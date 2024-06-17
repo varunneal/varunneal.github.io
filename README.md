@@ -1,3 +1,3 @@
-# VarunNSrivastava.github.io
+# varunneal.github.io
 
-This site is live at [https://varunnsrivastava.github.io/](https://varunnsrivastava.github.io/). Check it out!
+This site is live at [https://varunneal.github.io/](https://varunneal.github.io/). Check it out!

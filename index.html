@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE HTML>
 <!--
 	Massively by HTML5 UP
@@ -158,3 +159,148 @@
 
 	</body>
 </html>
+=======
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Varun Neal Srivastava</title>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f8f0;
+        }
+        h1, h2 {
+            font-family: "Times New Roman", Times, serif;
+            color: #333;
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.8em;
+            color: #666;
+        }
+        .ripple {
+            position: absolute;
+            border-radius:45%;
+            background: rgba(0,0,0,0.1);
+            animation: ripple-animation 1s linear infinite;
+            pointer-events: none; /* Allows clicks to pass through */
+        }
+        @keyframes ripple-animation {
+            from {
+                transform: scale(2);
+                opacity: 1;
+            }
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Varun Neal Srivastava</h1>
+<p>
+<a href="./resume.pdf" class="logo">Resume</a>,
+<a href="https://github.com/varunneal" class="logo">Github</a>, 
+<a href="https://www.linkedin.com/in/varun-n-sri/" class="logo">LinkedIn</a>,
+<a href="mailto:varun.neal@berkeley.edu" class="logo">Email</a> 
+</p>
+
+<h1>Projects</h1>
+
+<div class="section">
+    <h2>Machine Learning</h2>
+    <p><a href="https://do-me.github.io/SemanticFinder/">SemanticFinder</a> - Frontend-only semantic search.</p>
+    <p><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa22/upload/files/proj5/cs194-26-agh/">Facial Keypoint Detection</a> - Detecting facial keypoints with networks.</p>
+</div>
+
+
+<div class="section">
+    <h2>Graphics</h2>
+    <p><a href="https://github.com/varunneal/ChromaLab">ChromaLab</a> - Color Library for research into human vision, spectral imaging, tetrachromacy. </p>
+    <p><a href="https://varunnsrivastava.github.io/cs184-project3-2/">Raytracing II</a> - Raytracing Engine in C++/OpenGL with advanced materials support.</p>
+    <p><a href="https://varunnsrivastava.github.io/cs184-project2/">3D Mesh Engine</a> - C++/OpenGL engine for rendering 3D meshes.</p>
+    <p><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa22/upload/files/projFinalAssigned/cs194-26-agh/">Tour into the Photo</a> - Creating animations/3D scene models from a single image.</p>
+</div>
+
+<div class="section">
+    <h2>Math</h2>
+    <p><a href="https://varunnsrivastava.wordpress.com/">Blog</a> - Mathematical musings.</p>
+</div>
+
+
+<div class="footer">
+    <p>&copy; Varun Neal Srivastava</p>
+</div>
+
+<script>
+let lastX, lastY, lastTime;
+const threshold = 5; // Velocity threshold for ripple effect
+var dotsOn = false;
+
+document.body.onmousemove = function(e) {
+    const now = Date.now();
+    if (!lastTime) { 
+        lastTime = now;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        return; 
+    }
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    const dt = now - lastTime;
+    const velocity = Math.sqrt(dx * dx + dy * dy) / dt;
+    
+    if (velocity > threshold) {
+        dotsOn = true;
+    }
+    
+    
+    if (dotsOn) {
+        createRipple(e.clientX, e.clientY);
+    }
+    
+    if (velocity < 0.001) {
+        dotsOn = false;
+    }
+    
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastTime = now;
+};
+
+function createRipple(x, y) {
+    var ripple = document.createElement('div');
+    ripple.className = 'ripple';
+    document.body.appendChild(ripple);
+    ripple.style.width = ripple.style.height = '10px';
+    ripple.style.left = x - 5 + 'px';
+    ripple.style.top = y - 5 + 'px';
+    
+    setTimeout(function() {
+        ripple.remove();
+    }, 1000);
+}
+</script>
+
+
+</body>
+</html>
+
+>>>>>>> f37b6bb (added resume to site)

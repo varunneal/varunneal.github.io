@@ -1,3 +1,9 @@
+<!-- Preload critical fonts -->
+<link rel="preload" href="assets/webfonts/fotmatissebold.otf" as="font" type="font/otf" crossorigin>
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="preconnect" href="//fonts.gstatic.com" crossorigin>
+
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -5,34 +11,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Varun Neal Srivastava</title>
     <style>
+        @font-face {
+            font-family: 'matisse bold';
+            src: url('assets/webfonts/fotmatissebold.otf') format('opentype');
+            font-display: optional;
+        }
         body {
             font-family: Helvetica, Arial, sans-serif;
             margin: 20px;
             background-color: #f8f8f0;
         }
+
         h1, h2 {
-            font-family: "Times New Roman", Times, serif;
+            font-family: 'matisse bold', "Times New Roman", Times, serif;
             color: #333;
         }
+
         p {
-            max-width: 738px; /* Set the maximum width of paragraphs */
+            max-width: 738px;
         }
+
         a {
             color: #007BFF;
             text-decoration: none;
         }
+
         img {
             max-width: 100%;
             height: auto;
         }
+
         .section {
             margin-bottom: 40px;
         }
+
         .footer {
             text-align: center;
             margin-top: 40px;
             font-size: 0.8em;
             color: #666;
+        }
+
+        .hover-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hover-image {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            margin-left: 35px;
+            max-width: 300px;  /* Adjust size as needed */
+            height: auto;
+            border: 2px solid transparent;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .hover-container:hover .hover-image {
+            border: 2px solid #333;
+
+            display: block;
+            opacity: 1;
         }
     </style>
 </head>
@@ -45,6 +89,7 @@
     <a href="./resume.pdf" class="logo">Resume</a>,
     <a href="https://github.com/varunneal" class="logo">Github</a>,
     <a href="https://www.linkedin.com/in/varun-n-sri/" class="logo">LinkedIn</a>,
+    <a href="https://open.spotify.com/user/varun2k" class="logo">Spotify</a>,
     <a href="mailto:varun.neal@berkeley.edu" class="logo">Email</a>
 </p>
 
@@ -59,26 +104,72 @@ Projects
 </h1>
 
 <div class="section">
-    <h2>Machine Learning</h2>
+    <h2>ML/AI</h2>
     <p><a href="https://do-me.github.io/SemanticFinder/">SemanticFinder</a> - Frontend-only semantic search.</p>
-    <p><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa22/upload/files/proj5/cs194-26-agh/">Facial Keypoint Detection</a> - Detecting facial keypoints with networks.</p>
+    <p>
+        <span class="hover-container">
+            <a href="https://inst.eecs.berkeley.edu/~cs194-26/fa22/upload/files/proj5/cs194-26-agh/">Facial Keypoint Detection</a>
+            <img class="hover-image" src="images/keypoints.png" alt="Facial keypoint preview">
+        </span>
+        - Detecting facial features with networks.
+    </p>
+    <p><a href="https://github.com/varunneal/spotify-mcp">Spotify MCP Server</a> - Connect AI clients like Claude to Spotify.</p>
 </div>
-
 
 <div class="section">
     <h2>Graphics</h2>
-    <p><a href="https://varunnsrivastava.github.io/cs184-project3/">Raytracing I</a> - C++ Raytracing Engine.</p>
-    <p><a href="https://varunnsrivastava.github.io/cs184-project3-2/">Raytracing II</a> - Additional materials for the Raytracing Engine.</p>
-    <p><a href="https://varunnsrivastava.github.io/cs184-project2/">3D Mesh Engine</a> - C++/OpenGL engine for rendering 3D meshes.</p>
-    <p><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa22/upload/files/projFinalAssigned/cs194-26-agh/">Tour into the Photo</a> - Creating animations/3D scene models from a single image.</p>
-    <p><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa22/upload/files/proj4B/cs194-26-agh/">Auto-stitching Mosaics</a> - Stitching together images to form panoramas.</p>
+    <p>
+        <span class="hover-container">
+            <a href="https://imjal.github.io/theory-of-tetrachromacy/"><i>Theory of Human Tetrachromatic Color Experience</i></a>
+            <img class="hover-image" src="images/tetra2.png" alt="Tetrachromacy preview">
+        </span>
+        - ACM SIGGRAPH Paper, 2024.
+    </p>
+    <p>
+        <span class="hover-container">
+            <a href="https://varunnsrivastava.github.io/cs184-project3/">Raytracing I</a>
+            <img class="hover-image" src="images/bunny_1024_4_3.png" alt="Raytracing I preview">
+        </span>
+        - C++ Raytracing Engine.
+    </p>
+    <p>
+        <span class="hover-container">
+            <a href="https://varunnsrivastava.github.io/cs184-project3-2/">Raytracing II</a>
+            <img class="hover-image" src="images/dragon.png" alt="Dragon render preview">
+        </span>
+        - Additional materials for the Raytracing Engine.
+    </p>
+    <p>
+        <span class="hover-container">
+            <a href="https://varunnsrivastava.github.io/cs184-project2/">3D Mesh Engine</a>
+            <img class="hover-image" src="images/pt2_1.jpeg" alt="3D Mesh preview">
+        </span>
+        - C++/OpenGL engine for rendering 3D meshes.
+    </p>
+    <p>
+        <span class="hover-container">
+            <a href="https://varunnsrivastava.github.io/cs184-project4/">Auto-stitching Mosaics</a>
+            <img class="hover-image" src="images/anthropology2.jpeg" alt="Mosaics preview">
+        </span>
+        - Stitching photos together via keypoints and warping.
+    </p>
+    <p>
+        <span class="hover-container">
+            <a href="https://varunneal.github.io/cs194-final-project/">Tour into the Picture</a>
+            <img class="hover-image" src="images/sjerome1.jpeg" alt="Tour preview">
+        </span>
+        - Creating animations/3D scene models from a single image.
+    </p>
 </div>
-
 
 <div class="section">
-    <h2>Math</h2>
+    <h2>Misc</h2>
+    <p><a href="https://github.com/varunneal/uv-rss-reader">RSS Reader</a> - Single file RSS reader with UV.</p>
+    <p><a href="https://github.com/varunneal/day-one-calendar">Day One Obsidian plugin</a> - Obsidian plugin I use for daily journaling.</p>
+    <p><a href="https://github.com/varunneal/dot-obsidian">.obsidian</a> - My personal obsidian configuration.</p>
     <p><a href="https://varunnsrivastava.wordpress.com/">Blog</a> - Mathematical musings.</p>
 </div>
+
 
 <div class="footer">
     <p>&copy; Varun Neal Srivastava</p>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Oracles for Models</title>
+<style>
+@font-face {
+    font-family: 'matisse bold';
+    src: url('assets/webfonts/fotmatissebold.otf') format('opentype');
+    font-display: optional;
+}
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    justify-content: center;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.wrapper {
+    max-width: 700px;
+    width: 100%;
+}
+.light-mode {
+    background-color: #f8f8f0;
+    color: #2d2d2d;  /* Slightly softer than #333 */
+}
+.dark-mode {
+    background-color: #1f1f1f;
+    color: #f0f0f0;  /* Slightly softer than #eee */
+}
+.light-mode h1, .light-mode h2 {
+    font-family: 'matisse bold', "Times New Roman", Times, serif;
+    color: #333;
+}
+.dark-mode h1, .dark-mode h2 {
+    font-family: 'matisse bold', "Times New Roman", Times, serif;
+    color: #eee;
+}
+code {
+    font-family: Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Separate styles for code blocks vs inline code */
+pre code {
+    padding: 0;  /* Remove padding for code inside pre blocks */
+    display: block;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+pre {
+    padding: 1em;
+    border-radius: 6px;
+    margin: 1em 0;
+}
+.light-mode code, .light-mode pre {
+    background-color: #f0f0f0;
+    color: #333;
+}
+.dark-mode code, .dark-mode pre {
+    background-color: #333;
+    color: #ccc;
+}
+.toggle-btn {
+    cursor: pointer;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 100px;  /* Set consistent width */
+    text-align: center;  /* Center the text within the button */
+    transform: scale(1);
+    transition: transform 0.15s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.light-mode .toggle-btn {
+    color: #333;
+    border: 1px solid #333;
+}
+.dark-mode .toggle-btn {
+    color: #eee;
+    border: 1px solid #eee;
+}
+.light-mode a:hover {
+    text-decoration: underline;
+}
+
+.light-mode a:visited {
+    color: #551A8B;
+}
+
+/* Link styles for dark mode */
+.dark-mode a {
+    color: #58a6ff;  /* Brighter blue for dark mode */
+    text-decoration: none;
+}
+
+.dark-mode a:hover {
+    text-decoration: underline;
+    color: #79b8ff;  /* Even brighter on hover */
+}
+
+.dark-mode a:visited {
+    color: #b392f0;  /* Purple for visited links */
+}
+
+.dark-mode a:active {
+    color: #ffab70;  /* Orange flash when clicked */
+}
+</style>
+</head>
+<body class="light-mode">
+<button class="toggle-btn" onclick="toggleMode()">Dark Mode</button>
+<div class="wrapper">
+<h1>Oracles for Models</h1>
+<p>An LLM <a href="https://github.com/getasterisk/deepclaude?tab=readme-ov-file#why-r1--claude">doesn't care where its CoT knowledge came from</a>. Therefore, its CoT should be hacked to be as helpful as possible, even if the LLM itself cannot generate it.</p>
+<p>Consider this deepseek-r1:14b CoT:  </p>
+<pre><code>&lt;think&gt;  
+Okay, so I need to figure out how many &quot;rs&quot; are in the word &quot;strawberry.&quot; Hmm, let's start by  
+spelling it out to make sure I have it right. S-T-R-A-W-B-E-R-R-Y. Wait, no, that can't be right  
+because when I think of &quot;strawberry,&quot; I know it has two r sounds, but maybe more letters.
+
+Let me write it down properly: S-T-R-A-W-B-E-R-R-Y? No, wait, the correct spelling is actually  
+S-T-R-A-W-B-E-R-R-Y. So that's how it goes. Now, I'm trying to count the number of times the letter  
+'r' appears in this word.
+
+Looking at each letter one by one: S, T, R, A, W, B, E, R, R, Y. Wait, so after the first R, there  
+are two more Rs? Let me check again. After the initial R (the third letter), I think there's another  
+R later on. So maybe that's it.
+
+Wait, no, let me make sure. The word is S-T-R-A-W-B-E-R-R-Y. So starting from the beginning: S, T,  
+then R at position 3, then A, W, B, E, and then R again at position 8, followed by another R at  
+position 9 before ending with Y.
+
+So that means there are three Rs in &quot;strawberry.&quot; Wait, no, that doesn't sound right because when I  
+think of it, the word has two 'r' sounds. Let me check a reliable source or maybe use another method  
+to confirm.
+
+Alternatively, maybe I'm overcomplicating this. The word is spelled S-T-R-A-W-B-E-R-R-Y. So from  
+position 3: R, then after E comes R again, and another R? Wait no, that's not correct because the  
+word should be S-T-R-A-W-B-E-R-R-Y, which actually has two Rs at the end.
+
+Wait, perhaps I'm confusing it with &quot;strawberry&quot; being spelled as S-T-R-A-W-B-E-R-R-Y. Let me count  
+again: 1 (R), then another R later on—so that's two Rs in total.  
+&lt;/think&gt;
+
+The word &quot;strawberry&quot; contains two 'r's.
+
+**Answer:** There are 2 'rs' in &quot;strawberry.&quot;  
+</code></pre>
+<p>Instead of CoT, let's suppose we fine-tuned the LLM to use Oracles via tool-calling:  </p>
+<pre><code>&lt;oracle&gt;  
+I need to figure out how many &quot;rs&quot; are in the word &quot;strawberry.&quot; A reliable source tells me that there are &lt;python&gt;'strawberry'.count('r')&lt;/python&gt;  
+</code></pre>
+<p>before the next token is generated, the <code>&lt;python&gt;</code> statement gets automatically executed, so the CoT finishes as:  </p>
+<pre><code>&lt;oracle&gt;  
+I need to figure out how many &quot;rs&quot; are in the word &quot;strawberry.&quot; A reliable source tells me that there are 3 &quot;r&quot;s in &quot;strawberry.&quot;  
+&lt;/oracle&gt;
+The word &quot;strawberry contains three 'r's.  
+</code></pre>
+<p>I think it is likely that such Oracle-like use of tool calling will be an emergent property of equipping current CoT SL with interpreters and other APIs. </p>
+</div>
+<script>
+function toggleMode() {
+  var body = document.body;
+  body.classList.toggle('dark-mode');
+  body.classList.toggle('light-mode');
+  document.querySelector('.toggle-btn').textContent =
+    body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+}
+
+</script>
+</body>
+</html>

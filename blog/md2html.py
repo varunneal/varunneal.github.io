@@ -5,6 +5,25 @@ import re
 import os
 import markdown
 
+import random
+
+def blocks(count=10, bias_probability=0.3):
+    block_chars = [
+        '▀', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█', '▉', '▊', '▋', '▌', '▍', '▎', '▏', '▐', '▕', '░'
+    ]
+    if count <= 0:
+        return ""
+    result = []
+    current = random.choice(block_chars)
+    result.append(current)
+    for _ in range(1, count):
+        if random.random() < bias_probability:
+            result.append(current)
+        else:
+            current = random.choice(block_chars)
+            result.append(current)
+    return "".join(result)
+
 
 def main(md_file):
 
@@ -24,6 +43,7 @@ def main(md_file):
         template
         .replace("__TITLE__", doc_title)
         .replace("__CONTENT__", html_content)
+        .replace("__BLOCKS__", blocks())
     )
 
     with open(output_file, 'w', encoding='utf-8') as f:

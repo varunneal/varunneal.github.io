@@ -194,3 +194,11 @@ pre {
 .dark-mode .post-description {
     color: #bbb;
 }
+
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.8em;
+    color: #666;
+}

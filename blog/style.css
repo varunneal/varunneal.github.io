@@ -95,7 +95,7 @@ pre code {
 pre {
     padding: 1em;
     border-radius: 6px;
-    margin: 1em 0;
+    margin: 1em 1em;
 }
 .light-mode code,
 .light-mode pre {

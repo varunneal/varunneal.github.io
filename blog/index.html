@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>__TITLE__</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <a href="index.html" class="home-link">Home</a>
+        <a class="toggle-theme" onclick="toggleMode()">☀</a>
+    </div>
+<!--    <h1>Posts</h1>-->
+    <ul class="post-list">
+        <li class="post-item">
+            <div class="post-date">January 31, 2025</div>
+            <h2 class="post-title">
+                <a href="oracles-for-models.html">Oracles for Models</a>
+            </h2>
+            <div class="post-description">
+                LLMs can think now. But they should be able to do much more.
+            </div>
+        </li>
+
+    </ul>
+</div>
+<script>
+    // Function to set the theme
+    function setTheme(theme) {
+        const body = document.body;
+        const toggleButton = document.querySelector('.toggle-theme');
+
+        body.classList.remove('light-mode', 'dark-mode');
+        body.classList.add(theme);
+
+        toggleButton.textContent = theme === 'dark-mode' ? '☀' : '⏾';
+    }
+
+    // Function to toggle between themes
+    function toggleMode() {
+        const isDark = document.body.classList.contains('dark-mode');
+        setTheme(isDark ? 'light-mode' : 'dark-mode');
+    }
+
+    if (window.matchMedia) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+        setTheme(prefersDark.matches ? 'dark-mode' : 'light-mode');
+
+        prefersDark.addEventListener('change', (e) => {
+            setTheme(e.matches ? 'dark-mode' : 'light-mode');
+        });
+    }
+</script>
+</body>
+</html>

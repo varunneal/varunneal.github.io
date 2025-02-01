@@ -1,0 +1,196 @@
+
+@font-face {
+    font-family: 'matisse bold';
+    src: url('assets/webfonts/fotmatissebold.otf') format('opentype');
+    font-display: optional;
+}
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    justify-content: center;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.wrapper {
+    max-width: 700px;
+    width: 100%;
+}
+.light-mode {
+    background-color: #f8f8f0;
+    color: #2d2d2d;
+}
+.dark-mode {
+    background-color: #1f1f1f;
+    color: #f0f0f0;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1em;
+    height: 50px;
+    border-bottom: 1px solid;
+    padding-bottom: 0.5em;
+}
+
+/* Border color matches text color in each mode */
+.light-mode .header {
+    border-color: #2d2d2d;
+}
+
+.dark-mode .header {
+    border-color: #f0f0f0;
+}
+
+.toggle-theme {
+    font-weight: bold;
+    font-size: 40px;
+    text-decoration: underline;
+    color: inherit !important;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+
+}
+/* Enforce regular text color and underline for Home link */
+.light-mode .home-link,
+.dark-mode .home-link {
+    font-family: 'matisse bold', "Times New Roman", Times, serif;
+    font-weight: bold;
+    font-size: 30px;
+    /*text-decoration: underline;*/
+    color: inherit !important;
+    margin: 0;
+    padding: 0;
+    cursor: pointer; /* Changed from default to pointer since it's a link */
+}
+
+.light-mode h1,
+.light-mode h2 {
+    font-family: 'matisse bold', "Times New Roman", Times, serif;
+    color: #333;
+}
+.dark-mode h1,
+.dark-mode h2 {
+    font-family: 'matisse bold', "Times New Roman", Times, serif;
+    color: #eee;
+}
+code {
+    font-family: Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre code {
+    padding: 0;
+    display: block;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+pre {
+    padding: 1em;
+    border-radius: 6px;
+    margin: 1em 0;
+}
+.light-mode code,
+.light-mode pre {
+    background-color: #f0f0f0;
+    color: #333;
+}
+.dark-mode code,
+.dark-mode pre {
+    background-color: #333;
+    color: #ccc;
+}
+.toggle-btn {
+    cursor: pointer;
+    background: none;
+    font-family: serif;
+    font-weight: 900;
+    font-size: 3em;
+    width: 3vw;
+    /*padding: 0;*/
+    margin: 0;
+    text-align: center;
+    transition: opacity 0.15s ease;
+    border: 2px solid pink;
+}
+
+.light-mode .toggle-btn {
+    color: #333;
+
+}
+
+.dark-mode .toggle-btn {
+    color: #eee;
+}
+/* Generic link styling can remain for other links, but won't affect .home-link now */
+.light-mode a {
+    color: #0366d6;
+    text-decoration: none;
+}
+.light-mode a:hover {
+    text-decoration: underline;
+}
+.light-mode a:visited {
+    color: #551A8B;
+}
+.dark-mode a {
+    color: #58a6ff;
+    text-decoration: none;
+}
+.dark-mode a:hover {
+    text-decoration: underline;
+    color: #79b8ff;
+}
+.dark-mode a:visited {
+    color: #b392f0;
+}
+.dark-mode a:active {
+    color: #ffab70;
+}
+
+/* Post list styles */
+.post-list {
+    list-style: none;
+    padding: 0;
+}
+
+.post-item {
+    margin-bottom: 1.5em;
+    padding-bottom: 1.5em;
+    border-bottom: 1px solid #ddd;
+}
+
+.dark-mode .post-item {
+    border-bottom: 1px solid #333;
+}
+
+.post-date {
+    font-size: 0.9em;
+    color: #666;
+    /*margin-bottom: 0.3em;*/
+}
+
+.dark-mode .post-date {
+    color: #999;
+}
+
+.post-title {
+    margin: 0;
+    font-size: 1.4em;
+}
+
+.post-description {
+    /*margin-top: 0.5em;*/
+    color: #555;
+}
+
+.dark-mode .post-description {
+    color: #bbb;
+}

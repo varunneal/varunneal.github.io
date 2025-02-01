@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>__TITLE__</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <a href="index.html" class="home-link">Home</a>
+        <a class="toggle-theme" onclick="toggleMode()">⏾</a>
+    </div>
+    <h1>__TITLE__</h1>
+    __CONTENT__
+    <div class="footer">
+        <p>&copy; Varun Neal Srivastava</p>
+    </div>
+</div>
+<script>
+    // Function to set the theme
+    function setTheme(theme) {
+        const body = document.body;
+        const toggleButton = document.querySelector('.toggle-theme');
+
+        body.classList.remove('light-mode', 'dark-mode');
+        body.classList.add(theme);
+
+        toggleButton.textContent = theme === 'dark-mode' ? '☀' : '⏾';
+    }
+
+    function toggleMode() {
+        const isDark = document.body.classList.contains('dark-mode');
+        setTheme(isDark ? 'light-mode' : 'dark-mode');
+    }
+
+    if (window.matchMedia) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+        setTheme(prefersDark.matches ? 'dark-mode' : 'light-mode');
+
+        prefersDark.addEventListener('change', (e) => {
+            setTheme(e.matches ? 'dark-mode' : 'light-mode');
+        });
+    }
+</script>
+</body>
+</html>

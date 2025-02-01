@@ -1,129 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Oracles for Models</title>
-<style>
-@font-face {
-    font-family: 'matisse bold';
-    src: url('assets/webfonts/fotmatissebold.otf') format('opentype');
-    font-display: optional;
-}
-body {
-    font-family: Helvetica, Arial, sans-serif;
-    margin: 20px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    display: flex;
-    justify-content: center;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-.wrapper {
-    max-width: 700px;
-    width: 100%;
-}
-.light-mode {
-    background-color: #f8f8f0;
-    color: #2d2d2d;  /* Slightly softer than #333 */
-}
-.dark-mode {
-    background-color: #1f1f1f;
-    color: #f0f0f0;  /* Slightly softer than #eee */
-}
-.light-mode h1, .light-mode h2 {
-    font-family: 'matisse bold', "Times New Roman", Times, serif;
-    color: #333;
-}
-.dark-mode h1, .dark-mode h2 {
-    font-family: 'matisse bold', "Times New Roman", Times, serif;
-    color: #eee;
-}
-code {
-    font-family: Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-    font-size: 0.9em;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-
-/* Separate styles for code blocks vs inline code */
-pre code {
-    padding: 0;  /* Remove padding for code inside pre blocks */
-    display: block;
-    overflow-x: auto;
-    margin: 1em 0;
-}
-
-pre {
-    padding: 1em;
-    border-radius: 6px;
-    margin: 1em 0;
-}
-.light-mode code, .light-mode pre {
-    background-color: #f0f0f0;
-    color: #333;
-}
-.dark-mode code, .dark-mode pre {
-    background-color: #333;
-    color: #ccc;
-}
-.toggle-btn {
-    cursor: pointer;
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 14px;
-    min-width: 100px;  /* Set consistent width */
-    text-align: center;  /* Center the text within the button */
-    transform: scale(1);
-    transition: transform 0.15s ease, color 0.3s ease, border-color 0.3s ease;
-}
-.light-mode .toggle-btn {
-    color: #333;
-    border: 1px solid #333;
-}
-.dark-mode .toggle-btn {
-    color: #eee;
-    border: 1px solid #eee;
-}
-.light-mode a:hover {
-    text-decoration: underline;
-}
-
-.light-mode a:visited {
-    color: #551A8B;
-}
-
-/* Link styles for dark mode */
-.dark-mode a {
-    color: #58a6ff;  /* Brighter blue for dark mode */
-    text-decoration: none;
-}
-
-.dark-mode a:hover {
-    text-decoration: underline;
-    color: #79b8ff;  /* Even brighter on hover */
-}
-
-.dark-mode a:visited {
-    color: #b392f0;  /* Purple for visited links */
-}
-
-.dark-mode a:active {
-    color: #ffab70;  /* Orange flash when clicked */
-}
-</style>
+    <meta charset="utf-8">
+    <title>Oracles for Models</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="light-mode">
-<button class="toggle-btn" onclick="toggleMode()">Dark Mode</button>
+<body>
 <div class="wrapper">
-<h1>Oracles for Models</h1>
-<p>An LLM <a href="https://github.com/getasterisk/deepclaude?tab=readme-ov-file#why-r1--claude">doesn't care where its CoT knowledge came from</a>. Therefore, its CoT should be hacked to be as helpful as possible, even if the LLM itself cannot generate it.</p>
+    <div class="header">
+        <a href="index.html" class="home-link">Home</a>
+        <a class="toggle-theme" onclick="toggleMode()">⏾</a>
+    </div>
+    <h1>Oracles for Models</h1>
+    <p>An LLM <a href="https://github.com/getasterisk/deepclaude?tab=readme-ov-file#why-r1--claude">doesn't care where its CoT knowledge came from</a>. Therefore, its CoT should be hacked to be as helpful as possible, even if the LLM itself cannot generate it.</p>
 <p>Consider this deepseek-r1:14b CoT:  </p>
 <pre><code>&lt;think&gt;  
 Okay, so I need to figure out how many &quot;rs&quot; are in the word &quot;strawberry.&quot; Hmm, let's start by  
@@ -162,23 +51,45 @@ The word &quot;strawberry&quot; contains two 'r's.
 <pre><code>&lt;oracle&gt;  
 I need to figure out how many &quot;rs&quot; are in the word &quot;strawberry.&quot; A reliable source tells me that there are &lt;python&gt;'strawberry'.count('r')&lt;/python&gt;  
 </code></pre>
-<p>before the next token is generated, the <code>&lt;python&gt;</code> statement gets automatically executed, so the CoT finishes as:  </p>
+<p>Before the next token is generated, the <code>&lt;python&gt;</code> statement gets automatically executed, so the CoT finishes as:  </p>
 <pre><code>&lt;oracle&gt;  
 I need to figure out how many &quot;rs&quot; are in the word &quot;strawberry.&quot; A reliable source tells me that there are 3 &quot;r&quot;s in &quot;strawberry.&quot;  
 &lt;/oracle&gt;
 The word &quot;strawberry contains three 'r's.  
 </code></pre>
 <p>I think it is likely that such Oracle-like use of tool calling will be an emergent property of equipping current CoT SL with interpreters and other APIs. </p>
+    <div class="footer">
+        <p>&copy; Varun Neal Srivastava</p>
+    </div>
 </div>
 <script>
-function toggleMode() {
-  var body = document.body;
-  body.classList.toggle('dark-mode');
-  body.classList.toggle('light-mode');
-  document.querySelector('.toggle-btn').textContent =
-    body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
-}
+    // Function to set the theme
+    function setTheme(theme) {
+        const body = document.body;
+        const toggleButton = document.querySelector('.toggle-theme');
 
+        body.classList.remove('light-mode', 'dark-mode');
+        body.classList.add(theme);
+
+        // Update the toggle button icon
+        toggleButton.textContent = theme === 'dark-mode' ? '☀' : '⏾';
+    }
+
+    // Function to toggle between themes
+    function toggleMode() {
+        const isDark = document.body.classList.contains('dark-mode');
+        setTheme(isDark ? 'light-mode' : 'dark-mode');
+    }
+
+    if (window.matchMedia) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+        setTheme(prefersDark.matches ? 'dark-mode' : 'light-mode');
+
+        prefersDark.addEventListener('change', (e) => {
+            setTheme(e.matches ? 'dark-mode' : 'light-mode');
+        });
+    }
 </script>
 </body>
 </html>

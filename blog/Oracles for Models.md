@@ -41,7 +41,7 @@ Instead of CoT, let's suppose we fine-tuned the LLM to use Oracles via tool-call
 <oracle>  
 I need to figure out how many "rs" are in the word "strawberry." A reliable source tells me that there are <python>'strawberry'.count('r')</python>  
 ```  
-before the next token is generated, the `<python>` statement gets automatically executed, so the CoT finishes as:  
+Before the next token is generated, the `<python>` statement gets automatically executed, so the CoT finishes as:  
 ```  
 <oracle>  
 I need to figure out how many "rs" are in the word "strawberry." A reliable source tells me that there are 3 "r"s in "strawberry."  

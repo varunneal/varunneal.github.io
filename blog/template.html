@@ -36,9 +36,7 @@
 
     if (window.matchMedia) {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-
-        setTheme(prefersDark.matches ? 'dark-mode' : 'light-mode');
-
+        setTheme(prefersDark.matches || !window.matchMedia ? 'dark-mode' : 'light-mode');
         prefersDark.addEventListener('change', (e) => {
             setTheme(e.matches ? 'dark-mode' : 'light-mode');
         });

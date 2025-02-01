@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Varun Neal Srivastava</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <a href="index.html" class="home-link">Home</a>
+        <a class="toggle-theme" onclick="toggleMode()">⏾</a>
+    </div>
+    <h1>Varun Neal Srivastava</h1>
+    <p><a href="https://varunneal.github.io/resume.pdf">Resume</a>, <a href="https://github.com/varunneal">Github</a>, <a href="https://www.linkedin.com/in/varun-n-sri/">LinkedIn</a>, <a href="https://open.spotify.com/user/varun2k">Spotify</a>, <a href="mailto:varun.neal@berkeley.edu">Email</a></p>
+<p>I'm Varun. I am an engineer and researcher broadly interested in machine learning, computer graphics, and human vision. If you're interested in learning more, take a look at my resume or some of my projects below.</p>
+<h1>Projects</h1>
+<h2>ML &amp; AI</h2>
+<ul>
+<li><a href="https://do-me.github.io/SemanticFinder/">Semantic Finder</a> - Frontend-only semantic search. </li>
+<li><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa22/upload/files/proj5/cs194-26-agh/">Facial Keypoint Detection</a> - Detecting facial features with networks.</li>
+<li><a href="https://github.com/varunneal/spotify-mcp">Spotify MCP Server</a> - Connect AI clients like Claude to Spotify.</li>
+</ul>
+<h2>Graphics</h2>
+<ul>
+<li><a href="https://imjal.github.io/theory-of-tetrachromacy/"><em>Theory of Human Tetrachromatic Color Experience</em></a> - ACM SIGGRAPH Paper, 2024.</li>
+<li><a href="https://varunnsrivastava.github.io/cs184-project3/">Raytracing I</a> - C++ Raytracing Engine.</li>
+<li><a href="https://varunnsrivastava.github.io/cs184-project3-2/">Raytracing II</a> - Additional materials for the Raytracing Engine.</li>
+<li><a href="https://varunnsrivastava.github.io/cs184-project2/">3D Mesh Engine</a> - C++/OpenGL engine for rendering 3D meshes.</li>
+<li><a href="https://varunnsrivastava.github.io/cs184-project4/">Auto-stitching Mosaics</a> - Stitching photos together via keypoints and warping.</li>
+<li><a href="https://varunneal.github.io/cs194-final-project/">Tour into the Picture</a> - Creating animations/3D scene models from a single image.</li>
+</ul>
+<h2>Misc</h2>
+<ul>
+<li><a href="https://github.com/varunneal/uv-rss-reader">RSS Reader</a> - Single file RSS reader with UV.</li>
+<li><a href="https://github.com/varunneal/day-one-calendar">Day One Obsidian plugin</a> - Obsidian plugin I use for daily journaling.</li>
+<li><a href="https://github.com/varunneal/dot-obsidian">.obsidian</a> - My personal obsidian configuration.</li>
+<li><a href="https://varunneal.github.io/blog/">brand new blog</a> - Notes from the vault. </li>
+<li><a href="https://varunnsrivastava.wordpress.com/">very old blog</a> - Mathematical musings.</li>
+</ul>
+    <div class="footer">
+        <p>░▂▀▂▂░░░▀▄</p>
+    </div>
+</div>
+<script>
+    // Function to set the theme
+    function setTheme(theme) {
+        const body = document.body;
+        const toggleButton = document.querySelector('.toggle-theme');
+
+        body.classList.remove('light-mode', 'dark-mode');
+        body.classList.add(theme);
+
+        toggleButton.textContent = theme === 'dark-mode' ? '☀' : '⏾';
+    }
+
+    function toggleMode() {
+        const isDark = document.body.classList.contains('dark-mode');
+        setTheme(isDark ? 'light-mode' : 'dark-mode');
+    }
+
+    if (window.matchMedia) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        setTheme(prefersDark.matches || !window.matchMedia ? 'dark-mode' : 'light-mode');
+        prefersDark.addEventListener('change', (e) => {
+            setTheme(e.matches ? 'dark-mode' : 'light-mode');
+        });
+    }
+
+</script>
+</body>
+</html>

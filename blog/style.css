@@ -10,7 +10,7 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
     display: flex;
     justify-content: center;
-    line-height: 1.6;
+    line-height: 1.4;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -66,6 +66,17 @@ body {
     margin: 0;
     padding: 0;
     cursor: pointer; /* Changed from default to pointer since it's a link */
+}
+
+h1, h2 {
+    margin-top: 0.2em;
+}
+
+h1 {
+    margin-bottom: 0.2em;;
+}
+h2, h3, h4, h5 {
+    margin-bottom: 0;;
 }
 
 .light-mode h1,
@@ -200,5 +211,24 @@ pre {
     text-align: center;
     margin-top: 40px;
     font-size: 0.8em;
+    color: #666;
+}
+
+
+ul {
+    list-style-type: disc;
+    list-style-position: inside;
+    padding-left: 0;
+    padding-top: 0;
+}
+
+ul li {
+    position: relative;
+    padding-left: 1.2em;
+    margin-bottom: 0.5em;
+}
+
+
+ul li::marker {
     color: #666;
 }

@@ -1,0 +1,15 @@
+---
+title: welcome
+tags:
+---
+[Resume](https://varunneal.github.io/resume.pdf), [Github](https://github.com/varunneal), [LinkedIn](https://www.linkedin.com/in/varun-n-sri/), [Spotify](https://open.spotify.com/user/varun2k), [Twitter](https://x.com/varunneal), [Email](mailto:varun.neal@berkeley.edu)
+
+I'm Varun. Currently I am an ML Engineer at adMarketplace, which serves ads in a privacy-mindful way. Previously I studied Math, CS @ Berkeley. 
+
+If you are interested in my professionally take a look at my resume above, or explore some of my [[technical projects]]. 
+
+Otherwise, I invite you to read some of my [[Preface to Essays |essays]] or connect with me on my socials above. 
+
+
+> [!danger]
+> I have only very recently migrated my personal site to [Quartz](https://quartz.jzhao.xyz/). I love it, but everything you see here is still very much in construction. 

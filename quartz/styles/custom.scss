@@ -1,3 +1,76 @@
 @use "./base.scss";
+@use "./variables.scss" as *;
 
-// put your custom CSS here!
+body[data-slug="index"] img {
+  filter: invert(0%);
+  opacity: 0.85;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+
+  // only allow synthesizing italics but not bold
+  font-synthesis: style;
+}
+
+img[src*="banner.svg"] {
+  opacity: 0.8;
+}
+
+[saved-theme="dark"] body[data-slug="index"] img[src*="banner.svg"] {
+  filter: invert(100%);
+}
+
+
+hr {
+  overflow: visible;
+  padding: 0;
+  height: 0;
+  margin: 2em auto;
+  border: none;
+  text-align: center;
+  width: 100%;
+
+  &:after {
+    content: "* * *";
+    display: inline-block;
+    margin: -1em 0 0.5em;
+    font-size: 1.5em;
+    padding: 0.5em 1em;
+    color: var(--gray);
+  }
+}
+
+pre.poetry {
+  font-size: 1.2rem;
+  font-family: cursive;
+  border: none;
+  padding: 0;
+  position: unset;
+}
+
+.meta,
+.content-meta {
+  font-family: biro_script_standardRgus, var(--bodyFont);
+}
+//
+///* Override dark mode backgrounds for pre blocks */
+//[saved-theme="dark"] pre {
+//  background-color: rgba(255, 255, 255, 0.1) !important;
+//  border-color: rgba(255, 255, 255, 0.2) !important;
+//}
+//
+///* For inline code outside of pre */
+//[saved-theme="dark"] code {
+//  background: rgba(255, 255, 255, 0.1) !important;
+//}
+//
+///* Ensure pre > code inherits the pre’s background rather than layering its own */
+//[saved-theme="dark"] pre > code {
+//  background: inherit !important;
+//}
+
+
+// BLOCK QUOTE SUTT
+

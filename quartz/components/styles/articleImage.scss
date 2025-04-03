@@ -1,0 +1,53 @@
+.article-image {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+
+  img {
+    max-width: v-bind("options.maxWidth");
+    max-height: v-bind("options.maxHeight");
+    object-fit: contain;
+  }
+
+  // Theme-specific image handling
+  .light-theme-image {
+    display: none;
+  }
+
+  .dark-theme-image {
+    display: none;
+  }
+
+  // Show light theme image when in light mode
+  :root[saved-theme="light"] & {
+    .light-theme-image {
+      display: block;
+    }
+
+    .dark-theme-image {
+      display: none;
+    }
+  }
+
+  // Show dark theme image when in dark mode
+  :root[saved-theme="dark"] & {
+    .light-theme-image {
+      display: none;
+    }
+
+    .dark-theme-image {
+      display: block;
+    }
+  }
+
+  // Auto-themed image recoloring
+  // Light mode - brown line color (#5b493a)
+  :root[saved-theme="light"] & .auto-themed-image {
+    filter: brightness(0) saturate(100%) invert(28%) sepia(10%) saturate(1064%) hue-rotate(346deg) brightness(94%) contrast(92%);
+  }
+
+  // Dark mode - taupe line color (#dcd3c5)
+  :root[saved-theme="dark"] & .auto-themed-image {
+    filter: brightness(0) saturate(100%) invert(90%) sepia(7%) saturate(339%) hue-rotate(330deg) brightness(99%) contrast(90%);
+  }
+}

@@ -1,5 +1,6 @@
 ---
 draft: "true"
+image:
 ---
 An LLM [doesn't care where its CoT knowledge came from](https://github.com/getasterisk/deepclaude?tab=readme-ov-file#why-r1--claude). Therefore, its CoT should be hacked to be as helpful as possible, even if the LLM itself cannot generate it.
 

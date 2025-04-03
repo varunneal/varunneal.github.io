@@ -1,3 +1,8 @@
+---
+image: ../images/pando-transparent.png
+imageAlt: pando
+---
+
 Variation encodes hierarchy. It selects for greatness, while undifferentiation breeds inertia—the inert blob of yeast.
 
 Are trees an exception? No! Trees often have greater genetic diversity than mammals. And the most majestic trees belong to the most diverse genuses:

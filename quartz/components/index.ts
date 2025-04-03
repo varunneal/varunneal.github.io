@@ -3,6 +3,7 @@ import TagContent from "./pages/TagContent"
 import FolderContent from "./pages/FolderContent"
 import NotFound from "./pages/404"
 import ArticleTitle from "./ArticleTitle"
+import ArticleImage from "./ArticleImage";
 import Darkmode from "./Darkmode"
 import Head from "./Head"
 import PageTitle from "./PageTitle"
@@ -23,6 +24,7 @@ import Comments from "./Comments"
 import Flex from "./Flex"
 
 export {
+  ArticleImage,
   ArticleTitle,
   Content,
   TagContent,

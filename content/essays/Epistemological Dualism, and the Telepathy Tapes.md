@@ -1,3 +1,7 @@
+---
+image: ../images/tapes2.png
+imageAlt: "credit: thetelepathytapes.com"
+---
 # (1) the tapes
 Epistemological dualism—a rule of reality, that we cannot definitively prove whether the material or consciousness-first worldview is correct using scientific methods. The very nature of scientific inquiry ensures that any evidence—especially for phenomena like telepathy—remains necessarily ambiguous. This is why the [Telepathy Tapes](https://thetelepathytapes.com/), which I deeply want to believe in (and I *do* believe that *I* do believe in) and all similar accounts, narrowly lack conclusive proof. The evidence bends to the interpretative lens of the observer, shaped by their psychological state.
 

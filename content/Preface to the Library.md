@@ -1,3 +1,9 @@
+---
+image: images/forest-lineart.png
+imageAlt: a forest emerges...
+---
+
+
 > What do you plan on doing, when intelligence is to cheap to monitor?
 
 The Library is my personal archive of essays, books, tweets, quotes, podcast transcripts etc. that I have not yet made public—but I plan to!

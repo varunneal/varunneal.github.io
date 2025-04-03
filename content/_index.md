@@ -1,5 +1,7 @@
 ---
 title: welcome
+image: images/ship2.png
+imageAlt: 
 tags:
 ---
 [Resume](https://varunneal.github.io/resume.pdf), [Github](https://github.com/varunneal), [LinkedIn](https://www.linkedin.com/in/varun-n-sri/), [Spotify](https://open.spotify.com/user/varun2k), [Twitter](https://x.com/varunneal), [Email](mailto:varun.neal@berkeley.edu)

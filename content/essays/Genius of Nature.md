@@ -3,6 +3,7 @@ aliases:
   - genius
   - genus
   - gana
+created: March 17, 2025
 ---
 
 It’s all so murky here.

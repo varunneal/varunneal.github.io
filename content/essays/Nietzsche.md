@@ -1,5 +1,6 @@
 ---
 draft: "true"
+created: March 17, 2025
 ---
 Works of Nietzsche should be found in [[Preface to the Library |Library]]. Therefore, in this section I am just compiing some of my favorite quotes by him and about him. 
 

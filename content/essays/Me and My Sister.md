@@ -1,5 +1,6 @@
 ---
 created: May 8, 2025
+draft: "true"
 ---
 In various times in my life, struggling with This question of a Girl or That question of a Diet, or my ultimate fate on this planet, I try to turn to what my ancestor may have done. I'm not entirely sure why. Is it because I share their genetics, and so their physiology, and am similar in appearances and build? Or is it spiritual, and I believe they are ever-watching me, and will give me boons if I live in a way they find righteous?
 

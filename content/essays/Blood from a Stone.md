@@ -16,7 +16,7 @@ The advent of science—particularly statistical methods, p-values, and falsifia
 
 Magic is the mystery prior to measurement. It's Schrödinger's Cat before you open the box. What's more magical than a cat in the superposition of life and death? How can you ensure that you never kill the cat? You never open the box. Don't falsify my magical cat. Do not read out that p-value.  
 
-At this point you might think I am coping; that I advocate for a forced ignorance of reality. But I respond: you cannot use measurement to find what is *immeasurable*!
+You may criticize my feigned ignorance. You may tell me that I am coping; that I am turning away from science because I know it will not validate my beliefs. But I respond: you cannot use measurement to find what is *immeasurable*!
 
 We all know that *reality* as we see it is a terribly lossy projection. Our senses reduce a rich universe into a handful of coordinates—sight, sound, smell, touch—but even much of this is ignored. Our minds spin narratives. No vantage point is high enough to see the entire valley. Have you ever fallen in love? Do you know what it feels like to have all of your thoughts orbit another? To trust anything is to have faith in a million truths unverifiable. 
 

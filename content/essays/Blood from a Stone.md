@@ -7,6 +7,7 @@ aliases:
   - nature loves to hide
 image: ../images/behelit.png
 imageAlt: Line art behelit from Berserk
+modified: May 23, 2025
 ---
 
 *This post is a follow-up to [[Two Peaks and the Telepathy Tapes|two peaks and the telepathy tapes]].*

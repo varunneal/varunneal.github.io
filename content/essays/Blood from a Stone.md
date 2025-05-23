@@ -39,7 +39,7 @@ The lack of scientific evidence for psi phenomena is not yet reason to susepct i
 	- Pedantic point but: double-blind studies are, by definition, incompatible with the nature of telepathy. If you assume that it is possible to have a double-blind study, you assume there can be no telepathic communication. 
 	- Double blind studies that introduce deception and a clinical (laboratory environment) seem like they interfere with psi abiliity. 
 
-The immeasurable resists measurement. But if you tread very carefully, and you plan very steadily, you may find it in your hands. After all, what is magic if not esoteric? Nietzsche believed science had the power to rescue such an esotericism; that it could be justified in a more noble way than blind faith. Dr. Laurence Lampert elegantly says:[^7]
+The immeasurable resists measurement. But if you tread very carefully, and you plan very steadily, you may find it in your hands. After all, what is magic if not esoteric? Nietzsche believed science had the power to rescue such an esotericism; that it could be justified in a more noble way than blind faith. Dr. Laurence Lampert elegantly writes:[^7]
 
 > Nature loves to hide. We dwell within the natural incomprehensibility of things and we dwell inquiringly. At best, Nietzsche suggests, our inquiry will afford us glimpses into the heart of things. And at best, *reports* on those glimpses will appear enigmatic; they will be like the report Zarathustra issued after creeping into the well-guarded fortress of Life herself where, with her complicity and with her permission, he stole her secret.
 >

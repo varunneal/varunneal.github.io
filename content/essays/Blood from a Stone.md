@@ -14,14 +14,14 @@ imageAlt: Line art behelit from Berserk
 
 The advent of science—particularly statistical methods, p-values, and falsifiability—created the framework by which "Magic" could be dismissed. There is a reason science is compared to a sharp razor, or a flaming laser sword[^1]. It slices through and *murders* one half of the universe. 
 
-Magic is the mystery prior to measurement. It's Schrödinger's Cat before you open the box. What's more magical than a cat in the superposition of life and death? How can you ensure that you never kill the cat? You never open the box. Don't falsify my magical cat. Do not read out that p-value.  
+Magic is the mystery prior to measurement. It's Schrödinger's Cat before you open the box. What's more magical than a cat in the superposition of life and death? How can you ensure that you never kill the cat? You never open the box. Don't falsify my magical cat. Do not read out that p-value. 
 
 You may criticize my feigned ignorance. You may tell me that I am coping; that I am turning away from science because I know it will not validate my beliefs. But I respond: you cannot use measurement to find what is *immeasurable*!
 
 We all know that *reality* as we see it is a terribly lossy projection. Our senses reduce a rich universe into a handful of coordinates—sight, sound, smell, touch—but even much of this is ignored. Our minds spin narratives. No vantage point is high enough to see the entire valley. Have you ever fallen in love? Do you know what it feels like to have all of your thoughts orbit another? To trust anything is to have faith in a million truths unverifiable. 
 
 ---
-##  (2) squeezing blood from a stone
+## (2) squeezing blood from a stone
 
 At the heart of the good materialist's soul is hope that in God's eye there is no epistemic uncertainty—the deterministic pathways of the universe can be forwarded, rewinded like a VHS tape. With enough precision at $t=0$ I will tell you the world at $t=1$. 
 
@@ -29,9 +29,9 @@ In the 20th century, exegesis of quantum phenomena spoiled this conviction. No a
 
 Isn't that story fun? After some terrible ingenuity, concentrated effort from several world-historic geniuses, careful bookkeeping, and some exhausting labwork, we can wrestle out a profound strangeness of reality—no local hidden variables.[^4] Truth falls out like blood from a stone. 
 
-In contrast, psi tests are furiously imprecise. In the [[Two Peaks and the Telepathy Tapes|Telepathy Tapes]], mothers make symbols with their fingers, visibly push limbs, and murmur suspcious subvocalizations. There is so much room for interference. There is so much rigor that must be considered. Human minds are much harder to measure than quantum particles. There is much greater room for interference and loophole in minds than in quantum physics. %% Parapsychology researchers must be incredibly skeptical of their positive p-values. %%
+In contrast, psi tests are furiously imprecise. In the [[Two Peaks and the Telepathy Tapes|Telepathy Tapes]], mothers make symbols with their fingers, visibly push limbs, and murmur suspcious subvocalizations. There is so much room for interference, rigor that hasn't been considered. Human minds are much harder to measure than quantum particles, and so there is much greater room for interference and loophole in minds than in quantum physics. %% Parapsychology researchers must be incredibly skeptical of their positive p-values. %%
 
-The lack of scientific evidence for psi phenomena is not yet reason to susepct it does not exist. I want to persuade that it, by its very nature, is hard to replicate. If consciousness is much more than science curently claims, then it is also exotic in a many more ways that we expect. As such, when we attempt to study it we can expect pitfalls everywhere.  Despite this, there have been several strong attempts in the literature:
+The lack of scientific evidence for psi phenomena is not yet reason to suspect it does not exist. I want to persuade you that it, by its very nature, is hard to replicate. If consciousness is much more than science curently claims, then it is also exotic in a many more ways that we expect. As such, when we attempt to study it we can expect pitfalls everywhere. Despite this, there have been several strong attempts in the literature:
 - The Sheep/Goat effect as documented by Gertrude Schmeidler: believers in ESP consistently perform significantly better on ESP tests than chance; disbelievers perform significantly worse—this effect is also called "Missing Psi".[^5]
 - Rupert Sheldrake has positively repeated experiments on scopaesthesia—the extrasensory ability to detect when being stared at—several times.[^6] This study has been replicated by various parapsychology proponents, and has failed to replicate many other times by skeptics. Such a dichotomy, amusingly, is an example of the sheep/goat effect.
 - [[Two Peaks and the Telepathy Tapes|The Telepathy Tapes]] must be studied with rigor. They deserve such an honor, but I believe the effort involved would be immense:
@@ -39,7 +39,7 @@ The lack of scientific evidence for psi phenomena is not yet reason to susepct i
 	- Double-blind studies are, by definition, incompatible with the nature of telepathy. If you assume that it is possible to have a double-blind study, you assume there can be no telepathic communication. This point is pedantic, but demonstrates limitations of the standard paradigms for measuring psi. 
 	- Studies that introduce deception (e.g. via double-blindedness) and a clinical setting would interfere with psi abiliity. Paraphrasing what I wrote previously: "psychic abilities are governed by the physics of love; love is sincere, and abhors concealment. Such a physics, which is based on the validity of the psyche—emotions, feelings, experience—is not easily measurable in a materialist setting. A double-blind study simply may not be possible."
 
-The immeasurable resists measurement. After all, what is magic if not esoteric?  But if you tread very carefully, and you plan very steadily, you may find it in your hands. Nietzsche believed science had the power to rescue such an esotericism; that it could be justified in a more noble way than blind faith. Dr. Laurence Lampert elegantly writes:[^7]
+The immeasurable resists measurement. After all, what is magic if not esoteric? But if you tread very carefully, and you plan very steadily, you may find it in your hands. Nietzsche believed science had the power to rescue such an esotericism; that it could be justified in a more noble way than blind faith. Dr. Laurence Lampert elegantly writes:[^7]
 
 > Nature loves to hide. We dwell within the natural incomprehensibility of things and we dwell inquiringly. At best, Nietzsche suggests, our inquiry will afford us glimpses into the heart of things. And at best, *reports* on those glimpses will appear enigmatic; they will be like the report Zarathustra issued after creeping into the well-guarded fortress of Life herself where, with her complicity and with her permission, he stole her secret.
 >

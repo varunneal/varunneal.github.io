@@ -120,6 +120,7 @@ button.desktop-explorer {
     padding: 0;
 
     & li > a {
+      margin-bottom: 5rem;
       color: var(--dark);
       opacity: 0.75;
       pointer-events: all;

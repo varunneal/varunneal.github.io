@@ -1,6 +1,6 @@
-%%  %%> Reading is not absorbing text but watching the thoughts that arise as you read.
+%%  Reading is not absorbing text but watching the thoughts that arise as you read. %%
 
-[essays in this subfolder :\)](varunneal.github.io/essays/)
+[essays are in this subfolder :\)](/essays/)
 
 These essays are my living commentary on the [[Preface to the Library |library]]. Ideally, I pair with each blog all of the texts, videos, podcasts, art that influenced it. This is impossible... but certainly possible to attempt. 
 

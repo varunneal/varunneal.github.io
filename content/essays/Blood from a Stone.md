@@ -1,0 +1,65 @@
+---
+created: May 22, 2025
+aliases:
+  - blood from a stone
+  - p-values
+  - p-values killed the cat
+  - nature loves to hide
+image: ../images/behelit.png
+imageAlt: Line art behelit from Berserk
+---
+
+*This post is a follow-up to [[Two Peaks and the Telepathy Tapes|two peaks and the telepathy tapes]].*
+## (1) p-values killed the cat
+
+The advent of science—particularly statistical methods, p-values, and falsifiability—created the framework by which "Magic" could be dismissed. There is a reason science is compared to a sharp razor, or a flaming laser sword[^1]. It slices through and *murders* one half of the universe. 
+
+Magic is the mystery prior to measurement. It's Schrödinger's Cat before you open the box. What's more magical than a cat in the superposition of life and death? How can you ensure that you never kill the cat? You never open the box. Don't falsify my magical cat. Do not read out that p-value.  
+
+At this point you might think I am coping; that I advocate for a forced ignorance of reality. But I respond: you cannot use measurement to find what is *immeasurable*!
+
+We all know that *reality* as we see it is a terribly lossy projection. Our senses reduce a rich universe into a handful of coordinates—sight, sound, smell, touch—but even much of this is ignored. Our minds spin narratives. No vantage point is high enough to see the entire valley. Have you ever fallen in love? Do you know what it feels like to have all of your thoughts orbit another? To trust anything is to have faith in a million truths unverifiable. 
+
+---
+##  (2) squeezing blood from a stone
+
+At the heart of the good materialist's soul is hope that in God's eye there is no epistemic uncertainty—the deterministic pathways of the universe can be forwarded, rewinded like a VHS tape. With enough precision at $t=0$ I will tell you the world at $t=1$. 
+
+In the 20th century, exegesis of quantum phenomena spoiled this conviction. No amount of information at $t=0$ will tell us $t=1$, time at collapse. Please allow me to state some history here: *hidden variable* theories suppose that there are certain, perhaps indeterminable, factors responsible for probabilistic collapse of the wave function. That is, an accurate prediction of quantum collapse would be possible if we had access to some additional measurements. In 1932, von Neumann sketched a proof that there were no such hidden variables. John Stewart Bell, while working at CERN, found von Neumann's proof to be hand-wavey: *"The proof of von Neumann is not merely false but foolish!* Bell wanted a testable—falsifiable!—hypothesis with minimal a priori assumptions. It took some years for his famous inequalities[^2] to appear. The Bell Tests are my favorite scientific experiments. They are so *slight*. In one initial formulation, based on the CHSH inequality[^3], a pair of entangled photons are shot into separate controllers and collapsed by orthogonally polarized detectors. The outcome of each collapse ($+1$ or $-1$) is jotted down. You run this experiment millions of times and take the mean, and if that mean exceeds the magic number—2!—there are no hidden variables! In 1972, after several hundred hours of lab time, this experiment had its first positive result: $2.30 \pm 0.16$. In the ensuing decades, scientists took much care to ensure that there were no experimental gaps, possible objections. One gap was the *communicate loophole*, which suggested that the two photon detecors could be leaking information to each other at the speed of light. How was this resolved? Put the stations far enough apart (e.g. opposite sides of the planet) so that light can't travel fast enough in time. Another gap, called the *freedom-of-choice loophole*, was solved via "Cosmic-Bell tests": leveraging photon streams emitted from distant stars in order to rule out "common past variables". 
+
+Isn't that story fun? It reminds me of that idiom about squeezing blood from a stone. After some terrible ingenuity, concentrated effort, careful bookkeeping, and some exhausting labwork, we can wrestle out a strangeness in reality—no local hidden variables.[^4]
+
+In contrast, psi tests are furiously imprecise. In the [[Two Peaks and the Telepathy Tapes|Telepathy Tapes]], mothers make symbols with their fingers, visibly push limbs, and murmur suspcious subvocalizations. There is so much room for interference. There is so much rigor that must be added.
+
+The Bell Inequalities show us that teasing out an exotic result from physics took several world-historic geniuses, decades of mathematical bookkeeping, and diligent scientific laboratory work. Human minds are much harder to measure than quantum particles, and so parapsychology research must be even more focused to squeeze out positive p-values. There are *hints* of the possible studies already in the literature:
+- The Sheep/Goat effect as documented by Gertrude Schmeidler: believers in ESP consistently perform significantly better on ESP tests than chance; disbelievers perform significantly worse—this effect is also called "Missing Psi".[^5]
+- Rupert Sheldrake has positively repeated experiments on scopaesthesia—the extrasensory ability to detect when being stared at—several times.[^6] This study has been replicated by various parapsychology proponents, and has failed to replicate many other times by skeptics. Such a dichotomy is an example of the sheep/goat effect.
+- The Telepathy Tapes must be studied with rigor. They deserve such an honor, but I believe the effort involved would be immense:
+	- The telepathy discussed in these episodes is exhibited non-verbal autists who necessarily require some help by assistants. 
+	- Pedantic point but: double-blind studies are, by definition, incompatible with the nature of telepathy. If you assume that it is possible to have a double-blind study, you assume there can be no telepathic communication. 
+	- Double blind studies that introduce deception and a clinical (laboratory environment) seem like they interfere with psi abiliity. 
+
+The immeasurable resists measurement. But if you tread very carefully, and you plan very steadily, you may find it in your hands. After all, what is magic if not esoteric? I end off with the following passage by Dr. Laurence Lampert on Nietzsche[^7]:
+
+> [E]sotericism survives in Nietzsche in a third and most fundamental way. Nature loves to hide. We dwell within the natural incomprehensibility of things and we dwell inquiringly. At best, Nietzsche suggests, our inquiry will afford us glimpses into the heart of things. And at best, *reports* on those glimpses will appear enigmatic; they will be like the report Zarathustra issued after creeping into the well-guarded fortress of Life herself where, with her complicity and with her permission, he stole her secret.
+> [...]
+> For Nietzsche, 'Nature loves to hide' is not a lament. That Nature loves to hide is the ultimate gift of nature to nature's favourites, inquirers into nature: we dwell within a boundless whole that will never sate us or bore us or make us disappointed. On the contrary, the enigmatic object of the inquirer's hunt transforms the inquirer into a lover and the object of the hunt into the beloved.
+> [...] 
+> Esotericism survives in Nietzsche at the heart of his thought, the impassioned, erotic heart of a way of thinking that is the way of the lover who loves the highest beloved, the enigmatic whole of things.
+
+
+---
+
+[^1]: [Occam's Razor](https://en.wikipedia.org/wiki/Occam%27s_razor) and [Newton's Flaming Laser Sword](https://en.wiktionary.org/wiki/Newton%27s_flaming_laser_sword)
+
+[^2]: [Bell's Inequalities](https://scienceworld.wolfram.com/physics/BellsInequalities.html), inspired by work by Bohm on the [EPR Paradox](https://plato.stanford.edu/entries/qt-epr/). 
+
+[^3]: https://en.wikipedia.org/wiki/CHSH_inequality
+
+[^4]: It is still possible for the universe to be deterministic if we assume there are *global* hidden variables. That is, two particles on opposite sides of the universe could be governed by *the same* deterministic equation. In such formulations, the equation itself is typically what is real; the particle itself is a sort of residue in material space. Such theories, namely [Bohmian Mechanics](https://en.wikipedia.org/wiki/De_Broglie%E2%80%93Bohm_theory) and [Wolfram's Ruliad](https://writings.stephenwolfram.com/2021/11/the-concept-of-the-ruliad/) are global superdeterministic theories. These conceptions imagine simple guiding equations or rules govern the precise motion of every single underlying beat of the universe; matter itself only arises as an emergent property of some mathematical system. I love both of these theories so much. They also frighten me to my core. I find both to be scratching at some deep metaphysical truth much deeper than *simulation theory*, which is shallowly similar. I also feel as if Pythagoras would be at home with them; but not Plato. 
+
+[^5]: [Tao Lin](https://taolin.substack.com/p/paranormal-phenomena) has written about this in detail. This effect also implies that skeptical scientists studying Psi phenomena are somehow incapable of producing a positive result. Another instance where studying the thing itself requires much greater attention to detail than has been given. In the linked blog post, Lin also compiles some dozen or so other compelling evidence for psi phenomena. 
+
+[^6]: There is a [collection](https://www.sheldrake.org/research/sense-of-being-stared-at) of scopaesthesia studies on Sheldrake's website. As an aside, Sheldrake is a personal hero of mine. His theory of Morphic Resonance is terribly deep and seemingly fundamental; I believe its laws are still a hundred years ahead of our grasp. He has dedicated much effort to validating many psi phenomena. Some highlights include [the Hill Effect](https://www.sheldrake.org/files/pdfs/papers/Hill-Effect_8-04-21.pdf), [dogs knowing when you're coming home](https://www.sheldrake.org/files/pdfs/papers/Hill-Effect_8-04-21.pdf), [joint attention](https://www.sheldrake.org/files/pdfs/papers/Is-Joint-Attention-Detectable-at-a-Distance-Three-Automated-Internet-Based-Tests.pdf). 
+
+[^7]: From *Nietzsche and Esotericism*, which I have accessed [here](https://www.scribd.com/document/392496177/Nietzsche-and-Esotericism). 

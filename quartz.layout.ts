@@ -67,7 +67,15 @@ export const defaultListPageLayout: PageLayout = {
                 {Component: Component.Darkmode()},
             ],
         }),
-        Component.Explorer(),
+        Component.Explorer(
+        //     {
+        //     mapFn: (node) => {
+        //         if (!node.isFolder) {
+        //             node.displayName = "---jnfvjd " + node.displayName
+        //         }
+        //     },
+        // }
+        ),
     ],
     right: [],
 }

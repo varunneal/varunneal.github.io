@@ -10,8 +10,9 @@ I'm Varun. Currently I am an ML Engineer at adMarketplace, which serves ads in a
 
 If you are interested in my professionally take a look at my resume above, or explore some of my [[Projects|technical projects]]. 
 
-Otherwise, I invite you to read some of my [essays](varunneal.github.io/essays/) or connect with me on my socials above. 
+Otherwise, I invite you to read some of my [essays](/essays/) or connect with me on my socials above. 
 
-
+%% 
 > [!warning]
 > I have only very recently migrated my personal site to [Quartz](https://quartz.jzhao.xyz/). I love it, but everything you see here is still very much in construction. 
+%%

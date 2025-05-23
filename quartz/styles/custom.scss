@@ -42,35 +42,118 @@ hr {
   }
 }
 
-pre.poetry {
-  font-size: 1.2rem;
-  font-family: cursive;
-  border: none;
-  padding: 0;
-  position: unset;
+pre.lang-poetry {
+  font-style: italic;
+  margin: 1rem 0;
+  border-left: 3px solid var(--secondary);
+  padding-left: 1rem;
+  transition: border-color 0.2s ease;
 }
+
+// fancy "quote" block
+
+pre.lang-quote {
+  /* Reset code block defaults */
+  background: none;
+  border: none;
+  border-radius: 0;
+
+  /* Book-like typography */
+  font-family: 'Crimson Text', 'Baskerville', 'Georgia', serif;
+  font-size: 1.1em;
+  line-height: 1.6;
+
+  /* Layout and spacing */
+  margin: 0.5em 0;
+  padding: 1em 1em 1em 1em;
+  position: relative;
+
+  /* Left border - elegant accent */
+  border-left: 3px solid currentColor;
+  opacity: 0.85;
+
+  /* Subtle background tint */
+  background-color: rgba(127, 127, 127, 0.05);
+}
+
+pre.lang-quote code {
+  /* Reset code styling */
+  background: none;
+  padding: 0;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+
 
 .meta,
 .content-meta {
   font-family: biro_script_standardRgus, var(--bodyFont);
 }
-//
-///* Override dark mode backgrounds for pre blocks */
-//[saved-theme="dark"] pre {
-//  background-color: rgba(255, 255, 255, 0.1) !important;
-//  border-color: rgba(255, 255, 255, 0.2) !important;
-//}
-//
-///* For inline code outside of pre */
-//[saved-theme="dark"] code {
-//  background: rgba(255, 255, 255, 0.1) !important;
-//}
-//
-///* Ensure pre > code inherits the pre’s background rather than layering its own */
-//[saved-theme="dark"] pre > code {
-//  background: inherit !important;
-//}
 
 
-// BLOCK QUOTE SUTT
+// BLOCK QUOTE
+
+/* ─── Core look ────────────────────────────────────────────────────────── */
+blockquote {
+  /* typography */
+  font-family: var(--serif-font, "EB Garamond", Georgia, "Times New Roman", serif);
+  font-size: 1.05rem;
+  line-height: 1.55;
+  font-weight: 500;
+
+  /* narrow column */
+  max-width: 60ch;           /* ≈ 60 characters wide  */
+  margin: 2.5rem auto;       /* centre on the page    */
+
+  /* paper card */
+  padding: 1rem 2rem;
+  background: var(--paper-light, #fcfcf9);
+  border: 1px solid rgba(var(--gray-rgb, 0,0,0), .12);
+  border-left: 0;            /* drop the coloured bar */
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+
+  /* slight “human” skew so it feels scanned */
+  transform: rotate(0.05deg);
+
+  position: relative;
+  transition:
+          background   .2s ease,
+          border-color .2s ease,
+          box-shadow   .2s ease;
+}
+
+/* ─── Film‑grain overlay (noise texture) ──────────────────────────────── */
+blockquote::after{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;           /* make it strictly decorative */
+  opacity:.04;
+  mix-blend-mode:multiply;       /* blends differently in light/dark */
+
+  /* 8×8 transparent PNG noise (base‑64) — tiny, cached forever */
+  background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAHElEQVQYV2NkQAIYBaNgFFkIGhCMSNmBkYGBgYEAADpBoy63xFLCwAAAABJRU5ErkJggg==");
+  background-size:8px 8px;
+}
+
+/* ─── Responsive nicety: let long quotes break early on mobile ────────── */
+@media (max-width: 640px){
+  blockquote{ max-width: 90%; }
+}
+
+/* ─── Dark mode overrides ─────────────────────────────────────────────── */
+[saved-theme="dark"] blockquote{
+  background: var(--paper-dark , #1b1b1b);
+  border-color: rgba(255,255,255,.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,.45);
+}
+
+/* optional: lighten the film‑grain on dark backgrounds */
+[saved-theme="dark"] blockquote::after{ opacity:.07; }
+
 

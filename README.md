@@ -16,3 +16,4 @@ In order to make transparent edge-detected images I'm using ImageMagick with com
 ```
 </details>
 
+

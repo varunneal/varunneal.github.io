@@ -7,7 +7,7 @@ aliases:
   - nature loves to hide
 image: ../images/behelit.png
 imageAlt: Line art behelit from Berserk
-modified: May 23, 2025
+modified: May 29, 2025
 ---
 
 *This post is a follow-up to [[Two Peaks and the Telepathy Tapes|two peaks and the telepathy tapes]].*
@@ -30,11 +30,11 @@ In the 20th century, exegesis of quantum phenomena spoiled this conviction. No a
 
 Isn't that story fun? After some terrible ingenuity, concentrated effort from several world-historic geniuses, careful bookkeeping, and some exhausting labwork, we can wrestle out a profound strangeness of reality—no local hidden variables.[^4] Truth falls out like blood from a stone. 
 
-In contrast, psi tests are furiously imprecise. In the [[Two Peaks and the Telepathy Tapes|Telepathy Tapes]], mothers make symbols with their fingers, visibly push limbs, and murmur suspcious subvocalizations. There is so much room for interference, rigor that hasn't been considered. Human minds are much harder to measure than quantum particles, and so there is much greater room for interference and loophole in minds than in quantum physics. %% Parapsychology researchers must be incredibly skeptical of their positive p-values. %%
+In contrast, psi tests are furiously imprecise. In the [[Two Peaks and the Telepathy Tapes|Telepathy Tapes]], mothers make symbols with their fingers, visibly push limbs, and murmur suspicious subvocalizations. There is so much room for interference, rigor that hasn't been considered. Human minds are much harder to measure than quantum particles, and so there is much greater room for interference and loophole in minds than in quantum physics. %% Parapsychology researchers must be incredibly skeptical of their positive p-values. %%
 
-The lack of scientific evidence for psi phenomena is not yet reason to suspect it does not exist. I want to persuade you that it, by its very nature, is hard to replicate. If consciousness is much more than science curently claims, then it is also exotic in a many more ways that we expect. As such, when we attempt to study it we can expect pitfalls everywhere. Despite this, there have been several strong attempts in the literature:
+The lack of scientific evidence for psi phenomena is not yet reason to suspect it does not exist. I want to persuade you that it, by its very nature, is hard to replicate. If consciousness is much more than science currently claims, then it is also exotic in a many more ways that we expect. As such, when we attempt to study it we can expect pitfalls everywhere. Despite this, there have been several strong attempts in the literature:
 - The Sheep/Goat effect as documented by Gertrude Schmeidler: believers in ESP consistently perform significantly better on ESP tests than chance; disbelievers perform significantly worse—this effect is also called "Missing Psi".[^5]
-- Rupert Sheldrake has positively repeated experiments on scopaesthesia—the extrasensory ability to detect when being stared at—several times.[^6] This study has been replicated by various parapsychology proponents, and has failed to replicate many other times by skeptics. Such a dichotomy, amusingly, is an example of the sheep/goat effect.
+- Rupert Sheldrake has positively repeated experiments on scopaesthesia—the extrasensory abiliity to detect when being stared at—several times.[^6] This study has been replicated by various parapsychology proponents, and has failed to replicate many other times by skeptics. Such a dichotomy, amusingly, is an example of the sheep/goat effect.
 - [[Two Peaks and the Telepathy Tapes|The Telepathy Tapes]] must be studied with rigor. They deserve such an honor, but I believe the effort involved would be immense:
 	- The telepathy discussed in these episodes is exhibited by non-speaking autistic children who necessarily require some help by assistants. 
 	- Double-blind studies are, by definition, incompatible with the nature of telepathy. If you assume that it is possible to have a double-blind study, you assume there can be no telepathic communication. This point is pedantic, but demonstrates limitations of the standard paradigms for measuring psi. 

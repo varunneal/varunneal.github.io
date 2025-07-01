@@ -157,3 +157,13 @@ blockquote::after{
 [saved-theme="dark"] blockquote::after{ opacity:.07; }
 
 
+
+/* Footnote reference markers – keep them small and out of the line-height */
+sup,
+a.footnote-ref {          /* Quartz/Markdown processors give the anchor this class */
+  // font-size: 0.65em;      /* small enough to stay inside the line box */
+  line-height: 0;         /* prevents the marker itself from expanding leading */
+  position: relative;     /* lift it manually… */
+  top: -0.5em;            /* …fine-tune until it looks right with your typeface */
+  vertical-align: baseline;   /* cancel the browser’s default “super” value */
+}

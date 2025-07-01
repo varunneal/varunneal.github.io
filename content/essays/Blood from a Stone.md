@@ -13,13 +13,13 @@ modified: June 30, 2025
 *This post is a follow-up to [[Two Peaks and the Telepathy Tapes|two peaks and the telepathy tapes]].*
 ## (1) p-values killed the cat
 
-Science has killed magic. The relentless march of science—with its statistical methods, p-values, and falsifiability—has sliced up[^1] everything supernatural. God is the gaps, scared and in hiding. 
+Science has killed magic. The relentless march of science—with its statistical methods, p-values, and falsifiability—has sliced up everything supernatural[^1]. God is scared and has fled to the gaps. 
 
 Prior to measurement there is mystery. Schrödinger's Cat, before you open the box, is a magical cat in the superposition of life and death. How can you ensure that you never kill the cat? You never open the box. Don't falsify my magical cat. Do not read out that p-value. 
 
-You may criticize my feigned ignorance. You may tell me that I am coping; that I am turning away from science because I know it will not validate my beliefs. But I respond: you cannot use measurement to find what is immeasurable!
+After all, why can't I just *choose to believe*? You may criticize my feigned ignorance. You may tell me that I am coping; that I am turning away from science because I know it will not validate my beliefs. But I respond: you cannot use measurement to find what is immeasurable!
 
-The *reality* that we are constantly observing is a terribly lossy projection. Our senses reduce a rich universe into a handful of coordinates—sight, sound, smell, touch—but even much of this is ignored. Our minds spin narratives. No vantage point is high enough to see the entire valley. Have you ever fallen in love? Do you know what it feels like to have all of your thoughts orbit another? To trust anything is to have faith in a million truths unverifiable. 
+Reality, as we constantly observe it, is a terribly lossy projection. Our senses reduce a rich universe into a handful of coordinates—sight, sound, smell, touch—but even much of this is ignored. Our minds spin narratives. No vantage point is high enough to see the entire valley. Have you ever fallen in love? Do you know what it feels like to have all of your thoughts orbit another? To trust anything is to have faith in a million truths unverifiable. 
 
 ---
 ## (2) squeezing blood from a stone
@@ -56,7 +56,7 @@ The immeasurable resists measurement. After all, what is magic if not esoteric? 
 
 ---
 
-[^1]: [Occam's Razor](https://en.wikipedia.org/wiki/Occam%27s_razor) and [Newton's Flaming Laser Sword](https://en.wiktionary.org/wiki/Newton%27s_flaming_laser_sword)
+[^1]: Sliced like with a [razor](https://en.wikipedia.org/wiki/Occam%27s_razor) or [Newton's Flaming Laser Sword](https://en.wiktionary.org/wiki/Newton%27s_flaming_laser_sword)
 
 [^2]: [Bell's Inequalities](https://scienceworld.wolfram.com/physics/BellsInequalities.html), inspired by work by Bohm on the [EPR Paradox](https://plato.stanford.edu/entries/qt-epr/). 
 

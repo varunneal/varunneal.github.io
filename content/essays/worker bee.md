@@ -11,4 +11,4 @@ And if another worker bee thinks little of her, cares little for her, but has li
 
 And does it matter if there is a worker bee who despise his mother, despise his brother, but respite in sweet honey he gathers, in his warm home, and dies in a choke . . .
 
-And does it matter if there is a worker bee who is in awe of his project, in the hallowed halls of his grand castle, in the immensity of the will of his mother, and worships the grandiose that she has brought to be . . . 
+And does it matter if there is a worker bee who is in awe of his project, in the hallowed halls of his grand castle, in the immensity of the will of his mother, and worships the grandiose that she has brought to bear . . . 

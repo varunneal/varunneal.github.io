@@ -70,7 +70,8 @@ const config: QuartzConfig = {
       }),
       Plugin.ObsidianFlavoredMarkdown({
         enableInHtmlEmbed: false,
-        parseArrows: false
+        parseArrows: false,
+        mermaid: false
       }),
       Plugin.GitHubFlavoredMarkdown(),
       Plugin.TableOfContents(),

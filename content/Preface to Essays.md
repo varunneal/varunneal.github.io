@@ -1,3 +1,7 @@
+---
+draft: "true"
+---
+
 %%  Reading is not absorbing text but watching the thoughts that arise as you read. %%
 
 [essays are in this subfolder :\)](/essays/)

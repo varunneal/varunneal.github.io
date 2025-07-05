@@ -1,6 +1,7 @@
 ---
 image: images/forest-lineart.png
 imageAlt: a forest emerges...
+draft: "true"
 ---
 
 ```

@@ -13,7 +13,8 @@ const config: QuartzConfig = {
     enableSPA: true,
     enablePopovers: true,
     analytics: {
-      provider: "plausible",
+      provider: "google",
+      tagId: 'G-X06SGTCDRZ'
     },
     locale: "en-US",
     baseUrl: "varunneal.github.io",

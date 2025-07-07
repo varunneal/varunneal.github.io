@@ -30,7 +30,7 @@ I've been working on . . .
 
 > I wouldn't overthink it. Build something your friends might use. They'll tell other people and it'll snowball from there.
 >
-> — [suhail](https://twitter.com/Suhail/status/1718636137462497741):
+> — [suhail](https://twitter.com/Suhail/status/1718636137462497741)
 
 
 >there are people who make important and beautiful things on their computers. and there are people on this website who never emotionally matured past hackathons and spend a lot of time talking about "cracked coders". sometimes these two groups overlap but it's rare 
@@ -38,9 +38,7 @@ I've been working on . . .
 > — [coldhealing](https://x.com/coldhealing/status/1886858278136840330)
 
 
-```
- What do you plan on doing, when intelligence is to cheap to monitor? 
- — Roon 
-```
+> What do you plan on doing, when intelligence is to cheap to monitor? 
+ > — Roon (apocryphal)
 
- ---
+

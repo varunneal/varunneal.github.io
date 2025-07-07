@@ -1,5 +1,6 @@
 import {PageLayout, SharedLayout} from "./quartz/cfg"
 import * as Component from "./quartz/components"
+import {FileTrieNode} from "./quartz/util/fileTrie";
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
@@ -13,6 +14,22 @@ export const sharedPageComponents: SharedLayout = {
         },
     }),
 }
+
+const navOrder  = (a: FileTrieNode, b: FileTrieNode) => {
+    const PRIORITY = ["Projects", "Essays"]
+
+    const rank = (n: FileTrieNode) =>
+        PRIORITY.findIndex((x) => x.toLowerCase() === n.displayName.toLowerCase())
+
+    const rA = rank(a)
+    const rB = rank(b)
+
+    if (rA !== rB) return rA - rB          // honour custom list
+    if (a.isFolder !== b.isFolder)         // keep folders above files
+        return a.isFolder ? -1 : 1
+    return a.displayName.localeCompare(b.displayName) // fallback α-sorting
+}
+
 
 // components for pages that display a single page (e.g. a single note)
 export const defaultContentPageLayout: PageLayout = {
@@ -36,7 +53,10 @@ export const defaultContentPageLayout: PageLayout = {
                 {Component: Component.Darkmode()},
             ],
         }),
-        Component.Explorer(),
+        Component.Explorer({
+            folderDefaultState: "open",
+            sortFn: navOrder
+        }),
     ],
     right: [
         // Component.Graph(),

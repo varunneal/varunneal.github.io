@@ -2,34 +2,61 @@ import {PageLayout, SharedLayout} from "./quartz/cfg"
 import * as Component from "./quartz/components"
 import {FileTrieNode} from "./quartz/util/fileTrie";
 
+
+
+function navOrder(a: FileTrieNode, b: FileTrieNode): number {
+    // sorted ascending
+     const ORDER: Record<string, number>  = {
+        'projects': 0,
+        'essays': 1
+     }
+
+    const rA = ORDER[a.displayName.toLowerCase()] ?? 100
+    const rB = ORDER[b.displayName.toLowerCase()] ?? 100
+
+    if (rA !== rB) {
+        return rA - rB
+    }
+    if (a.isFolder !== b.isFolder)
+        return a.isFolder ? -1 : 1
+
+    return a.displayName.localeCompare(b.displayName)
+}
+
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
     head: Component.Head(),
     header: [],
     afterBody: [],
+    left: [
+        Component.PageTitle(),
+        Component.MobileOnly(Component.Spacer()),
+        Component.Flex({
+            components: [
+                {
+                    Component: Component.Search(),
+                    grow: true,
+                },
+                {Component: Component.Darkmode()}
+            ],
+            gap: "0.4rem"
+        }),
+        Component.Explorer({
+            folderDefaultState: "open",
+            sortFn: navOrder
+        }),
+    ],
     footer: Component.Footer({
         links: {
-            // GitHub: "https://github.com/jackyzha0/quartz",
-            // "Discord Community": "https://discord.gg/cRFFHYye7t",
+            // Resume: "https://varunneal.github.io/resume.pdf",
+            Github: "https://github.com/varunneal",
+            LinkedIn: "https://www.linkedin.com/in/varun-n-sri/",
+            Spotify: "https://open.spotify.com/user/varun2k",
+            Twitter: "https://x.com/varunneal/",
+            Email: "mailto:varun.neal@berkeley.edu"
         },
     }),
 }
-
-const navOrder  = (a: FileTrieNode, b: FileTrieNode) => {
-    const PRIORITY = ["Projects", "Essays"]
-
-    const rank = (n: FileTrieNode) =>
-        PRIORITY.findIndex((x) => x.toLowerCase() === n.displayName.toLowerCase())
-
-    const rA = rank(a)
-    const rB = rank(b)
-
-    if (rA !== rB) return rA - rB          // honour custom list
-    if (a.isFolder !== b.isFolder)         // keep folders above files
-        return a.isFolder ? -1 : 1
-    return a.displayName.localeCompare(b.displayName) // fallback α-sorting
-}
-
 
 // components for pages that display a single page (e.g. a single note)
 export const defaultContentPageLayout: PageLayout = {
@@ -41,26 +68,13 @@ export const defaultContentPageLayout: PageLayout = {
         }),
         Component.TagList(),
     ],
-    left: [
-        Component.PageTitle(),
-        Component.MobileOnly(Component.Spacer()),
-        Component.Flex({
-            components: [
-                {
-                    Component: Component.Search(),
-                    grow: true,
-                },
-                {Component: Component.Darkmode()},
-            ],
-        }),
-        Component.Explorer({
-            folderDefaultState: "open",
-            sortFn: navOrder
-        }),
-    ],
     right: [
         // Component.Graph(),
         Component.ArticleImage(),
+        Component.Fractal({
+            height: 289,
+            width: 289
+        }),
         Component.DesktopOnly(Component.TableOfContents()),
         Component.Backlinks(),
     ],
@@ -69,33 +83,6 @@ export const defaultContentPageLayout: PageLayout = {
 // components for pages that display lists of pages  (e.g. tags or folders)
 export const defaultListPageLayout: PageLayout = {
     beforeBody: [
-        Component.Breadcrumbs(),
-        Component.ArticleTitle(),
-        Component.ContentMeta({
-            showReadingTime: false
-        })
-    ],
-    left: [
-        Component.PageTitle(),
-        Component.MobileOnly(Component.Spacer()),
-        Component.Flex({
-            components: [
-                {
-                    Component: Component.Search(),
-                    grow: true,
-                },
-                {Component: Component.Darkmode()},
-            ],
-        }),
-        Component.Explorer(
-        //     {
-        //     mapFn: (node) => {
-        //         if (!node.isFolder) {
-        //             node.displayName = "---jnfvjd " + node.displayName
-        //         }
-        //     },
-        // }
-        ),
     ],
     right: [],
 }

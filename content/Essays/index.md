@@ -1,0 +1,1 @@
+Personal catalog of essays, aphorisms, arrows. 

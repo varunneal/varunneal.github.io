@@ -9,37 +9,6 @@
     object-fit: contain;
   }
 
-  // Theme-specific image handling
-  .light-theme-image {
-    display: none;
-  }
-
-  .dark-theme-image {
-    display: none;
-  }
-
-  // Show light theme image when in light mode
-  :root[saved-theme="light"] & {
-    .light-theme-image {
-      display: block;
-    }
-
-    .dark-theme-image {
-      display: none;
-    }
-  }
-
-  // Show dark theme image when in dark mode
-  :root[saved-theme="dark"] & {
-    .light-theme-image {
-      display: none;
-    }
-
-    .dark-theme-image {
-      display: block;
-    }
-  }
-
   // Auto-themed image recoloring
   // Light mode - brown line color (#5b493a)
   :root[saved-theme="light"] & .auto-themed-image {

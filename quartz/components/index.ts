@@ -22,6 +22,7 @@ import RecentNotes from "./RecentNotes"
 import Breadcrumbs from "./Breadcrumbs"
 import Comments from "./Comments"
 import Flex from "./Flex"
+import Fractal from "./Fractal"
 
 export {
   ArticleImage,
@@ -48,4 +49,5 @@ export {
   Breadcrumbs,
   Comments,
   Flex,
+  Fractal
 }

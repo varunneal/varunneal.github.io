@@ -1,9 +1,39 @@
 @use "./base.scss";
 @use "./variables.scss" as *;
+@use "sass:map";
+
 
 body[data-slug="index"] img {
   filter: invert(0%);
   opacity: 0.85;
+}
+
+
+.page {
+  max-width: calc(#{map.get($breakpoints, desktop)} + 100px);
+}
+
+
+
+@media (min-width: 48rem) {        /* don’t choke phones & small tablets */
+  /* the main article wrapper Quartz renders */
+  main#quartz-body > article {
+    max-width: 800px;              /* pick your number or “75ch” etc. */
+    width: 100%;                   /* stay fluid below 800 px */
+    margin-inline: auto;           /* (b) equal leftover space L/R   */
+    padding-inline: 1.25rem;       /* keeps text off the edges        */
+  }
+}
+
+/* optional: if you also want list pages, folder views, etc. */
+@media (min-width: 48rem) {
+  #quartz-body .list-page,
+  #quartz-body .folder-page,
+  #quartz-body .tag-page {
+    max-width: 800px;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
 }
 
 body {
@@ -166,4 +196,18 @@ a.footnote-ref {          /* Quartz/Markdown processors give the anchor this cla
   position: relative;     /* lift it manually… */
   top: -0.5em;            /* …fine-tune until it looks right with your typeface */
   vertical-align: baseline;   /* cancel the browser’s default “super” value */
+}
+
+.darkmode {
+  //padding-right: 5rem;
+  margin-inline-end: 1.25rem;   /* = margin-right in LTR, margin-left in RTL */
+}
+
+/** hide explorer dropdown **/
+.explorer .title-button.desktop-explorer  {
+  display: none;        // removes both label and caret
+}
+
+.explorer .folder-icon {
+  display: none;
 }

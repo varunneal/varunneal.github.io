@@ -1,6 +1,6 @@
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 import style from "./styles/articleImage.scss"
-import { i18n } from "../i18n"
+// import { i18n } from "../i18n"
 
 interface ArticleImageOptions {
     // Configuration options
@@ -99,14 +99,14 @@ export default ((opts?: Partial<ArticleImageOptions>) => {
         }
 
         // Generate alt text if not provided
-        if (!imageAlt) {
-            imageAlt = i18n(cfg.locale).components.articleImage?.alt ||
-                "Article image"
-        }
+        // if (!imageAlt) {
+        //     imageAlt = i18n(cfg.locale).components.articleImage?.alt ||
+        //         "Article image"
+        // }
 
         // Determine which classes to apply based on theme-specific images
         const hasThemeImages = darkImagePath && lightImagePath
-        const themeClass = hasThemeImages ? "theme-specific" : "auto-themed"
+        // const themeClass = hasThemeImages ? "theme-specific" : "auto-themed"
 
         return (
             <div class={`${displayClass} article-image`}>

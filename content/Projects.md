@@ -1,7 +1,7 @@
 ---
 aliases:
-  - projects
   - technical projects
+fractal: mandelbrot
 ---
 
 I've been working on . . .

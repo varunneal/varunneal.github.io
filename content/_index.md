@@ -8,4 +8,4 @@ I'm Varun. Currently I am an ML Engineer at adMarketplace, which serves ads in a
 
 If you are interested in me professionally take a look at my [resume](./resume.pdf), or explore some of my [[Projects|technical projects]]. 
 
-Otherwise, I invite you to read some of my [essays](/essays/) or connect with me on my socials below.
+Otherwise, I invite you to read some of my [essays](essays/) or connect with me on my socials below.

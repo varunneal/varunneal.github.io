@@ -72,13 +72,7 @@ hr {
   }
 }
 
-pre.lang-poetry {
-  font-style: italic;
-  margin: 1rem 0;
-  border-left: 3px solid var(--secondary);
-  padding-left: 1rem;
-  transition: border-color 0.2s ease;
-}
+
 
 // fancy "quote" block
 
@@ -119,7 +113,17 @@ pre.lang-quote code {
   word-wrap: break-word;
 }
 
+pre.lang-poetry {
+  font-style: italic;
+  margin: 1rem 0;
+  border-left: 3px solid var(--secondary);
+  padding-left: 1rem;
+  transition: border-color 0.2s ease;
+}
 
+pre.lang-macondo {
+  font-family: Macondo !important;
+}
 
 .meta,
 .content-meta {
@@ -210,4 +214,8 @@ a.footnote-ref {          /* Quartz/Markdown processors give the anchor this cla
 
 .explorer .folder-icon {
   display: none;
+}
+
+#quartz-body > .sidebar.left {
+  gap: 1rem;
 }

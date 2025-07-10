@@ -76,7 +76,7 @@ export const defaultContentPageLayout: PageLayout = {
             width: 289
         }),
         Component.DesktopOnly(Component.TableOfContents()),
-        Component.Backlinks(),
+        // Component.Backlinks(),
     ],
 }
 

@@ -245,6 +245,8 @@ export const FRACTALS: Record<string, FractalDef> = {
             wake()
         })
 
+
+
         compute()
         ctx.putImageData(img, 0, 0)
 
@@ -255,11 +257,16 @@ export const FRACTALS: Record<string, FractalDef> = {
         }
     }
     /* go --------------------------------------------------------- */
-    mount()
 
     document.addEventListener("nav", () => {
         cleanup?.()
         mount()
     })
+
+    document.addEventListener("themechange", () => {
+        mount()
+    })
+    mount()
+
 
 })()

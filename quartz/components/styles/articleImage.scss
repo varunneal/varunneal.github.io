@@ -10,12 +10,12 @@
   }
 
   // Auto-themed image recoloring
-  // Light mode - brown line color (#5b493a)
+  // Light mode - bright beige color (#E5D4D1)
   :root[saved-theme="light"] & .auto-themed-image {
     filter: brightness(0) saturate(100%) invert(28%) sepia(10%) saturate(1064%) hue-rotate(346deg) brightness(94%) contrast(92%);
   }
 
-  // Dark mode - taupe line color (#dcd3c5)
+  // Dark mode - dark taupe color (#56473A)
   :root[saved-theme="dark"] & .auto-themed-image {
     filter: brightness(0) saturate(100%) invert(90%) sepia(7%) saturate(339%) hue-rotate(330deg) brightness(99%) contrast(90%);
   }

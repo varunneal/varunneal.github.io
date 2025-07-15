@@ -57,7 +57,7 @@ function formatFontSpecification(
     spec = { name: spec }
   }
 
-  const defaultIncludeWeights = type === "header" ? [400, 700] : [400, 600]
+  const defaultIncludeWeights = type === "header" ? [400, 500, 600, 700] : [400, 500, 600, 700]
   const defaultIncludeItalic = type === "body"
   const weights = spec.weights ?? defaultIncludeWeights
   const italic = spec.includeItalic ?? defaultIncludeItalic

@@ -8,6 +8,7 @@ I've been working on . . .
 %% I am trying to make beautiful things that my friends might like. Here are some things you can check out.  %%
 
  (LLMs)
+ - [Modded NanoGPT](https://github.com/KellerJordan/modded-nanogpt/pull/118) - an llm speedrunning competition
 - [Semantic Finder](https://do-me.github.io/SemanticFinder/) - vector search in your browser!
 - [Spotify MCP Server](https://github.com/varunneal/spotify-mcp) - get your llm to control spotify
 %% - [Facial Keypoint Detection](https://inst.eecs.berkeley.edu/~cs194-26/fa22/upload/files/proj5/cs194-26-agh/) - Detecting facial features with networks. %%

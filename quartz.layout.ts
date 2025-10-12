@@ -29,29 +29,29 @@ export const sharedPageComponents: SharedLayout = {
     header: [],
     afterBody: [],
     left: [
-        Component.PageTitle(),
-        Component.MobileOnly(Component.Spacer()),
-        Component.Flex({
-            components: [
-                {
-                    Component: Component.Search(),
-                    grow: true,
-                },
-                {Component: Component.Darkmode()}
-            ],
-            gap: "0.4rem"
-        }),
-        Component.Explorer({
-            folderDefaultState: "open",
-            sortFn: navOrder
-        }),
+        // Component.PageTitle(),
+        // Component.MobileOnly(Component.Spacer()),
+        // Component.Flex({
+        //     components: [
+        //         {
+        //             Component: Component.Search(),
+        //             grow: true,
+        //         },
+        //         {Component: Component.Darkmode()}
+        //     ],
+        //     gap: "0.4rem"
+        // }),
+        // Component.Explorer({
+        //     folderDefaultState: "open",
+        //     sortFn: navOrder
+        // }),
     ],
     footer: Component.Footer({
         links: {
             // Resume: "https://varunneal.github.io/resume.pdf",
             Github: "https://github.com/varunneal",
             LinkedIn: "https://www.linkedin.com/in/varun-n-sri/",
-            Spotify: "https://open.spotify.com/user/varun2k",
+            // Spotify: "https://open.spotify.com/user/varun2k",
             Twitter: "https://x.com/varunneal/",
             Email: "mailto:varun.neal@berkeley.edu"
         },
@@ -63,6 +63,12 @@ export const defaultContentPageLayout: PageLayout = {
     beforeBody: [
         Component.Breadcrumbs(),
         Component.ArticleTitle(),
+        // Component.Flex({
+        //     components: [
+        //         {Component: Component.ArticleTitle(), grow: true},
+        //         {Component: Component.Darkmode(), justify: "end"}
+        //     ],
+        // }),
         Component.ContentMeta({
             showReadingTime: false
         }),

@@ -4,11 +4,11 @@ aliases:
 fractal: mandelbrot
 ---
 
-I've been working on . . .
+(I've been working on . . .)
 
  Machine Learning
 - [Modded NanoGPT](https://github.com/KellerJordan/modded-nanogpt/) - an LLM speedrunning competition: [Record 1](https://github.com/KellerJordan/modded-nanogpt/pull/118) and [Record 2](https://github.com/KellerJordan/modded-nanogpt/pull/134)
-- RL Environments - implementing envs to test and train agents, including [SWE Bench](https://github.com/PrimeIntellect-ai/prime-environments/pull/136) for Prime Intellect 
+- [Prime Environments](https://github.com/PrimeIntellect-ai/prime-rl) - creating Reinforcement Learning envs to test and train agents, including [SWE Bench](https://github.com/PrimeIntellect-ai/prime-environments/pull/136) 
 - [Spotify MCP Server](https://github.com/varunneal/spotify-mcp) - get your LLM to control spotify (>500 github stars!)
 - [Semantic Finder](https://do-me.github.io/SemanticFinder/) - vector search in your browser (>300 github stars!)
 

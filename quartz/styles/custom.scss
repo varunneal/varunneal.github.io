@@ -14,6 +14,12 @@ body {
   font-size: 1.1rem;
 }
 
+/* List spacing */
+ul > li,
+ol > li {
+  margin-bottom: 0.35rem;
+}
+
 .page {
   max-width: calc(#{map.get($breakpoints, desktop)} + 200px);
 }

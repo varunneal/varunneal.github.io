@@ -6,6 +6,7 @@ Built using Quartz v4
 <summary>Hints:</summary>
 
 - `nvm use 22`
+- `npm install`
 - build locally `npx quartz build --serve`
 - push to git `npx quartz sync`
 

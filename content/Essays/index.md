@@ -1,2 +1,2 @@
-![[the-sun-munsch.png]]
+![[the-sun-compressed.jpg]]
 Personal catalog of essays, aphorisms, arrows. 

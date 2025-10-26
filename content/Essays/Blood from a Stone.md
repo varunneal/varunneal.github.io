@@ -43,13 +43,9 @@ The lack of scientific evidence for supernatural phenomena is not yet reason to 
 
 The immeasurable resists measurement. After all, what is magic if not esoteric? But if you tread very carefully, and you plan very steadily, you may find it in your hands. Nietzsche believed science had the power to rescue such an esotericism; that it could be justified in a more noble way than blind faith. Dr. Laurence Lampert elegantly writes:[^8]
 
-> Nature loves to hide. We dwell within the natural incomprehensibility of things and we dwell inquiringly. At best, Nietzsche suggests, our inquiry will afford us glimpses into the heart of things. And at best, *reports* on those glimpses will appear enigmatic; they will be like the report Zarathustra issued after creeping into the well-guarded fortress of Life herself where, with her complicity and with her permission, he stole her secret.
->
-> [...]
+> Nature loves to hide. We dwell within the natural incomprehensibility of things and we dwell inquiringly. At best, Nietzsche suggests, our inquiry will afford us glimpses into the heart of things. And at best, *reports* on those glimpses will appear enigmatic; they will be like the report Zarathustra issued after creeping into the well-guarded fortress of Life herself where, with her complicity and with her permission, he stole her secret. 
 > 
-> For Nietzsche, 'Nature loves to hide' is not a lament. That Nature loves to hide is the ultimate gift of nature to nature's favourites, inquirers into nature: we dwell within a boundless whole that will never sate us or bore us or make us disappointed. On the contrary, the enigmatic object of the inquirer's hunt transforms the inquirer into a lover and the object of the hunt into the beloved.
-> 
-> [...]
+> For Nietzsche, 'Nature loves to hide' is not a lament. That Nature loves to hide is the ultimate gift of nature to nature's favourites, inquirers into nature: we dwell within a boundless whole that will never sate us or bore us or make us disappointed. On the contrary, the enigmatic object of the inquirer's hunt transforms the inquirer into a lover and the object of the hunt into the beloved. 
 > 
 > Esotericism survives in Nietzsche at the heart of his thought, the impassioned, erotic heart of a way of thinking that is the way of the lover who loves the highest beloved, the enigmatic whole of things.
 

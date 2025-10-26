@@ -133,15 +133,16 @@ pre.macondo {
 
 blockquote {
   /* Typography */
-  font-family: var(--serif-font, "EB Garamond", Georgia, "Times New Roman", serif);
-  font-size: 1.05rem;
-  line-height: 1.55;
+  font-family: Baskerville, "Baskerville Old Face", "Libre Baskerville", Georgia, "Times New Roman", serif;
+  font-size: 1.2rem;
+  line-height: 1.4;
   font-weight: 500;
+  white-space: pre-line;
 
   /* Layout */
   max-width: 60ch;
   margin: 2.5rem auto;
-  padding: 1rem 2rem;
+  padding: 0.5rem 2rem;
 
   /* Styling */
   background: var(--paper-light, #fcfcf9);
@@ -156,6 +157,19 @@ blockquote {
     background   .2s ease,
     border-color .2s ease,
     box-shadow   .2s ease;
+
+  /* Reduce paragraph spacing */
+  p {
+    margin: 0.5em 0;
+  }
+
+  p:first-child {
+    margin-top: 0;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
 }
 
 /* Film grain overlay */

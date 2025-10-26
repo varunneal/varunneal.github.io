@@ -5,6 +5,9 @@ import { googleFontHref } from "../util/theme"
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 import { unescapeHTML } from "../util/escape"
 import { CustomOgImagesEmitterName } from "../plugins/emitters/ogImage"
+// @ts-ignore
+import darkmodeScript from "./scripts/darkmode.inline"
+import darkmodeStyles from "./styles/darkmode.scss"
 export default (() => {
   const Head: QuartzComponent = ({
     cfg,
@@ -98,5 +101,7 @@ export default (() => {
     )
   }
 
+  Head.beforeDOMLoaded = darkmodeScript
+  Head.css = darkmodeStyles
   return Head
 }) satisfies QuartzComponentConstructor

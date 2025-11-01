@@ -80,6 +80,19 @@ hr {
    Code Blocks & Pre-formatted Text
    ======================================================================== */
 
+/* Enable code wrapping */
+pre {
+  overflow-x: visible;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+pre > code {
+  overflow-x: visible;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* Quote Block */
 pre.lang-quote {
   background: none;
@@ -126,6 +139,28 @@ pre.macondo {
   position: unset;
 }
 
+/* Borderless Block */
+pre.borderless {
+  border: none;
+  background: #1b1b1b;
+  color: #dcd3c5;
+  font-size: 0.95rem;
+  margin: 0 1em;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  position: relative;
+
+  &::after {
+    content: "|";
+    animation: blink 1s step-end infinite;
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 
 /* ========================================================================
    Blockquotes
@@ -140,7 +175,7 @@ blockquote {
   white-space: pre-line;
 
   /* Layout */
-  max-width: 60ch;
+  max-width: 80ch;
   margin: 2.5rem auto;
   padding: 0.5rem 2rem;
 
@@ -160,7 +195,7 @@ blockquote {
 
   /* Reduce paragraph spacing */
   p {
-    margin: 0.5em 0;
+    margin: 0.3em 0;
   }
 
   p:first-child {

@@ -34,7 +34,7 @@ June 2025
 
 Mark Zuckerberg compiles a masterlist of top AI engineers and researchers across the globe for his superintelligence. Sam Altman claims packages of $100mn are offered to OpenAI's top talent in an effort to lure them to Meta. 
 
-Stealth startup Thinking Machine announces its co-founders, including: Mira Murati (ex-CTO of OpenAI), John Schulman (OpenAI cofounder), and Andrew Tulloch (previous lead engineer in PyTorch). They immediately raise $2bn.
+Stealth startup Thinking Machine announces its co-founders, including: Mira Murati (ex-CTO of OpenAI), John Schulman (OpenAI cofounder), and Andrew Tulloch (ex-engineer at PyTorch). They immediately raise $2bn.
 ```
 
 

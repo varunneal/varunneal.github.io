@@ -1,7 +1,16 @@
+---
+created: Oct 31, 2025
+aliases:
+  - Hephaestus
+image: ../images/shield-achilles-outline.png
+imageAlt: Shield of Achilles, Angelo Monticelli
+modified: Nov 1, 2025
+---
 
 THREE thousand years ago, Homer strained his memory and recalled what was said about that great inventor Hephaestus...
 
-----
+<br>
+<br>
 
 
 ```borderless
@@ -11,9 +20,13 @@ Meta pays $14bn for a majority stake in Scale AI. Its founder, 28-year-old Alexa
 ```
 
 
-HERA hurled Hephaestus down from heaven, ashamed at her son's lameness. But he made use of his skills. Having been rescued in the ocean by Nereids he made many things—some for Thetis (by whom he had been saved), and  others for her sisters Eurynome and Metis—but he also built a throne with invisible chains and sent it as a gift for his mother. And she was very delighted by this gift, and she sat on it and golden shackles bound her, and she found herself trapped, and there was no one to release her. 
+<br>
+<br>
 
----
+HERA hurled Hephaestus down from heaven, ashamed at her son's lameness. But he made use of his skills. Having been rescued in the ocean by Nereids he made many things—some for Thetis (by whom he had been saved), and  others for her sisters Eurynome and Metis—but he also built a throne with invisible chains and sent it as a gift for his mother. And she was very delighted by this gift, and she sat on it and golden handcuffs bound her, and she found herself trapped, and there was no one to release her. 
+
+<br>
+<br>
 
 
 ```borderless
@@ -25,10 +38,14 @@ Stealth startup Thinking Machine announces its co-founders, including: Mira Mura
 ```
 
 
+<br>
+<br>
+
  AND so the gods of Olympus were distraught at the capture of Hera, and did not know what to do, and counciled and agreed to send Ares; but when he got there he accomplished nothing, and retreated in disgrace, for Hephaestus threatened him with torches. Since Hera was in such great distress, Dionysus arrives, bringing wine and a mule.
 
 
----
+<br>
+<br>
 
 
 ```borderless
@@ -41,10 +58,13 @@ Waves of defections are announced from all major companies: OpenAI, Anthropic, D
 Zuckerberg tries to buy startup Thinking Machine Labs outright. Upon failure he tries to recruit one of its co-founders, Tulloch——who previously worked at Meta for 11 years——for a reported 9-figure pay package. Tulloch rejects.
 ```
 
+<br>
+<br>
 
 HEPHAESTUS sees his brother, Dionysus, and trusts him, and so he accepts his sweet wine, and he becomes drunk and falls asleep. Dionysus wraps Hephaestus's tools—his hammer, his axe, his torches, and loads them with Hephaestus on the back of the mule. And gently he brings him on the mule to the court of Olympus among the gods, and the two are set before their father Zeus. 
 
----
+<br>
+<br>
 
 
 ```borderless
@@ -56,6 +76,10 @@ TBPN puts out the "Metis List"——a live leaderboard of the top 100 AI researc
 ```
 
 
+<br>
+<br>
+
+
 ZEUS, father, says to Hephaestus, "All that thy heart desires shall be thine, if thou wilt free Queen Hera from her bonds",
 
 and Hephaestus says, "Then let it be that I return to high Olympus, to take my place among the immortal ones,"<br>and Zeus says, "So be it",
@@ -64,7 +88,8 @@ and Hephaestus says, "And then let me have the most beautiful among the goddesse
 
 and Hephaestus, marveling at what he has been granted, knows not what more to ask. And his discerning eyes fall upon the creations of the Cyclopes—the mighty bolt of Zeus, and the trident of Poseidon, and the helmet of Hades—and in his heart there stirs a great longing. "Grant me this also, Father, that I might forge the armor of the deathless gods of Olympus", <br>And Zeus says, "So be it". 
 
----
+<br>
+<br>
 
 
 ```borderless
@@ -72,6 +97,10 @@ October 2025
 
 Tulloch leaves Thinking Machine Labs for Meta, with a compensation package reported to be up to $1.5bn. 
 ```
+
+
+<br>
+<br>
 
 
 THETIS ran through the sea until she reached the bronze house of Hephaestus on Olympus, and entering the great hall of his forge, she was made to sit on a silver-studded chair. 
@@ -104,4 +133,4 @@ And the famous god of the two strong arms answers,
 Would that I might so surely avail to hide him afar from dolorous death; <br>
 but dread fate cometh upon him, verily goodly armor shall be his, <br>
 such that in the afterlife many a one among the multitude  <br>
-shall marvel, 'certainly this belonged to the greatest of men'".  <br>
+shall marvel, 'certainly this belonged to the greatest of men'."  <br>

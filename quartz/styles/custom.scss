@@ -140,7 +140,8 @@ pre.macondo {
 }
 
 /* Borderless Block */
-pre.borderless {
+pre.borderless,
+pre.borderless-blinking {
   border: none;
   background: #1b1b1b;
   color: #dcd3c5;
@@ -149,11 +150,12 @@ pre.borderless {
   padding-top: 1rem;
   padding-bottom: 1rem;
   position: relative;
+}
 
-  &::after {
-    content: "|";
-    animation: blink 1s step-end infinite;
-  }
+/* Borderless with blinking cursor */
+pre.borderless-blinking::after {
+  content: "|";
+  animation: blink 1s step-end infinite;
 }
 
 @keyframes blink {
@@ -181,9 +183,8 @@ blockquote {
 
   /* Styling */
   background: var(--paper-light, #fcfcf9);
-  border: 1px solid rgba(var(--gray-rgb, 0,0,0), .12);
-  border-left: 0;
-  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+  border: none;
+  box-shadow: 0 4px 4px -2px rgba(0,0,0,.08);
   transform: rotate(0.05deg);
   position: relative;
 

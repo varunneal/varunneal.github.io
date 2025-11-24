@@ -31,6 +31,28 @@ body[data-slug="index"] .page {
    Images & Media
    ======================================================================== */
 
+/* Theme-aware image switching */
+.theme-image-dark {
+  display: none;
+}
+
+.theme-image-light {
+  display: block;
+}
+
+[saved-theme="dark"] .theme-image-dark {
+  display: block;
+}
+
+[saved-theme="dark"] .theme-image-light {
+  display: none;
+}
+
+/* Image borders for plots */
+img.plot {
+  border: 1px solid var(--dark);
+}
+
 body[data-slug="index"] img {
   filter: invert(0%);
   opacity: 0.85;
@@ -48,6 +70,22 @@ img[src*="banner.svg"] {
 /* ========================================================================
    Typography Elements
    ======================================================================== */
+
+/* Math/LaTeX font size */
+.math,
+.katex,
+.katex-html,
+.katex-display,
+span.katex {
+  font-size: 0.95rem !important;
+}
+
+/* Heading styles */
+h4 {
+  border-bottom: 0.5px solid currentColor;
+  padding-bottom: 0.2rem;
+  margin-bottom: -0.8rem;
+}
 
 /* Horizontal Rule Styling */
 hr {
@@ -133,10 +171,32 @@ pre.lang-poetry {
 /* Macondo Font Block */
 pre.macondo {
   font-family: Macondo, cursive !important;
-  font-size: 8px !important;
+  font-size: 1.2rem !important;
   border: none;
   padding: 0;
   position: unset;
+  text-align: left;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+/* Baskerville Font Block */
+pre.baskerville {
+  font-family: Baskerville, "Baskerville Old Face", "Libre Baskerville", Georgia, "Times New Roman", serif !important;
+  font-size: 1.2rem !important;
+  font-weight: 500;
+  border: none;
+  padding: 0;
+  position: unset;
+  text-align: left;
+  max-width: 60ch;
+  width: fit-content;
+  margin: 0 auto;
+
+  &::first-letter {
+    font-size: 1.2em;
+    font-weight: 700;
+  }
 }
 
 /* Borderless Block */
@@ -256,9 +316,29 @@ a.footnote-ref {
    UI Components
    ======================================================================== */
 
-/* Dark mode toggle */
+/* Dark mode toggle - small square in top right */
 .darkmode {
-  margin-inline-end: 1.25rem;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  background: var(--dark);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  z-index: 999;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  & svg {
+    display: none !important;
+  }
 }
 
 /* Explorer component */

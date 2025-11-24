@@ -26,7 +26,7 @@ function navOrder(a: FileTrieNode, b: FileTrieNode): number {
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
     head: Component.Head(),
-    header: [],
+    header: [Component.Darkmode()],
     afterBody: [],
     left: [
         // Component.PageTitle(),

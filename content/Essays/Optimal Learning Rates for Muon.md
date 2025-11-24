@@ -3,7 +3,7 @@ Muon has fairy different learning rate properties than Adam. In this blog I prop
 ## (1) Optimal Learning Rate
 Increasing the batch size decreases the amount of variance in each gradient. If we want each step to have a fixed variance budget, we should choose a learning rate $\eta$ that is inverse to the expected variance of the gradient. Correspondingly, stochastic gradient descent finds that optimal increases linearly with batch size. In contrast, Adam dampens update variance, so the optimal scaling law is closer to $\eta \approx \sqrt{B}$[^sqrtadam].
 
-This relationship has been claimed to hold for Muon as well. For example, In April 2025, Simo Ryu posted the following chart, suggesting $\eta \propto \sqrt{B}$:
+This relationship has been claimed to hold for Muon as well. For example, the following chart has been tweeted in evidence that $\eta \propto \sqrt{B}$ holds for Muon:
 
 <img src="../images/Muon/simo-0.png" class="plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
@@ -26,7 +26,9 @@ Due to this, I propose that above a certain batch size $B_{\text{saturated}}$, t
 <img src="../images/Muon/heatmap-dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 Figure 4: Sweeping Modded NanoGPT on a learning rate x batch size grid. See section 4 for more details. 
 
-At a token budget of $\approx 134$ M tokens, optimal learning rate seems to plateau at $\eta \approx 0.035$. For a token budget of $\approx 1T$ tokens, optimal learning rate stabilizes at  $\eta \approx 0.015$. Note that $B_{\text{saturated}}$ is above the optimal batch size at the lower token budget, but higher at the higher token budget. At the larger training budget, $B = 128 \times 2^{14}$ is an exception to convergence, though this may be attributable to noise.
+At a token budget of $\approx 134$ M tokens, optimal learning rate seems to converge around $\eta \approx 0.035$. For a token budget of $\approx 1T$ tokens, optimal learning rate stabilizes at  $\eta \approx 0.015$. At the larger training budget, $B = 128 \times 2^{14}$ is an exception to convergence, though this may be attributable to noise.
+
+Note that $B_{\text{saturated}}$ decreases as we increase our token budget. 
 ## (2) Relationship to Critical Batch Size
 When choosing a batch size, we keep in mind that
 1) For a fixed token budget over training, lower batch sizes are more token-efficient: they will achieve lower final losses.
@@ -41,9 +43,9 @@ Figure 5: From *Critical Batch Size Revisited* [^ai2], which was done on Adam. $
 <img src="../images/Muon/loss-plot-light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/Muon/loss-plot-dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-Figure 6: Results from the previous sweep when choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss, and will tend to increase as we increase the token budget. Similar curves are given in Sato et al[^sato]. 
+Figure 6: Results from the previous sweep when choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss. Similar curves are given in Sato et al[^sato]. 
 
-For small token budgets, $B_{\text{critical}}$ will be quite low, so it is possible $B_{\text{saturated}} > B_{\text{critical}}$. In this regime, Muon's optimal learning rate may be well approximated via a power-law $\eta \propto B^p$ [^muonp]. At a larger scale, however, $B_{\text{saturated}} < B_{\text{critical}}$. Practically, this implies 
+For small token budgets, $B_{\text{critical}}$ will be quite low, so it is possible $B_{\text{saturated}} > B_{\text{critical}}$. In this regime, Muon's optimal learning rate may be well approximated via a power-law $\eta \propto B^p$ [^muonp]. At a larger scale, however, we expect both $B_{\text{saturated}}$ to decrease and $B_{\text{critical}}$ to increase, so we will quickly have $B_{\text{saturated}} < B_{\text{critical}}$. Practically, this implies 
 1) You should not increase learning rate when increasing your batch size for large scale training. Notably, Kimi K2's Moonlight technical report[^kimi] implies they do not increase Muon's learning rate when they increase the batch size. 
 2) Your hyperparameter sweeps on Muon should not assume the square-root law holds. 
 

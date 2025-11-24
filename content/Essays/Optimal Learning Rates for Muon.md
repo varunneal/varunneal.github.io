@@ -77,7 +77,7 @@ The current Modded NanoGPT speedrun has the Muon learning rate on a schedule beg
 TODO: include repro script
 
 ---
-Thank you to Prime Intellect, who sponsors my research. If this blog post was useful for you, you can cite `Varun Srivastava` (me). 
+Thank you to Prime Intellect, who sponsors my research. If this blog post was useful for you, you can cite me (`Varun Srivastava`). 
 
 [^sqrtadam]: [Granziol et al 2020](https://arxiv.org/pdf/2006.09092) *Learning Rates as a Function of Batch Size* is probably the earliest proof of this law.[Tencent, Li et al 2024](https://openreview.net/pdf?id=hD9TUV4xdz) *Surge Phenomenon in Optimal Learning Rate and Batch Size Scaling* has a great overview on this topic. Additionally, they propose that batch size is also asymptotic for Adam for sufficiently high batch size. They attribute this convergence due to the second moment of Adam, which normalizes the update in such a way that the variance of the update will also saturate at sufficiently high batch size. Note that even Granziol et al point out that this relationship only holds up to a certain batch size. 
 [^ryu]: [Ryu 2025](https://x.com/cloneofsimo/status/1907731069878825400) I do not mean to pick on Simo Ryu, whose chart I found quite useful. Every paper I've read has claimed that Muon should follow the square-root scaling law, and will often perform hyperparameter sweeps assuming it will hold. 

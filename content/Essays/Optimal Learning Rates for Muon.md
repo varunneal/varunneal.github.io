@@ -26,9 +26,7 @@ Due to this, I propose that above a certain batch size $B_{\text{saturated}}$, t
 <img src="../images/Muon/heatmap-dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 Figure 4: Sweeping Modded NanoGPT on a learning rate x batch size grid. See section 4 for more details. 
 
-At a token budget of $\approx 134$ M tokens, optimal learning rate seems to converge around $\eta \approx 0.035$. For a token budget of $\approx 1T$ tokens, optimal learning rate stabilizes at  $\eta \approx 0.015$. At the larger training budget, $B = 128 \times 2^{14}$ is an exception to convergence, though this may be attributable to noise.
-
-Note that $B_{\text{saturated}}$ decreases as we increase our token budget. 
+At a token budget of $\approx 134$ M tokens, optimal learning rate seems to converge around $\eta \approx 0.035.$ For a token budget of $\approx 1T$ tokens, optimal learning rate stabilizes at  $\eta \approx 0.015$. At the larger training budget, $B = 128 \times 2^{14}$ is an exception to convergence, though this may be attributable to noise. In any case, the square-root law certainly does not appear to hold. 
 ## (2) Relationship to Critical Batch Size
 When choosing a batch size, we keep in mind that
 1) For a fixed token budget over training, lower batch sizes are more token-efficient: they will achieve lower final losses.
@@ -37,15 +35,15 @@ A *critical batch size*  $B_{\text{critical}}$  balances both of these considera
 
 <img src="../images/Muon/cbs-revisited.png"  class="plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-Figure 5: From *Critical Batch Size Revisited* [^ai2], which was done on Adam. $B_{\text{critical}}$, chosen for exceeding a loss threshold of 1%, is marked in red.
+Figure 5: Loss curves for Adam from *Critical Batch Size Revisited* [^ai2]. $B_{\text{critical}}$, chosen as the greatest batch size exceeding below 1% of the lowest loss, is marked in red.
 
 
 <img src="../images/Muon/loss-plot-light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/Muon/loss-plot-dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-Figure 6: Results from the previous sweep when choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss. Similar curves are given in Sato et al[^sato]. 
+Figure 6: Results from the previous sweep (Fig4) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss. Similar curves are given in Sato et al[^sato]. 
 
-For small token budgets, $B_{\text{critical}}$ will be quite low, so it is possible $B_{\text{saturated}} > B_{\text{critical}}$. In this regime, Muon's optimal learning rate may be well approximated via a power-law $\eta \propto B^p$ [^muonp]. At a larger scale, however, we expect both $B_{\text{saturated}}$ to decrease and $B_{\text{critical}}$ to increase, so we will quickly have $B_{\text{saturated}} < B_{\text{critical}}$. Practically, this implies 
+For small token budgets, $B_{\text{critical}}$ will be quite low, so it is possible $B_{\text{saturated}} > B_{\text{critical}}$. In this regime, Muon's optimal learning rate may be well approximated via a power-law $\eta \propto B^p$ [^muonp]. At a larger scale, however, we expect both $B_{\text{saturated}}$ to decrease (Fig4) and $B_{\text{critical}}$ to increase (Fig6), so we will quickly have $B_{\text{saturated}} < B_{\text{critical}}$. Practically, this implies 
 1) You should not increase learning rate when increasing your batch size for large scale training. Notably, Kimi K2's Moonlight technical report[^kimi] implies they do not increase Muon's learning rate when they increase the batch size. 
 2) Your hyperparameter sweeps on Muon should not assume the square-root law holds. 
 

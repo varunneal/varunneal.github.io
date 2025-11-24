@@ -1,4 +1,4 @@
-Muon has fairy different learning rate properties than Adam. In this blog I propose that the relationship between its optimal learning rate $\eta$ and batch size $B$ is quickly asymptotic, as opposed to Adam's square-root law $\eta \propto \sqrt{B}$, and also survey how this impacts Critical Batch Size for Muon. 
+Muon has fairly different learning rate properties than Adam. In this blog I propose that the relationship between its optimal learning rate $\eta$ and batch size $B$ is quickly asymptotic, as opposed to Adam's square-root law $\eta \propto \sqrt{B}$, and also survey how this impacts Critical Batch Size for Muon. 
 
 ## (1) Optimal Learning Rate
 Increasing the batch size decreases the amount of variance in each gradient. If we want each step to have a fixed variance budget, we should choose a learning rate $\eta$ that is inverse to the expected variance of the gradient. Correspondingly, stochastic gradient descent finds that optimal increases linearly with batch size. In contrast, Adam dampens update variance, so the optimal scaling law is closer to $\eta \approx \sqrt{B}$[^sqrtadam].
@@ -31,6 +31,7 @@ At a token budget of $\approx 134$ M tokens, optimal learning rate seems to conv
 When choosing a batch size, we keep in mind that
 1) For a fixed token budget over training, lower batch sizes are more token-efficient: they will achieve lower final losses.
 2) Training at higher batch sizes is desirable for various reasons: GPUs parallelize over the batch dimension, DDP is easy, every step incurs overhead (optimizers, comms, etc.)
+
 A *critical batch size*  $B_{\text{critical}}$  balances both of these considerations: low enough to be token-efficient, and high enough to be speed-efficient.
 
 <img src="../images/Muon/cbs-revisited.png"  class="plot" style="width: 100%; height: auto; flex-shrink: 0;">

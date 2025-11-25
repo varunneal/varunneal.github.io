@@ -53,6 +53,11 @@ img.plot {
   border: 1px solid var(--dark);
 }
 
+/* Remove extra spacing between images and following text */
+img + p {
+  margin-top: 0;
+}
+
 body[data-slug="index"] img {
   filter: invert(0%);
   opacity: 0.85;
@@ -71,13 +76,29 @@ img[src*="banner.svg"] {
    Typography Elements
    ======================================================================== */
 
+/* Bold text styling (Jacques Francois doesn't have bold weights) */
+strong,
+b,
+p > strong,
+p > b {
+  font-weight: 400 !important;
+  color: #3d2d20 !important;
+}
+
+[saved-theme="dark"] strong,
+[saved-theme="dark"] b,
+[saved-theme="dark"] p > strong,
+[saved-theme="dark"] p > b {
+  color: #e5dcd0 !important;
+}
+
 /* Math/LaTeX font size */
 .math,
 .katex,
 .katex-html,
 .katex-display,
 span.katex {
-  font-size: 0.95rem !important;
+  font-size: 0.97rem !important;
 }
 
 /* Heading styles */

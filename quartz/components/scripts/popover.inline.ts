@@ -82,19 +82,31 @@ async function mouseEnterHandler(
       const contents = await response.text()
       const html = p.parseFromString(contents, "text/html")
       normalizeRelativeURLs(html, targetUrl)
+
+      // find the target element BEFORE removing IDs
+      let targetElement: HTMLElement | null = null
+      if (hash !== "") {
+        targetElement = html.querySelector(hash) as HTMLElement | null
+      }
+
       // strip all IDs from elements to prevent duplicates
       html.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"))
       const elts = [...html.getElementsByClassName("popover-hint")]
       if (elts.length === 0) return
 
       elts.forEach((elt) => popoverInner.appendChild(elt))
+
+      // store the target element reference for later
+      if (targetElement && elts.some(elt => elt.contains(targetElement))) {
+        targetElement.dataset.scrollTarget = "true"
+      }
   }
 
   setPosition(popoverElement)
   link.appendChild(popoverElement)
 
   if (hash !== "") {
-    const heading = popoverInner.querySelector(hash) as HTMLElement | null
+    const heading = popoverInner.querySelector('[data-scroll-target="true"]') as HTMLElement | null
     if (heading) {
       // leave ~12px of buffer when scrolling to a heading
       popoverInner.scroll({ top: heading.offsetTop - 12, behavior: "instant" })

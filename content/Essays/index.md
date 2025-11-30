@@ -1,7 +1,9 @@
 ---
 title: Essays
-image: ../images/shield-achilles.png
+image: ../images/the-sun-compressed.jpg
 draft: "false"
 ---
 Personal catalog of essays, aphorisms, arrows. 
+
+
 %% ![[the-sun-compressed.jpg]] %%

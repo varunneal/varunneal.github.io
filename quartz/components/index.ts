@@ -23,6 +23,7 @@ import Breadcrumbs from "./Breadcrumbs"
 import Comments from "./Comments"
 import Flex from "./Flex"
 import Fractal from "./Fractal"
+import ListPageImage from "./ListPageImage"
 
 export {
   ArticleImage,
@@ -49,5 +50,6 @@ export {
   Breadcrumbs,
   Comments,
   Flex,
-  Fractal
+  Fractal,
+  ListPageImage
 }

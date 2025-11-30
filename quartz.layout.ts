@@ -91,5 +91,8 @@ export const defaultListPageLayout: PageLayout = {
     beforeBody: [
         Component.Breadcrumbs(),
     ],
+    afterBody: [
+        Component.ListPageImage(),
+    ],
     right: [],
 }

@@ -8,6 +8,8 @@ aliases:
 image: ../images/behelit.png
 imageAlt: Line art behelit from Berserk
 modified: June 30, 2025
+title: Blood from a Stone
+permalink: blood-from-a-stone
 ---
 
 *This post is a follow-up to [[Two Peaks and the Telepathy Tapes|two peaks and the telepathy tapes]].*

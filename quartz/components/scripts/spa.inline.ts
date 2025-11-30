@@ -103,16 +103,20 @@ async function _navigate(url: URL, isBack: boolean = false) {
 
   // scroll to top before morphing to avoid flash of bottom content
   if (!isBack && !url.hash) {
-    window.scrollTo({ top: 0 })
+    window.scrollTo({ top: 0, behavior: "instant" })
   }
 
   // morph body
   micromorph(document.body, html.body)
 
-  // scroll to hash target after morphing
-  if (!isBack && url.hash) {
-    const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
-    el?.scrollIntoView()
+  // scroll again after morphing to ensure we're at the top
+  if (!isBack) {
+    if (url.hash) {
+      const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
+      el?.scrollIntoView()
+    } else {
+      window.scrollTo({ top: 0, behavior: "instant" })
+    }
   }
 
   // now, patch head, re-executing scripts

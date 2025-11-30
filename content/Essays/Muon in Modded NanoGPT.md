@@ -9,10 +9,9 @@ aliases:
   - optimal learning rates
 image: ../images/Muon/descent.png
 imageAlt: Descent of Everest
+permalink: essays/muon
+modified: November 30, 2025
 ---
-> "I only trust speedruns." —Keller Jordan [^jordan24a]
-
-[^jordan24a]: [Keller Jordan 2025](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
 
 The Muon optimizer was developed for Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since last summer, through the contributions of various researchers and engineers, the train time has decreased from 45 minutes to nearly 2 minutes. In this blog post, I'll walk through some Muon-related innovations from recent records and review the surrounding literature behind these techniques.
 
@@ -39,7 +38,7 @@ There have been several recent papers highlighting the benefits of an adaptive e
 
 
 ## (1) Adaptive Muon
-Several recent papers have highlighted the benefits of adding an adaptive estimation term to Muon [^normuon] [^adamuon] [^adago] [^frans]. Since one of these methods (Normuon) was incorporated into the speedrun on October 24th, I want to motivate why adaptive Muon  variants work. 
+The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^normuon]. Several recent papers have explored similar adaptive extensions [^adamuon] [^adago] [^frans]. In this section, I want to explain what "adaptive Muon" means and why it helps.
 
 %% I want to provide an overview of the literature on adaptive Muon variants, why it is effective, and why you might consider adopting it for yourself. %%
 
@@ -48,7 +47,9 @@ Several recent papers have highlighted the benefits of adding an adaptive estima
 [^normuon]: [Li et al 2025](https://arxiv.org/abs/2510.05491) *NorMuon*
 [^adamuon]:[Si et al 2025](https://arxiv.org/abs/2507.11005) *AdaMuon*
 
-Stochastic Gradient Descent with Momentum (SGDM) performs steps by computing the exponential moving average (EMA) of gradients. Adam (ADaptive Moment Estimation) additionally tracks the EMA of the norm of each parameter. Dividing by this second EMA gives us a variance-corrected update. 
+Start with the simplest case: Stochastic Gradient Descent with Momentum (SGDM) updates parameters using an exponential moving average (EMA) of gradients. Adam (ADaptive Moment Estimation) builds on this by also tracking the EMA of squared gradients per parameter. We divide by this second EMA to produce a variance-corrected update.
+
+%% performs steps by computing the exponential moving average (EMA) of gradients. Adam (ADaptive Moment Estimation) additionally tracks the EMA of the norm of each parameter. Dividing by this second EMA gives us a variance-corrected update.  %%
 
 Adaptive variance techniques estimate two distinct properties about the gradient:
 1) Stochastic noise: the variance within a single batch, estimated *per-parameter*. At a fixed batch size, certain features may be very noisy, while other features may have high signal. Adaptivity allows noisier gradient estimates to get dampened, effectively giving each parameter its own adaptive learning rate.
@@ -65,11 +66,11 @@ Muon tracks the EMA gradient of full parameters and normalizes the EMA through a
 
 
 %% Muon's orthogonalization corrects for the former, in that it's optimization step normalizes all spectral directions. Therefore, it will nat %%
-In various works, the update Muon has been argued to solve (2)—e.g. it is "curvature aware" [^kovalev][^anonymous26][^su25]. Intuitively, this is a feature of orthogonalizing the update: after orthogonalization, Muon's update is "well-rounded" in the parameter space, avoiding directions of steep change (i.e. sharp local minima) [^spectral]. 
+Despite not being a variance-adaptive method, Muon is "curvature-aware," which addresses (2) [^kovalev][^anonymous26][^su25]. Intuitively, this comes from orthogonalizing the update: after orthogonalization, Muon's update is "well-rounded" in parameter space, avoiding directions of steep change [^spectral]. Formally, each update is perfectly-conditioned (all spectral values are $1$), which keeps the weights themselves well-conditioned (the spectral values are low and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a restricted submanifold of the full parameter space. Relatedly, Jeremy Bernstein has proposed *Manifold Muon*, which tweaks Muon such that the weights remain perfectly-conditioned  [^bernstein25].
+
 
 [^spectral]: *Spectral directions* are the left and right singular vectors in the SVD decomposition of a matrix. They correspond to the directions the matrix stretches the input/output space. The amount each direction is stretched corresponds to *singular values* of the matrix. Orthogonalization finds a matrix with identical spectral directions but with all the singular value equal to $1$. The resulting transformation is *isometric* between the input and output spaces: distances, lengths, and angles are preserved. 
 
-Since each step is perfectly-conditioned (all spectral values are $1$), we empirically find that the parameter weights tend to remain similarly well-conditioned (the spectral values are low and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a well-behaved submanifold of the full parameter space. Relatedly, Jeremy Bernstein has proposed *Manifold Muon*, which tweaks Muon such that the weights remain perfectly-conditioned through gradient descent [^bernstein25].
 
 [^anonymous26]: [Anonymous ICLR Conference Submission 2025](https://openreview.net/forum?id=go388T3QjQ) *Long-tailed Learning with Muon Optimizer*
 [^su25]: [Su 2025](https://arxiv.org/abs/2511.00674) *Isotropic Curvature Model for Understanding Deep Learning Optimization*
@@ -94,7 +95,7 @@ def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
 
 Note that the above technique estimates variance for the $i$th strongest spectral component, whose direction will fluctuate over subsequent steps. Future work might account for this fluctuation, or find alternative ways to estimate spectral noise.
 
-The particular variant of Adaptive Muon that is adopted in Modded NanoGPT is called *Normuon*, and it maintains the Frobenius norm of the update after dividing by variance [^normuon]. Whether we track variance columnwise or rowwise is determined by which of the parameter's dimensions is larger.
+The particular variant of Adaptive Muon that is adopted in Modded NanoGPT, *NorNuon*, maintains the Frobenius norm of the update after dividing by variance [^normuon]. Whether we track variance columnwise or rowwise is determined by which of the parameter's dimensions is larger.
 
 
 %% 1D (or even scalar) variance factor  [^normuon] [^adamuon] [^adago] [^frans] . There are quite a few reasons for this, including that 
@@ -259,6 +260,12 @@ The implementation of Muon has been optimized in order to distribute the impleme
 
 
 ## (6) Implementation Notes 
+
+> "I only trust speedruns." —Keller Jordan [^jordan24a]
+
+[^jordan24a]: [Keller Jordan 2025](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
+
+
 I hope this post is broadly useful for pretraining with Muon. I want to highlight some important considerations for the Modded NanoGPT recipe: 
 - The model is very small (<124M active params) and has a unique architecture. 
 - Adam is used instead of Muon on a few parameters: the linear output head, the embedding dimension, and a few scalar constants, though this is "standard" for Muon. 
@@ -308,7 +315,7 @@ Thank you to Prime Intellect, who sponsors my research. If this blog post was us
 	author = {Varun Srivastava}, 
 	title = {Optimal Learning Rates for Muon}, 
 	year = {2025}, 
-	url = {https://varunneal.github.io/Essays/Optimal-Learning-Rates-for-Muon} 
+	url = {https://varunneal.github.io/essays/muon} 
 }
 ```
 

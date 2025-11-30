@@ -8,6 +8,8 @@ aliases:
   - two peaks
   - telepathy tapes
   - epistemological dualism
+title: Two Peaks and the Telepathy Tapes
+permalink: essays/two-peaks
 ---
 ## (1) Contra the tapes
 

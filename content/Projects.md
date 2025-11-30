@@ -2,6 +2,7 @@
 aliases:
   - technical projects
 fractal: mandelbrot
+title: Projects
 ---
 
 (I've been working on . . .)

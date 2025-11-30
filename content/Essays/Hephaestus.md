@@ -1,10 +1,11 @@
 ---
 created: Oct 31, 2025
 aliases:
-  - Hephaestus
 image: ../images/shield-achilles-outline.png
 imageAlt: Shield of Achilles, Angelo Monticelli
 modified: Nov 2, 2025
+title: Hephaestus
+permalink: essays/hephaestus
 ---
 
 THREE thousand years ago, Homer strained his memory and recalled what was said about that great inventor Hephaestus...

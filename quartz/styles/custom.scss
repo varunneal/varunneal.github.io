@@ -85,6 +85,13 @@ p > b {
   color: #3d2d20 !important;
 }
 
+/* Smallcaps for figure/algorithm captions */
+.smallcaps {
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.05em;
+}
+
 [saved-theme="dark"] strong,
 [saved-theme="dark"] b,
 [saved-theme="dark"] p > strong,

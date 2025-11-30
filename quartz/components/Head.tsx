@@ -8,6 +8,8 @@ import { CustomOgImagesEmitterName } from "../plugins/emitters/ogImage"
 // @ts-ignore
 import darkmodeScript from "./scripts/darkmode.inline"
 import darkmodeStyles from "./styles/darkmode.scss"
+// @ts-ignore
+import sidebarScript from "./scripts/sidebar.inline"
 export default (() => {
   const Head: QuartzComponent = ({
     cfg,
@@ -102,6 +104,7 @@ export default (() => {
   }
 
   Head.beforeDOMLoaded = darkmodeScript
+  Head.afterDOMLoaded = sidebarScript
   Head.css = darkmodeStyles
   return Head
 }) satisfies QuartzComponentConstructor

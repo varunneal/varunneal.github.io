@@ -84,9 +84,11 @@ async function mouseEnterHandler(
       normalizeRelativeURLs(html, targetUrl)
 
       // find the target element BEFORE removing IDs
-      let targetElement: HTMLElement | null = null
       if (hash !== "") {
-        targetElement = html.querySelector(hash) as HTMLElement | null
+        const targetElement = html.querySelector(hash) as HTMLElement | null
+        if (targetElement) {
+          targetElement.dataset.scrollTarget = "true"
+        }
       }
 
       // strip all IDs from elements to prevent duplicates
@@ -95,11 +97,6 @@ async function mouseEnterHandler(
       if (elts.length === 0) return
 
       elts.forEach((elt) => popoverInner.appendChild(elt))
-
-      // store the target element reference for later
-      if (targetElement && elts.some(elt => elt.contains(targetElement))) {
-        targetElement.dataset.scrollTarget = "true"
-      }
   }
 
   setPosition(popoverElement)
@@ -108,8 +105,15 @@ async function mouseEnterHandler(
   if (hash !== "") {
     const heading = popoverInner.querySelector('[data-scroll-target="true"]') as HTMLElement | null
     if (heading) {
+      // Calculate cumulative offset from popoverInner
+      let offsetTop = 0
+      let currentElement: HTMLElement | null = heading
+      while (currentElement && currentElement !== popoverInner) {
+        offsetTop += currentElement.offsetTop
+        currentElement = currentElement.offsetParent as HTMLElement | null
+      }
       // leave ~12px of buffer when scrolling to a heading
-      popoverInner.scroll({ top: heading.offsetTop - 12, behavior: "instant" })
+      popoverInner.scroll({ top: offsetTop - 12, behavior: "instant" })
     }
   }
 }

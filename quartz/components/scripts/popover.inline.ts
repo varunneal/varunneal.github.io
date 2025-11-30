@@ -112,8 +112,8 @@ async function mouseEnterHandler(
         offsetTop += currentElement.offsetTop
         currentElement = currentElement.offsetParent as HTMLElement | null
       }
-      // leave ~12px of buffer when scrolling to a heading
-      popoverInner.scroll({ top: offsetTop - 12, behavior: "instant" })
+      // scroll with buffer to show context before the target
+      popoverInner.scroll({ top: offsetTop - 60, behavior: "instant" })
     }
   }
 }

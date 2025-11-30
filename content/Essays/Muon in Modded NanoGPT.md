@@ -11,9 +11,9 @@ image: ../images/Muon/descent.png
 ---
 > "I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns." —Keller Jordan [^jordan24a]
 
-[^jordan24a]: [Keller Jordan 2025a](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
+[^jordan24a]: [Keller Jordan 2025](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
 
-The Muon optimizer was developed for Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since last summer, through the contributions of various researchers and engineers, the train time has decreased from 45 minutes to nearly 2 minutes. In this blog post, I'll walk through some Muon-related innovations from recent records, and review the surrounding literature behind these techniques.
+The Muon optimizer was developed for Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since last summer, through the contributions of various researchers and engineers, the train time has decreased from 45 minutes to nearly 2 minutes. In this blog post, I'll walk through some Muon-related innovations from recent records and review the surrounding literature behind these techniques.
 
 [^jordan-muon]: [Keller Jordan et al 2024b](https://kellerjordan.github.io/posts/muon/) *Muon: An optimizer for hidden layers in neural networks*
 
@@ -38,23 +38,23 @@ There have been several recent papers highlighting the benefits of an adaptive e
 
 
 ## (1) Adaptive Muon
-There have been several recent papers highlighting the benefits of an adaptive estimation term inside of Muon [^normuon] [^adamuon] [^adago] [^frans]. One of these methods (Normuon) incorporated into the speedrun on October 24th. 
+There have been several recent papers highlighting the benefits of an adaptive estimation term inside of Muon [^normuon] [^adamuon] [^adago] [^frans]. One of these methods (Normuon) was incorporated into the speedrun on October 24th. I want to motivate what this is doing, and why it is good. 
 
 %% I want to provide an overview of the literature on adaptive Muon variants, why it is effective, and why you might consider adopting it for yourself. %%
 
 [^frans]: [Frans et al 2025](https://arxiv.org/abs/2510.25000) *What Really Matters in Matrix-Whitening Optimizers?* 
 [^adago]: [Zhang et al 2025](https://arxiv.org/abs/2509.02981) *AdaGrad Meets Muon*
 [^normuon]: [Li et al 2025](https://arxiv.org/abs/2510.05491) *NorMuon*
-[^adamuon]:[Si et al 2025] *AdaMuon*
+[^adamuon]:[Si et al 2025](https://arxiv.org/abs/2507.11005) *AdaMuon*
 
-Stochastic Gradient Descent with Momentum (SGDM) performs steps by computing the exponential moving average (EMA) of gradients. Adam (ADaptive Moment Estimation) normalizes the EMA by tracking the exponential moving average of the norm of each parameter. 
+Stochastic Gradient Descent with Momentum (SGDM) performs steps by computing the exponential moving average (EMA) of gradients. Adam (ADaptive Moment Estimation) additionally tracks the EMA of the norm of each parameter. Dividing by this second EMA gives us a variance-corrected update. 
 
 Adaptive variance techniques estimate two distinct properties about the gradient:
 1) Stochastic noise: the variance within a single batch, estimated *per-parameter*. At a fixed batch size, certain features may be very noisy, while other features may have high signal. Adaptivity allows noisier gradient estimates to get dampened, effectively giving each parameter its own adaptive learning rate.
-2) Curvature: how the gradient changes as we move through parameter space. Various papers examine how second order statistics approximate the hessian the second moment of the loss landscape—that is, the per-parameter curvature [^cohen] [^kustner].  Normalizing by this estimate makes the optimizer take smaller steps into high-curvature regions, preventing overshooting and descent into "sharp" minima.
+2) Curvature: how the gradient changes as we move through parameter space. Various papers examine how second order statistics approximate the hessian (the second moment) of the loss landscape—that is, the per-parameter curvature [^cohen] [^kustner].  Normalizing by this estimate makes the optimizer take smaller steps into high-curvature regions, preventing overshooting and descent into "sharp" minima.
 
-[^kustner]: [Kustner et al 24](https://arxiv.org/abs/2402.19449) *Heavy-Tailed Class Imbalance and Why Adam Outperforms Gradient Descent on Language Models*
-[^cohen]: [Cohen et al 24](https://arxiv.org/abs/2410.24206) *Understanding Optimization in Deep Learning with Central Flows*, with a shorter accompanying blogpost [here](https://centralflows.github.io/part3/). 
+[^kustner]: [Kustner et al 2024](https://arxiv.org/abs/2402.19449) *Heavy-Tailed Class Imbalance and Why Adam Outperforms Gradient Descent on Language Models*
+[^cohen]: [Cohen et al 2024](https://arxiv.org/abs/2410.24206) *Understanding Optimization in Deep Learning with Central Flows*, with a shorter accompanying blogpost [here](https://centralflows.github.io/part3/). 
 
 
 %% as well. This "variance EMA" is an estimate of the noise we expect from sampling the gradient of each parameter. At each step, divide the update by variance so that high-variance terms update slowly and low-variance terms update quickly. 
@@ -64,11 +64,11 @@ Muon tracks the EMA gradient of full parameters and normalizes the EMA through a
 
 
 %% Muon's orthogonalization corrects for the former, in that it's optimization step normalizes all spectral directions. Therefore, it will nat %%
-In various works, the update Muon has been argued to solve (2)—e.g. it is "curvature aware" [^kovalev][^anonymous26][^su25]. Intuitively, this is a feature of orthogonalizing the update.. After orthogonalization, Muon's update is "well-rounded" in the parameter space, avoiding directions of steep change such as sharp crevasses [^spectral]. 
+In various works, the update Muon has been argued to solve (2)—e.g. it is "curvature aware" [^kovalev][^anonymous26][^su25]. Intuitively, this is a feature of orthogonalizing the update. After orthogonalization, Muon's update is "well-rounded" in the parameter space, avoiding directions of steep change (i.e. sharp local minima) [^spectral]. 
 
 [^spectral]: *Spectral directions* are the left and right singular vectors in the SVD decomposition of a matrix. They correspond to the directions the matrix stretches the input/output space. The amount each direction is stretched corresponds to *singular values* of the matrix. Orthogonalization finds a matrix with identical spectral directions but with all the singular value equal to $1$. The resulting transformation is *isometric* between the input and output spaces: distances, lengths, and angles are preserved. 
 
-Empirically, we find that since each step we is perfectly-conditioned (all spectral values are $1$), the parameter weights tend to remain similarly well-conditioned (the spectral values are near each other)[^Boreiko]. Muon is effectively performing gradient descent down a well-behaved submanifold of the full parameter space. Relatedly, Jeremy Bernstein has proposed *Modular Muon*, which tweaks Muon such that the weights themselves remain semi-orthogonal through gradient descent [^bernstein25].
+Empirically, we find that since each step is perfectly-conditioned (all spectral values are $1$), the parameter weights tend to remain similarly well-conditioned (the spectral values are low and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a well-behaved submanifold of the full parameter space. Relatedly, Jeremy Bernstein has proposed *Modular Muon*, which tweaks Muon such that the weights remain perfectly-conditioned through gradient descent [^bernstein25].
 
 [^anonymous26]: [Anonymous ICLR Conference Submission 2025](https://openreview.net/forum?id=go388T3QjQ) *Long-tailed Learning with Muon Optimizer*
 [^su25]: [Su 2025](https://arxiv.org/abs/2511.00674) *Isotropic Curvature Model for Understanding Deep Learning Optimization*
@@ -145,7 +145,7 @@ A *critical batch size* $B_{\text{critical}}$  balances both of these considerat
 
 %% For small token budgets, $B_{\text{critical}}$ will be low, so it is possible the power-law scaling $\eta \propto B^p$ is accurate. At a larger scale, however, $\eta_{\text{saturated}}$ decreases (Fig1) and $B_{\text{critical}}$ increases (Fig3), so you should expect that the optimal learning rate for $B_{\text{critical}}$ is approximately $\eta_{\text{saturated}}$.  %%
 
-Since the critical batch size increases as the total token budget increases, it is safe to increase the batch size throughout the course of training[^ai2].  Batch size literature that has focused on Muon has discovered it's critical batch size is significantly higher than Adam's, which may allow for higher batch sizes [^essentialai].  Both Kimi K2 and GLM 4.5's recipes for training with Muon involve some level of batch size increase through training[^kimi]  [^glm].
+Since the critical batch size increases as the total token budget increases, it is safe to increase the batch size throughout the course of training.  Batch size literature that has focused on Muon has discovered it's critical batch size is significantly higher than Adam's, which may allow for higher batch sizes [^essentialai].  Both Kimi K2 and GLM 4.5's recipes for training with Muon involve some level of batch size increase through training[^kimi]  [^glm].
 
 To accurately determine the critical batch size, we need to determine what the optimal learning rates are at each batch size. Larger batches average over more samples, which reduces gradient variance. For SGD, we can directly model the relationship between the optimal learning rate $\eta$ and batch size $B$ [^Mccandlish]:
 
@@ -162,7 +162,7 @@ $$
 $$ 
 
 
-A power-law relationship ($\eta \propto B^p$) is often assumed to hold for Muon as well[^sato][^ryu], though in practice I discovered this is only true at low batch sizes.
+A power-law relationship ($\eta \propto B^p$) is often assumed to hold for Muon as well[^sato][^ryu], though in practice it will asymptote quickly:
 
 [^sato]: [Sato et al 2025](https://arxiv.org/abs/2507.01598) *Convergence Bound and Critical Batch Size of Muon Optimizer*. 
 [^ryu]: [Simo Ryu 2025](https://x.com/cloneofsimo/status/1907731069878825400) A*Adam vs Shampoo vs Muon on MNIST. all follow the lr ~ sqrt(BS) law.*
@@ -187,11 +187,11 @@ In order to apply batch size increases inside of Modded NanoGPT, I needed to stu
 <img src="../images/Muon/validation_loss_heatmap_medium_dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 
-**Figure 2: Sweeping Adaptive Muon at a learning rate x log(batch size) grid at three different token budgets. The lowest loss per batch size is selected in red. See [[#(3) Implementation Notes]] for more details.** 
+**Figure 2: Sweeping Adaptive Muon at a learning rate x log(batch size) grid at three different token budgets. The lowest loss per batch size is selected in red.** 
 
 At token budgets of $\approx 134M$, $536M$, $1073M$ tokens, the optimal learning rate seems to converge around $\eta \approx 0.035$, $0.025$, and $0.015$, respectively. Note that $B = 4 \times 2^{14}$ does not appear to converge at the highest token budget for any of the swept learning rates. 
 
-Below the asymptote/saturated batch size, we can approximate the value $p$ in $\eta \propto B^p$ via the slope of the red boxes. At this granularity, $p \approx 0.6-1.0$ seems approximately correct. Convergence to the optimal learning rate appears to be very fast for this variant of Muon.
+Below the asymptote/saturated batch size, we can approximate the value $p$ in $\eta \propto B^p$ via the log-slope of the red boxes. At this granularity, $p \approx 0.6-1.0$ seems approximately correct. Convergence to the optimal learning rate appears to be very fast for this variant of Muon.
 
 
   [^glm]: [Zeng et al](https://arxiv.org/abs/2508.06471) *GLM-4.5*
@@ -208,7 +208,7 @@ For low batch sizes, Muon's optimal learning rate may be well approximated via a
 <img src="../images/Muon/loss_vs_batch_size_light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/Muon/loss_vs_batch_size_dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 3: Results from the previous sweep (Fig1) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss. Similar curves are given in Shah et al [^essentialAI] and in Sato et al[^sato].** 
+**Figure 3: Results from the previous sweep (Fig1) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss.** 
 
 The above graphs demonstrate an incredible stability in the critical batch size for our Adaptive Muon optimizer, especially at higher token budget. Consider the flatness in the curve for the highest token budget ($\approx 1T$ parameters): $1024$ steps at a A batch size of $2^{20}$ tokens converges to nearly the same loss at $1024$ steps as a batch size of $2^{18}$ tokens in $4096$ steps!
 
@@ -224,12 +224,13 @@ TODO: Insert Modded NanoGPT PR here  %%
 ## (3) Faster orthogonalization: Polar Express and beyond
 The Newton-Schulz iterative algorithm approximates orthogonalization via a quintic polynomial iteration. This iterative approach is agnostic to the conditioning of the underlying matrix. However, if we notice that the conditioning of the matrix improves in each iteration, we can find an optimal polynomial for that iteration. Ansel et al provide optimal coefficients at each iteration step via their algorithm Polar Express [^ansel]. 
 
-Last month, a paper from Shulgin et al demonstrated that a more precise orthogonalization genuinely does improve Muon convergence, especially when accompanied with appropriate learning rate tuning: 
+Last month, a paper from Shulgin et al demonstrated that a more precise orthogonalization improves Muon convergence, especially when accompanied with appropriate learning rate tuning: 
 
 <img src="../images/Muon/shulgin-heatmap.png"  class="plot" style="width: 100%; height: auto; flex-shrink: 0;">
+
 **Figure 4: Validation Loss at two levels of convergence for orthogonalization. Caption from Shulgin: "the optimal learning rate couples with approximation quality \[...\] higher precision → higher optimal LR + wider stability,"**
 
-It follows that using Polar Express over Newton Schulz represents a strict improvement in convergence.
+It follows that using Polar Express over Newton Schulz represents an improvement in convergence, and using it led to a new record in Modded NanoGPT. 
 
 On ongoing effort in the Modded NanoGPT speedrun is being made for even faster orthogonalization via *Almost-Orthogonal Layers*, though this has not been incorporated yet [^Boission]. 
 
@@ -239,7 +240,7 @@ On ongoing effort in the Modded NanoGPT speedrun is being made for even faster o
 ## (4) Cautious weight decay 
 Decoupled weight decay has been noted as a crucial technique for training with Muon. The Kimi team writes: "While vanilla Muon initially converges faster, we observed that some model weights grew too large over time, potentially limiting the model’s long-term performances. Adding weight decay addressed this issue - the results demonstrate that Muon with weight decay outperforms both vanilla Muon and AdamW" [^kimi]. 
 
-Inside Modded NanoGPT, weight decay on Muon doing more harm than good. In October, a variant of decoupled weight decay known as *Cautious Weight Decay* was discovered [^chen25], which only decays parameters that increase in magnitude in the update step:
+Inside Modded NanoGPT, weight decay on Muon was doing more harm than good. In October, a variant of decoupled weight decay known as *Cautious Weight Decay* was discovered [^chen25], which only decays parameters that increase in magnitude in the update step:
 
 ```python {2}
 def apply_update(param, update, learning_rate, weight_decay):
@@ -253,14 +254,14 @@ This technique proved highly effective in Modded NanoGPT when paired with a sche
 
 [^chen25]: [Chen et al 2025](https://arxiv.org/abs/2510.12402) *Cautious Weight Decay* 
 ## (5) Distributed and batched computation
-The implementation of Muon has been optimized in order to distribute the implementation over 8 devices. While some of these engineering tricks are interesting (e.g. batched orthogonalization), they do not represent algorithmic differenes from the original form of Muon. For additional information I direct you to Larry Dial's blog post [^larry2025a] and the Modded NanoGPT repo [^moddednanogpt]. 
+The implementation of Muon has been optimized in order to distribute the implementation over 8 devices. While some of these engineering tricks are interesting (e.g. batched orthogonalization), they do not represent algorithmic differences from the original form of Muon. For additional information I direct you to Larry Dial's blog post [^larry2025a] and the Modded NanoGPT repo [^moddednanogpt]. 
 
 
 ## (6) Implementation Notes 
-I hope this post is broadly useful for to pretraining with Muon. I want to highlight some important considerations for the Modded NanoGPT recipe: 
+I hope this post is broadly useful for pretraining with Muon. I want to highlight some important considerations for the Modded NanoGPT recipe: 
 - The model is very small (<124M active params) and has a unique architecture. 
 - Adam is used instead of Muon on a few parameters: the linear output head, the embedding dimension, and a few scalar constants, though this is "standard" for Muon. 
-- Adam is stepped over twice the number of gradient accumulation steps than Muon. Effectively, it has a 2x batch size than Muon. In the experiment in [[#(2) Batch size scheduling|Section 2]], I've scaled the Adam learning rate according to the square-root law. 
+- Adam is stepped with twice the number of gradient accumulation steps as Muon. Effectively, it has a 2x batch size than Muon. In the experiment in [[#(2) Batch size scheduling|Section 2]], I've scaled the Adam learning rate according to the square-root law. 
 %% 
 
 In the hyperparameter sweep, batch sizes $> 64 \times 16384$ tokens seemed too large for my token budget. In particular, the number of total steps was low, which increased variability. The Modded NanoGPT speedrun uses a batch size of $16 \times 16384$ for a token budget of approx $570M$ tokens. 
@@ -328,4 +329,4 @@ Thank you to Prime Intellect, who sponsors my research. If this blog post was us
 [^jordan-warmup]: [Jordan 2024](https://x.com/kellerjordan0/status/1845867151946899852) "Removed learning rate warmup, since the optimizer (Muon) doesn't need it"
 
 [^mahdid]: [Mahdid 2025](https://www.yacinemahdid.com/p/muon-optimizer-explained-to-a-toddler) *muon optimizer explained to a toddler* 
-[^snr]: I'm being somewhat imprecise with how we define the signal to noise ratio. McCandlish et al [^mccandlish] defines a critical batch size $B_{\text{noise}} =  \text{Cov}(G) / \mathbb{E}(G)^2$ for their analysis of SGD, which is the inverse SNR. 
+[^snr]: I'm being somewhat imprecise with how we define the signal to noise ratio. McCandlish et al [^mccandlish] defines a critical batch size $B_{\text{noise}} =  \text{Cov}(G) / \mathbb{E}(G)^2$ for their analysis of SGD. I'm using its inverse as the SNR. 

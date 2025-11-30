@@ -101,17 +101,18 @@ async function _navigate(url: URL, isBack: boolean = false) {
   announcer.dataset.persist = ""
   html.body.appendChild(announcer)
 
+  // scroll to top before morphing to avoid flash of bottom content
+  if (!isBack && !url.hash) {
+    window.scrollTo({ top: 0 })
+  }
+
   // morph body
   micromorph(document.body, html.body)
 
-  // scroll into place and add history
-  if (!isBack) {
-    if (url.hash) {
-      const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
-      el?.scrollIntoView()
-    } else {
-      window.scrollTo({ top: 0 })
-    }
+  // scroll to hash target after morphing
+  if (!isBack && url.hash) {
+    const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
+    el?.scrollIntoView()
   }
 
   // now, patch head, re-executing scripts

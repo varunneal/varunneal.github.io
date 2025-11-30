@@ -8,8 +8,9 @@ aliases:
   - Adaptive Muon
   - optimal learning rates
 image: ../images/Muon/descent.png
+imageAlt: Descent of Everest
 ---
-> "I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns." —Keller Jordan [^jordan24a]
+> "I only trust speedruns." —Keller Jordan [^jordan24a]
 
 [^jordan24a]: [Keller Jordan 2025](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
 
@@ -38,7 +39,7 @@ There have been several recent papers highlighting the benefits of an adaptive e
 
 
 ## (1) Adaptive Muon
-There have been several recent papers highlighting the benefits of an adaptive estimation term inside of Muon [^normuon] [^adamuon] [^adago] [^frans]. One of these methods (Normuon) was incorporated into the speedrun on October 24th. I want to motivate what this is doing, and why it is good. 
+Several recent papers have highlighted the benefits of adding an adaptive estimation term to Muon [^normuon] [^adamuon] [^adago] [^frans]. Since one of these methods (Normuon) was incorporated into the speedrun on October 24th, I want to motivate why adaptive Muon  variants work. 
 
 %% I want to provide an overview of the literature on adaptive Muon variants, why it is effective, and why you might consider adopting it for yourself. %%
 
@@ -64,11 +65,11 @@ Muon tracks the EMA gradient of full parameters and normalizes the EMA through a
 
 
 %% Muon's orthogonalization corrects for the former, in that it's optimization step normalizes all spectral directions. Therefore, it will nat %%
-In various works, the update Muon has been argued to solve (2)—e.g. it is "curvature aware" [^kovalev][^anonymous26][^su25]. Intuitively, this is a feature of orthogonalizing the update. After orthogonalization, Muon's update is "well-rounded" in the parameter space, avoiding directions of steep change (i.e. sharp local minima) [^spectral]. 
+In various works, the update Muon has been argued to solve (2)—e.g. it is "curvature aware" [^kovalev][^anonymous26][^su25]. Intuitively, this is a feature of orthogonalizing the update: after orthogonalization, Muon's update is "well-rounded" in the parameter space, avoiding directions of steep change (i.e. sharp local minima) [^spectral]. 
 
 [^spectral]: *Spectral directions* are the left and right singular vectors in the SVD decomposition of a matrix. They correspond to the directions the matrix stretches the input/output space. The amount each direction is stretched corresponds to *singular values* of the matrix. Orthogonalization finds a matrix with identical spectral directions but with all the singular value equal to $1$. The resulting transformation is *isometric* between the input and output spaces: distances, lengths, and angles are preserved. 
 
-Empirically, we find that since each step is perfectly-conditioned (all spectral values are $1$), the parameter weights tend to remain similarly well-conditioned (the spectral values are low and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a well-behaved submanifold of the full parameter space. Relatedly, Jeremy Bernstein has proposed *Modular Muon*, which tweaks Muon such that the weights remain perfectly-conditioned through gradient descent [^bernstein25].
+Since each step is perfectly-conditioned (all spectral values are $1$), we empirically find that the parameter weights tend to remain similarly well-conditioned (the spectral values are low and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a well-behaved submanifold of the full parameter space. Relatedly, Jeremy Bernstein has proposed *Manifold Muon*, which tweaks Muon such that the weights remain perfectly-conditioned through gradient descent [^bernstein25].
 
 [^anonymous26]: [Anonymous ICLR Conference Submission 2025](https://openreview.net/forum?id=go388T3QjQ) *Long-tailed Learning with Muon Optimizer*
 [^su25]: [Su 2025](https://arxiv.org/abs/2511.00674) *Isotropic Curvature Model for Understanding Deep Learning Optimization*
@@ -165,7 +166,7 @@ $$
 A power-law relationship ($\eta \propto B^p$) is often assumed to hold for Muon as well[^sato][^ryu], though in practice it will asymptote quickly:
 
 [^sato]: [Sato et al 2025](https://arxiv.org/abs/2507.01598) *Convergence Bound and Critical Batch Size of Muon Optimizer*. 
-[^ryu]: [Simo Ryu 2025](https://x.com/cloneofsimo/status/1907731069878825400) A*Adam vs Shampoo vs Muon on MNIST. all follow the lr ~ sqrt(BS) law.*
+[^ryu]: [Simo Ryu 2025](https://x.com/cloneofsimo/status/1907731069878825400) *Adam vs Shampoo vs Muon on MNIST. all follow the lr ~ sqrt(BS) law.*
 
 %%
 (see [[#(4) Related work]]). Muon orthogonalizes (i.e. spectrally normalizes) the update before stepping. Some literature proposes that orthogonalization can amplify noise [^adago], especially when the underlying gradient is ill-conditioned. 

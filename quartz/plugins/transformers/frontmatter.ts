@@ -88,10 +88,11 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options>> = (userOpts)
             }
 
             if (data.permalink != null && data.permalink.toString() !== "") {
-              data.permalink = data.permalink.toString() as FullSlug
+              // Normalize permalink to lowercase
+              data.permalink = data.permalink.toString().toLowerCase() as FullSlug
               const originalSlug = file.data.slug!
-              // Only create redirect if permalink differs from original slug (case insensitive)
-              if (originalSlug.toLowerCase() !== data.permalink.toLowerCase()) {
+              // Create redirect if permalink differs from original slug (case sensitive)
+              if (originalSlug !== data.permalink) {
                 // Store original slug as an alias so it redirects to permalink
                 const aliases = file.data.aliases ?? []
                 aliases.push(originalSlug)

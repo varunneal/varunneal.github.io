@@ -195,6 +195,17 @@ function createRouter() {
 createRouter()
 notifyNav(getFullSlug(window))
 
+// Redirect to lowercase URL if current path has uppercase characters
+;(function redirectToLowercase() {
+  const path = window.location.pathname
+  const lowerPath = path.toLowerCase()
+  if (path !== lowerPath) {
+    // Preserve hash and search params, redirect without adding to history
+    const newUrl = lowerPath + window.location.search + window.location.hash
+    window.location.replace(newUrl)
+  }
+})()
+
 if (!customElements.get("route-announcer")) {
   const attrs = {
     "aria-live": "assertive",

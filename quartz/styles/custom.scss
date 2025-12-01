@@ -87,9 +87,17 @@ p > b {
 
 /* Smallcaps for figure/algorithm captions */
 .smallcaps {
-  font-variant: small-caps;
-  text-transform: lowercase;
-  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 0.75em;
+  /* color: blue; */
+}
+
+.smallcaps .cap {
+  font-size: 1.35em;
+  text-transform: uppercase;
+  /* color: red; */
+
 }
 
 [saved-theme="dark"] strong,

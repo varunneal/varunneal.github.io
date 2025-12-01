@@ -81,8 +81,9 @@ function computeFolderInfo(
   // Update with actual content if available
   for (const [tree, file] of content) {
     const slug = stripSlashes(simplifySlug(file.data.slug!)) as SimpleSlug
-    if (folders.has(slug)) {
-      folderInfo[slug] = [tree, file]
+    const slugLower = slug.toLowerCase() as SimpleSlug
+    if (folders.has(slugLower)) {
+      folderInfo[slugLower] = [tree, file]
     }
   }
 
@@ -137,9 +138,9 @@ export const FolderPage: QuartzEmitterPlugin<Partial<FolderPageOptions>> = (user
       const folders: Set<SimpleSlug> = new Set(
         allFiles.flatMap((data) => {
           return data.slug
-            ? _getFolders(data.slug).filter(
-                (folderName) => folderName !== "." && folderName !== "tags",
-              )
+            ? _getFolders(data.slug)
+                .filter((folderName) => folderName !== "." && folderName !== "tags")
+                .map((folderName) => folderName.toLowerCase() as SimpleSlug)
             : []
         }),
       )
@@ -157,9 +158,9 @@ export const FolderPage: QuartzEmitterPlugin<Partial<FolderPageOptions>> = (user
       for (const changeEvent of changeEvents) {
         if (!changeEvent.file) continue
         const slug = changeEvent.file.data.slug!
-        const folders = _getFolders(slug).filter(
-          (folderName) => folderName !== "." && folderName !== "tags",
-        )
+        const folders = _getFolders(slug)
+          .filter((folderName) => folderName !== "." && folderName !== "tags")
+          .map((folderName) => folderName.toLowerCase() as SimpleSlug)
         folders.forEach((folder) => affectedFolders.add(folder))
       }
 

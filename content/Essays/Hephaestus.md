@@ -5,7 +5,7 @@ image: ../images/shield-achilles-outline.png
 imageAlt: Shield of Achilles, Angelo Monticelli
 modified: Nov 2, 2025
 title: Hephaestus
-permalink: essays/hephaestus
+# permalink: essays/hephaestus
 ---
 
 THREE thousand years ago, Homer strained his memory and recalled what was said about that great inventor Hephaestus...
@@ -17,7 +17,7 @@ THREE thousand years ago, Homer strained his memory and recalled what was said a
 ```borderless-blinking
 May 2025
 
-Meta pays $14bn for a majority stake in Scale AI. Its founder, 28-year-old Alexander Wang, is put in charge of Meta's "superintelligence team"... 
+Meta pays $14bn for a majority stake in Scale AI. Its founder, 28-year-old Alexander Wang, is put in charge of Meta's "superintelligence team"...
 ```
 
 
@@ -32,7 +32,7 @@ HERA hurled Hephaestus down from heaven, ashamed at her son's lameness. But he m
 ```borderless
 June 2025
 
-Mark Zuckerberg compiles a masterlist of top AI engineers and researchers across the globe for his superintelligence team. Sam Altman claims packages of $100mn are offered to OpenAI's top talent in an effort to lure them to Meta. 
+Mark Zuckerberg compiles a masterlist of top AI engineers and researchers across the globe for his superintelligence team. Sam Altman claims packages of $100mn are offered to OpenAI's top talent in an effort to lure them to Meta.
 
 Stealth startup Thinking Machine announces its co-founders, including Mira Murati (ex-CTO of OpenAI), John Schulman (OpenAI cofounder), and Andrew Tulloch (ex-engineer at PyTorch). They immediately raise $2bn.
 ```
@@ -51,11 +51,11 @@ Stealth startup Thinking Machine announces its co-founders, including Mira Murat
 ```borderless-blinking
 July 2025
 
-Zuckerberg's efforts have paid off, and Meta's superintelligence team is now forged of over a dozen ex-OpenAI researchers. OpenAI announces a week of total shutdown. All technical staff is given mandatory paid vacation. 
+Zuckerberg's efforts have paid off, and Meta's superintelligence team is now forged of over a dozen ex-OpenAI researchers. OpenAI announces a week of total shutdown. All technical staff is given mandatory paid vacation.
 
-Waves of defections are announced from all major companies: OpenAI, Anthropic, DeepMind, SSI. 
+Waves of defections are announced from all major companies: OpenAI, Anthropic, DeepMind, SSI.
 
-Zuckerberg tries to buy startup Thinking Machine Labs outright. Upon failure he tries to recruit one of its co-founders, Tulloch——who previously worked at Meta for 11 years——for a reported 9-figure pay package. Tulloch rejects... 
+Zuckerberg tries to buy startup Thinking Machine Labs outright. Upon failure he tries to recruit one of its co-founders, Tulloch——who previously worked at Meta for 11 years——for a reported 9-figure pay package. Tulloch rejects...
 ```
 
 <br>
@@ -70,9 +70,9 @@ HEPHAESTUS sees his brother, Dionysus, and trusts him, and so he accepts his hon
 ```borderless
 August 2025
 
-Draft season has hit all the major labs. Presiding from high hills of Pac Heights, jealous CEOs watch their forces reshuffle. Offers outrun replies, compute is pledged, compensation packages have gone stratospheric. 
+Draft season has hit all the major labs. Presiding from high hills of Pac Heights, jealous CEOs watch their forces reshuffle. Offers outrun replies, compute is pledged, compensation packages have gone stratospheric.
 
-TBPN puts out the "Metis List"——a live leaderboard of the top 100 AI researchers in the globe——as well as baseball-card graphics of researchers who are traded between labs. 
+TBPN puts out the "Metis List"——a live leaderboard of the top 100 AI researchers in the globe——as well as baseball-card graphics of researchers who are traded between labs.
 ```
 
 
@@ -86,7 +86,7 @@ and Hephaestus says, "Then let it be that I return to high Olympus, to take my p
 
 and Hephaestus says, "And then let me have the most beautiful among the goddesses, golden Aphrodite, as my wife",<br>and Zeus says, "So be it",
 
-and Hephaestus, marveling at what he has been granted, knows not what more to ask. Yet do his discerning eyes fall upon the creations of the Cyclopes—the mighty bolt of Zeus, and the earth-shaker's trident, and the helm of Hades—and in his heart there stirs a great longing. "Grant me this also, Father, that I might forge the arms of the deathless gods of Olympus", <br>And Zeus says, "So be it". 
+and Hephaestus, marveling at what he has been granted, knows not what more to ask. Yet do his discerning eyes fall upon the creations of the Cyclopes—the mighty bolt of Zeus, and the earth-shaker's trident, and the helm of Hades—and in his heart there stirs a great longing. "Grant me this also, Father, that I might forge the arms of the deathless gods of Olympus", <br>And Zeus says, "So be it".
 
 <br>
 <br>
@@ -101,21 +101,21 @@ Tulloch leaves Thinking Machine Labs for Meta, with a compensation package repor
 <br>
 <br>
 
-THETIS ran through the sea until she reached the bronze house of Hephaestus on Olympus, and entering the great hall of his forge, she was made to sit on a silver-studded chair. 
+THETIS ran through the sea until she reached the bronze house of Hephaestus on Olympus, and entering the great hall of his forge, she was made to sit on a silver-studded chair.
 
-Seeing her Hephaestus leaned away from the fire, and gathered his tools up in a silver chest, and wiped his face and hands and neck and chest with a sponge, and grasped a stout staff, and hobbled toward Thetis; but there moved swiftly to support their lord came automatons of gold, fashioned in the image of maidens. In them is understanding in their hearts, and in them speech and strength, and they know cunning handiwork by the gift of their immortal artisan. 
+Seeing her Hephaestus leaned away from the fire, and gathered his tools up in a silver chest, and wiped his face and hands and neck and chest with a sponge, and grasped a stout staff, and hobbled toward Thetis; but there moved swiftly to support their lord came automatons of gold, fashioned in the image of maidens. In them is understanding in their hearts, and in them speech and strength, and they know cunning handiwork by the gift of their immortal artisan.
 
 These busily moved to support their lord, and he, limping nigh, sat upon a shining chair opposite of Thetis and grasps her by the hand, "Speak, what is in thy mind; my heart bids me fulfill it."
 
 
 > "So once again we must look into this very point: in relation to which of the two images did the *demiourgos* fabricate the form—was it in relation to that which abides in the same and in the same way, or to that which has come-to-be?
-> "If, then, this *kosmos* is beautiful and the *demiourgos* is good, it is clear that he kept his gaze upon the *aïdion*; but if—a thing it is not even lawful to utter—\[untranslatable; consisting of *\<he gazed\>\<kosmos\>\<that would be otherwise\>*—\." 
+> "If, then, this *kosmos* is beautiful and the *demiourgos* is good, it is clear that he kept his gaze upon the *aïdion*; but if—a thing it is not even lawful to utter—\[untranslatable; consisting of *\<he gazed\>\<kosmos\>\<that would be otherwise\>*—\."
 >
-> — *Timaeus* of Plato 
+> — *Timaeus* of Plato
 
 
 
-AND Thetis shedding tears made answer to him, 
+AND Thetis shedding tears made answer to him,
 
 "Hephaestus, maker of wonders,  <br>
 forge me a second skin for my son, <br>
@@ -125,7 +125,7 @@ was surrendered by his beloved comrade<br>
 to the Trojans, by whom he was slain."<br>
 
 
-And the famous god of the two strong arms answers, 
+And the famous god of the two strong arms answers,
 
 "Be of good cheer, neither let these things distress thy heart.<br>
 Would that I might so surely avail to hide him afar from dolorous death; <br>

@@ -13,7 +13,7 @@ permalink: essays/muon
 modified: November 30, 2025
 ---
 
-The Muon optimizer was developed for Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since last summer, through the contributions of various researchers and engineers, the train time has decreased from 45 minutes to nearly 2 minutes. In this blog post, I'll walk through some Muon-related innovations from recent records and review the surrounding literature behind these techniques.
+The Muon optimizer was developed for Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since last summer, the Muon optimizer has seen widespread adoption. Over the same period, the Modded NanoGPT record has decreased from 45 minutes to just over 2 minutes, in part thanks to many changes to Muon's original formulation. In this blog post, I'll walk through some of the modifications used in recent record runs and connect them to the surrounding literature.
 
 [^jordan-muon]: [Keller Jordan et al 2024b](https://kellerjordan.github.io/posts/muon/) *Muon: An optimizer for hidden layers in neural networks*
 
@@ -22,39 +22,23 @@ The Muon optimizer was developed for Modded NanoGPT speedrun, which has the expr
 [^larry2025a]: [Larry Dial 2025](https://www.lesswrong.com/posts/j3gp8tebQiFJqzBgg/how-the-nanogpt-speedrun-wr-dropped-by-20-in-3-months) *How the NanoGPT Speedrun WR dropped by 20% in 3 months*
 
 ---
-%%
-want to review some key Muon modifications that have help drive down the Modded NanoGPT speedrun to nearly 2 minutes. added to Muon in the In this blog post, I want to examine
-
-The Muon optimizer was invented by Keller Jordan, ... , & friends for the Modded NanoGPT speedrun competition. .. lots of papers.. but Keller Jordan says he "only trusts speedruns". With this in mind, here some changes . Survey on related literature
-
-Aggregate related literature
-
-- the problem is i dont want to talk about everything lol
-
-There have been several recent papers highlighting the benefits of an adaptive estimation term inside of Muon. Given the recent adoption of one of these methods (Normuon) in the Modded NanoGPT speedrun, I want to examine the optimal learning rate and batch size for adaptive muon.
- %%
-%% In this blog I examine how optimal learning rate changes as batch size, and so is quickly asymptotic as opposed to Adam's square-root law $\eta \propto \sqrt{B}$. I also survey how this relates to Critical Batch Size and learning rate schedules for Muon.  %%
-
-
 
 ## (1) Adaptive Muon
-The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^normuon]. Several recent papers have explored similar adaptive extensions [^adamuon] [^adago] [^frans]. In this section, I want to explain what "adaptive Muon" means and why it helps.
-
-%% I want to provide an overview of the literature on adaptive Muon variants, why it is effective, and why you might consider adopting it for yourself. %%
+The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^normuon]. Several recent papers have proposed similar adaptive extensions [^adamuon] [^adago] [^frans]. In this section, I want to explain what "adaptive Muon" means and why it helps.
 
 [^frans]: [Frans et al 2025](https://arxiv.org/abs/2510.25000) *What Really Matters in Matrix-Whitening Optimizers?*
 [^adago]: [Zhang et al 2025](https://arxiv.org/abs/2509.02981) *AdaGrad Meets Muon*
 [^normuon]: [Li et al 2025](https://arxiv.org/abs/2510.05491) *NorMuon*
 [^adamuon]:[Si et al 2025](https://arxiv.org/abs/2507.11005) *AdaMuon*
 
-I like to consider Muon a variant of a much simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM), which updates parameters using an exponential moving average (EMA) of gradients. Muon modifies this by *orthogonalizing* the gradient EMA via a matrix-sign function. Orthogonalization is a rich concept, though for now you can think of it as a special form of normalization [^spectral].
+I like to view Muon a variant of a much simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM udpates parameters using an exponential moving average (EMA) of gradients. Muon (MomentUm Orthogonalized by Newton-Schulz) modifies this by *orthogonalizing* the gradient EMA via a matrix-sign function. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that keeps the gradient's directions but not their magnitude [^spectral].
 
-Adam (ADaptive Moment Estimation) builds upon SGDM in different way: by tracking the EMA of squared gradients per parameter. We divide our gradient EMA by our squared gradient EMA to produce variance-corrected update.
+Adam (ADaptive Moment Estimation) also builds on SGDM, but in a different way: it tracks the EMA of squared gradients per parameter. The gradient EMA is divided by the squared-gradient EMA to produce a variance-corrected update.
 
 %% performs steps by computing the exponential moving average (EMA) of gradients. Adam (ADaptive Moment Estimation) additionally tracks the EMA of the norm of each parameter. Dividing by this second EMA gives us a variance-corrected update.  %%
 
 Variance correction is hypothesized to be useful in two distinct ways:
-1) Stochastic noise: At a fixed batch size, certain features may be very noisy, while other features will have high signal. Adaptivity allows noisier gradient estimates to get dampened, effectively giving each parameter its own adaptive learning rate.
+1) Stochastic noise: At a fixed batch size, some features may be very noisy while other features will have high signal. Adaptivity allows noisier gradient estimates to get dampened, effectively giving each parameter its own adaptive learning rate.
 2) Curvature: how the gradient changes as we move through parameter space. Various papers examine how second order statistics approximate the hessian (the second derivative) of the loss landscape—that is, the per-parameter curvature [^cohen] [^kustner].  Normalizing by this estimate makes the optimizer take smaller steps into high-curvature regions, preventing overshooting and descent into "sharp" minima.
 
 [^kustner]: [Kustner et al 2024](https://arxiv.org/abs/2402.19449) *Heavy-Tailed Class Imbalance and Why Adam Outperforms Gradient Descent on Language Models*
@@ -65,11 +49,10 @@ Variance correction is hypothesized to be useful in two distinct ways:
 Muon tracks the EMA gradient of full parameters and normalizes the EMA through a method known as *orthogonalization* which you can variously read about elsewhere [^jordan24-muon] [^mahdid] [^bernstein]. Notably, this normalization is with respect to the matrix itself, not with respect to the estimated variance of the distribution. That is, Muon's normalization method does not increase our certainty about the gradient. This provides motivation for adding an adaptive estimator on top of Muon: %%
 
 
-%% Muon's orthogonalization corrects for the former, in that it's optimization step normalizes all spectral directions. Therefore, it will nat %%
-Despite not being a variance-adaptive method, Muon is "curvature-aware" [^kovalev][^anonymous26][^su25], which addresses (2). Intuitively, this comes from orthogonalizing the update: after orthogonalization, Muon's update is "well-rounded" in parameter space, avoiding directions of steep change [^spectral]. Formally, each update is perfectly-conditioned (all spectral values are $1$), which keeps the weights themselves well-conditioned (the spectral values are low and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a restricted submanifold of the full parameter space. Relatedly, Jeremy Bernstein has proposed *Manifold Muon*, which tweaks Muon such that the weights remain perfectly-conditioned  [^bernstein25].
+Despite not being a variance-adaptive method, Muon is "curvature-aware" [^kovalev][^anonymous26][^su25], which addresses point (2). Intuitively, this comes from orthogonalization: after orthogonalization, Muon's update is "well-rounded" in parameter space, avoiding directions of steep change [^spectral]. Formally, each update is perfectly-conditioned (all spectral values are $1$), which keeps the weights themselves well-conditioned (their singular values remain small and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a restricted submanifold of the full parameter space. Along these lines, Jeremy Bernstein has proposed *Manifold Muon*, which tweaks Muon such that the weights remain perfectly-conditioned  [^bernstein25].
 
 
-[^spectral]: Instead of normalizing the magnitude of each weight in the matrix, orthogonalization normalizes spectral directions. Formally, spectrally directions are the left and right singular vectors in the SVD decomposition of a matrix. They correspond to the directions the matrix stretches the input/output space. The amount each direction is stretched corresponds to *singular values* of the matrix. Orthogonalization finds a matrix with identical spectral directions but with all the singular value equal to $1$. The resulting transformation is *isometric* between the input and output spaces: distances, lengths, and angles are preserved.
+[^spectral]: The spectral directions of a matrix corresponds to how its transformation stretches the input/output space. Formally, spectral directions they are the left and right singular vectors in the Singular Value Decomposition (SVD) of a matrix. The amount each direction is stretched corresponds to *singular values* in the SVD. Orthogonalization finds a matrix with identical spectral directions but with all the singular value equal to $1$. The resulting matrix has a transformation that has the same directions but is *isometric* between the input and output spaces: distances, lengths, and angles are preserved.
 
 
 [^anonymous26]: [Anonymous ICLR Conference Submission 2025](https://openreview.net/forum?id=go388T3QjQ) *Long-tailed Learning with Muon Optimizer*
@@ -93,71 +76,38 @@ def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
 
 **Algorithm 1: Typical-ish Adaptive Muon update (differences from standard Muon highlighted).**
 
-Note that the above technique estimates variance for the $i$th strongest spectral component, whose direction will fluctuate over subsequent steps. Future work might account for this fluctuation, or find alternative ways to estimate spectral noise.
+Note that the above technique estimates variance for the $i$th strongest spectral component, but the corresponding direction can drift over subsequent steps. Future work might account for this fluctuation, or find alternative ways to estimate spectral noise.
 
-The particular variant of Adaptive Muon that is adopted in Modded NanoGPT, *NorMuon*, maintains the Frobenius norm of the update after dividing by variance [^normuon]. Whether we track variance columnwise or rowwise is determined by which of the parameter's dimensions is larger.
+The specific adaptive Muon variant used in Modded NanoGPT, *NorMuon*, maintains the Frobenius norm of the update after dividing by variance [^normuon]. Whether variance is tracked columnwise or rowwise is determined by which of the parameter's dimensions is larger. This method yields a $\approx 2\%$ decrease in training time, when combined with learning rate tuning.
 
-
-%% 1D (or even scalar) variance factor  [^normuon] [^adamuon] [^adago] [^frans] . There are quite a few reasons for this, including that
-* noise estimates are correlated across columns/rows (which roughly correspond to spectral directions in the orthogonal basis)
-* per-parameter updates will disrupt the spectral conditioning of orthogonalization.
-* Lower rank estimates reduce memory/FLOPs (useful in Modded NanoGPT!)
-. For this reason, we want to estimate the variance after we have orthogonalized the matrix. From here, we compute rowwise/columnwise norms
-Instead, 1D methods maintain variance estimates for each spectral direction by rank
-that is, a
-
-In my opinion, variance estimator for Muon would be in the spectral
-The spectral normalization step in Muon has been argued to solve both of these, but it is demonstrated
-
-If we intuitively understand Muon as taking equal steps in all spectral directions, it seems less likely we'll end up in sharp crevasses.
-
-We can sketch an argument that Muon's spectral normalization is a form of curvature-aware normalization. For
-This argument is formalized in a few places, though I have not reviewed how careful these proofs are %%
-
-
-%% Therefore, the primary benefit of an adaptive term on Muon may be (1) %%
-
-
-%% Several recent works have pointed out that orthogonalization approximations Gauss-Newton/Fisher preconditioning [^frans] []
-Muon's update is constrained such that all spectral directions have the same magnitude. This means that, while descending the loss landscape, we are going through an extremely  %%
-
-%% Franz Cesista notes that Muon is interpretable as a simpler algorithm (msign)  [^leloy]
-
-At the time, it was unclear why adding an adaptive method to Muon would benefit from a lower learning rate.
-
-In fact, we may expect the opposite. why? adaptive methods lower variance. low variance -> higher step size  %%
-
-%% ## (2) Optimal Learning Rates
-
-In minibatch training, larger batches average over more samples, which reduces the expected variance in our gradient sample. A good step size will adhere to the curvature of the loss landscape: we want to get close to the minima without overshooting. Increasing the learning rate will amplify noise in our gradient estimate, but decreasing the learning rate will mean it will take many steps to converge.
-
-One understanding is that there is an optimal error budget per step, and we should choose a learning rate $\eta$ that is inverse to the expected variance of the gradient.
-%%
 
 ## (2) Batch size scheduling
 Choosing a batch size involves a tradeoff:
-1) Smaller batch sizes are more token-efficient. For a fixed token budget, above a certain point, increasing the batch size will worsen final model performance. Above this point, the gradient signal we get from a single batch becomes saturated, and increasing the batch size just wastes tokens.
-2) Training at higher batch sizes is faster for various reasons: GPUs parallelize over the batch dimension, DDP is easy, every step incurs overhead (optimizers, comms, etc.)
+1) Token efficiency. Smaller batch sizes are more token-efficient. For a fixed token budget, once the batch size is above some threshold, increasing it furtheer tends to hurt final model performance. Beyond this point, the gradient signal from a single batch is saturated, so larger batches just waste tokens.
+2) Token speed: Training at higher batch sizes is faster *per-token* than training with a lower batch size for many steps. This is because GPUs parallelize over the batch dimension, DDP is easy, and every step incurs overhead (optimizers, comms, etc).
 
-A *critical batch size* $B_{\text{critical}}$  balances both of these considerations: low enough to be token-efficient, and high enough to be speed-efficient.
+A *critical batch size* $B_{\text{critical}}$  balances both of these considerations: low enough to be token-efficient, but high enough to be speed-efficient.
 
 <img src="../images/Muon/cbs-revisited.png"  class="plot" style="width: 95%; height: auto; flex-shrink: 0;">
 
 **Figure 1: Critical batch sizes for Adam at various token budgets [^ai2]. $B_{\text{critical}}$, chosen as the greatest batch size exceeding below 1% of the lowest loss, is marked in red. Batch size here is in units of 4096 Tokens.**
 
-%% For small token budgets, $B_{\text{critical}}$ will be low, so it is possible the power-law scaling $\eta \propto B^p$ is accurate. At a larger scale, however, $\eta_{\text{saturated}}$ decreases (Fig1) and $B_{\text{critical}}$ increases (Fig3), so you should expect that the optimal learning rate for $B_{\text{critical}}$ is approximately $\eta_{\text{saturated}}$.  %%
+Batch size can often be safely increased over the course of training [^ai2]. Conceptually, this may be because early training focuses on common patterns, so even small batches provide strong gradient signals. Later training involves learning rarer patterns. These sparse signals remain noisy even at high batch sizes, so the batch size can be increased without saturating the gradient.
 
-Empirically, it has been discovered batch size can be safely increased throughout the duration of training [^ai2]. In particular, there seems to be a reason that a fixed batch size becomes relatively more token-efficient throughout the duration of training. I believe this is because early training involves learning common patterns, so even small batches provide strong gradient signals. Later training involves learning from rarer patterns. These sparse signals remain noisy even at high batches, so larger batches help without saturating the gradient.
+Two strong models trained with Muon, Kimi K2 and GLM 4.5, both increase batch size mid-training [^kimi] [^glm].
 
-Two strong models trained with Muon, Kimi K2 and GLM 4.5, increased batch size in the middle of training training [^kimi] [^glm].
+[^glm]: [Zeng et al](https://arxiv.org/abs/2508.06471) *GLM-4.5*
+[^kimi]: [Moonshot AI, Liu et al 2025](https://arxiv.org/abs/2502.16982) *Muon is Scalable for LLM Training*
 
-To accurately determine the critical batch size, we need to determine what the optimal learning rates are at each batch size. Larger batches average over more samples, which reduces gradient variance. For SGD, we can directly model the relationship between the optimal learning rate $\eta$ and batch size $B$ [^Mccandlish]:
+To accurately determine the critical batch size, we need the optimal learning rate at each batch size. Larger batches average over more samples, which reduces gradient variance. For SGD, we can directly model the relationship between the optimal learning rate $\eta$ and batch size $B$ [^Mccandlish]:
 
 $$
 \eta \propto 1 - \frac{1}{1 + B \cdot \text{SNR}(G)}
 $$
 
-where $\text{SNR}(G)$ is the signal-to-noise ratio of our gradient estimate[^snr]. When $B \cdot SNR(G) << 1$, this is approximately $B \cdot SNR(G)$, which gives us our "linear scaling law".
+where $\text{SNR}(G)$ is the signal-to-noise ratio of the gradient estimate [^snr]. When $B \cdot SNR(G) << 1$, this is approximately $B \cdot SNR(G)$, which is why the "linear scaling law" $\eta \propto B$ is a good heuristic.
+
+[^snr]: I'm being somewhat imprecise with how we define the signal to noise ratio. McCandlish et al [^mccandlish] defines a critical batch size $B_{\text{noise}} =  \text{Cov}(G) / \mathbb{E}(G)^2$ for their analysis of SGD. I'm using its inverse as the SNR.
 
 Adam dampens update variance, so its optimal scaling is closer to $\eta \sim \sqrt{B}$[^mccandlish] [^granziol] before also becoming asymptotic[^li]:
 
@@ -171,22 +121,6 @@ A power-law relationship ($\eta \propto B^p$) is often assumed to hold for Muon 
 [^sato]: [Sato et al 2025](https://arxiv.org/abs/2507.01598) *Convergence Bound and Critical Batch Size of Muon Optimizer*.
 [^ryu]: [Simo Ryu 2025](https://x.com/cloneofsimo/status/1907731069878825400) *Adam vs Shampoo vs Muon on MNIST. all follow the lr ~ sqrt(BS) law.*
 
-%%
-(see [[#(4) Related work]]). Muon orthogonalizes (i.e. spectrally normalizes) the update before stepping. Some literature proposes that orthogonalization can amplify noise [^adago], especially when the underlying gradient is ill-conditioned.
-
-which provides some additional motivation for adding variance adaptation.
-
-
-
-
-Due to this, I propose that as batch size increase, the optimal learning rate will converge to $\eta_{\text{saturated}}$. We can test this hypothesis by sweeping large batch sizes:
-
-Adaptive Muon rapidly converges to the saturated learning rate.
-(Faster than non-adaptive muon? would need to test)
-The rate of saturation is controlled by the noise in the update. Implying that the adaptive term
-
-In order to apply batch size increases inside of Modded NanoGPT, I needed to study how the critical batch size increases throughout the (very short) duration of training. In order to do this accurately, I needed to batch each batch size according to its optimal batch size.  %%
-
 <img src="../images/Muon/validation_loss_heatmap_medium_light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/Muon/validation_loss_heatmap_medium_dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
@@ -198,32 +132,13 @@ At token budgets of $\approx 134M$, $536M$, $1073M$ tokens, the optimal learning
 Below the asymptote/saturated batch size, we can approximate the value $p$ in $\eta \propto B^p$ via the log-slope of the red boxes. At this granularity, $p \approx 0.6-1.0$ seems approximately correct. Convergence to the optimal learning rate appears to be very fast for this variant of Muon.
 
 
-  [^glm]: [Zeng et al](https://arxiv.org/abs/2508.06471) *GLM-4.5*
-  [^kimi]: [Moonshot AI, Liu et al 2025](https://arxiv.org/abs/2502.16982) *Muon is Scalable for LLM Training*
-
-
-%% Boreiko et al (2025) performs a hyperparameter sweep in which Muon's optimal learning rate is stable at various batch sizes [^Boreiko].
-
-For low batch sizes, Muon's optimal learning rate may be well approximated via a power-law $\eta \propto B^p$ [^muonp]. Since orthogonalization keeps update variance constant regardless of batch size, the optimal learning rate must depend on other factors. I hypothesize that since small batches are noisy estimates of the underlying distribution, they will produce gradients with highly distinct directions. Even though each update matrix (the orthogonalized gradient) has the same expected variance, the variance *between* successive updates is high. A lower learning rate can act as an implicit smoothing, similar to Muon's momentum coefficients $\beta$. Sufficiently large batch sizes will produce gradients with spectral directions that are aligned with the actual data ($B \to \infty$). A complete picture of learning rate scaling should consider inter- and intra-step variances.  %%
-
-
-
 
 <img src="../images/Muon/loss_vs_batch_size_light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/Muon/loss_vs_batch_size_dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 3: Results from the previous sweep (Fig1) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss.**
 
-The above graphs demonstrate an incredible stability in the critical batch size for our Adaptive Muon optimizer, especially at higher token budget. Consider the flatness in the curve for the highest token budget ($\approx 1T$ parameters): $1024$ steps at a A batch size of $2^{20}$ tokens converges to nearly the same loss at $1024$ steps as a batch size of $2^{18}$ tokens in $4096$ steps!
-
-
-%%
-Practically, I do not recommend doing this when training with Muon. As stated earlier, Kimi K2's training recipe did not increase learning rate when applying a batch size increase [^kimi].
-
-Additionally, I recommend that your Muon hyperparameter sweeps shouldn't assume the square-root law holds. For large batch sizes, the optimal batch size may not require serious tuning.
-
-TODO: Insert Modded NanoGPT PR here  %%
-
+The above graphs demonstrate an incredible stability in the critical batch size, especially at higher token budget. Consider the flatness in the curve for the highest token budget ($\approx 1T$ parameters): $1024$ steps at a A batch size of $2^{20}$ tokens converges to nearly the same loss at $1024$ steps as a batch size of $2^{18}$ tokens in $4096$ steps. Muon's high critical batch size has been noted elsewhere [^ai2], so this is not just a feature of our adaptive variant of Muon.
 
 ## (3) Faster orthogonalization: Polar Express and beyond
 The Newton-Schulz iterative algorithm approximates orthogonalization via a quintic polynomial iteration. This iterative approach is agnostic to the conditioning of the underlying matrix. However, if we notice that the conditioning of the matrix improves in each iteration, we can find an optimal polynomial for that iteration. Ansel et al provide optimal coefficients at each iteration step via their algorithm Polar Express [^ansel].
@@ -341,4 +256,3 @@ Thank you to Prime Intellect, who sponsors my research. If this blog post was us
 [^jordan-warmup]: [Jordan 2024](https://x.com/kellerjordan0/status/1845867151946899852) "Removed learning rate warmup, since the optimizer (Muon) doesn't need it"
 
 [^mahdid]: [Mahdid 2025](https://www.yacinemahdid.com/p/muon-optimizer-explained-to-a-toddler) *muon optimizer explained to a toddler*
-[^snr]: I'm being somewhat imprecise with how we define the signal to noise ratio. McCandlish et al [^mccandlish] defines a critical batch size $B_{\text{noise}} =  \text{Cov}(G) / \mathbb{E}(G)^2$ for their analysis of SGD. I'm using its inverse as the SNR.

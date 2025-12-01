@@ -66,7 +66,7 @@ To the best of my knowledge, there is no argument that Muon solves (1)—e.g. th
 ```python {5-6}
 def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
 	momentum1.lerp_(grad, 1 - beta1)
-	update = grad.lerp_(momentum1, beta1)
+	update = grad.lerp(momentum1, beta1)
 	update = orthogonalize(update)
 	momentum2.lerp_((update ** 2).mean(dim=-1, keepdim=True), 1 - beta2)
 	update /= momentum2.sqrt()

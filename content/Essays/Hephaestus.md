@@ -108,12 +108,17 @@ Seeing her Hephaestus leaned away from the fire, and gathered his tools up in a 
 These busily moved to support their lord, and he, limping nigh, sat upon a shining chair opposite of Thetis and grasps her by the hand, "Speak, what is in thy mind; my heart bids me fulfill it."
 
 
+<!--
+```
 > "So once again we must look into this very point: in relation to which of the two images did the *demiourgos* fabricate the form—was it in relation to that which abides in the same and in the same way, or to that which has come-to-be?
-> "If, then, this *kosmos* is beautiful and the *demiourgos* is good, it is clear that he kept his gaze upon the *aïdion*; but if—a thing it is not even lawful to utter—\[untranslatable; consisting of *\<he gazed\>\<kosmos\>\<that would be otherwise\>*—\."
+> "If, then, this *kosmos* is beautiful and the *demiourgos* is good, it is clear that he kept his gaze upon the *aïdion*; but if—a thing it is not even lawful to utter—\[untranslatable; consisting of *\<he gazed\>\<kosmos\>\<that would be otherwise\>*]—\."
 >
 > — *Timaeus* of Plato
+```-->
 
+---
 
+<br>
 
 AND Thetis shedding tears made answer to him,
 

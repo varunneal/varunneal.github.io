@@ -1,6 +1,5 @@
 ---
 title: Essays
-# permalink: essays/
 image: ../images/the-sun-compressed.jpg
 draft: "false"
 ---

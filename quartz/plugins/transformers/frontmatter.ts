@@ -87,22 +87,30 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options>> = (userOpts)
               allSlugs.push(...file.data.aliases)
             }
 
+            // Store original slug before any modifications
+            const originalSlug = file.data.slug!
+
             if (data.permalink != null && data.permalink.toString() !== "") {
               // Normalize permalink to lowercase
               data.permalink = data.permalink.toString().toLowerCase() as FullSlug
-              const originalSlug = file.data.slug!
-              // Create redirect if permalink differs from original slug (case sensitive)
-              if (originalSlug !== data.permalink) {
-                // Store original slug as an alias so it redirects to permalink
-                const aliases = file.data.aliases ?? []
-                aliases.push(originalSlug)
-                file.data.aliases = aliases
-                // Set permalink as the canonical slug
-                file.data.slug = data.permalink as FullSlug
-                allSlugs.push(originalSlug)
-              }
-              allSlugs.push(data.permalink as FullSlug)
+              file.data.slug = data.permalink as FullSlug
             }
+
+            // Always normalize slug to lowercase
+            const currentSlug = file.data.slug!
+            const lowercaseSlug = currentSlug.toLowerCase() as FullSlug
+            file.data.slug = lowercaseSlug
+
+            // Create redirect alias only if original slug differs by more than just case
+            // (case-only differences cause conflicts on case-insensitive filesystems like macOS)
+            // For case-only differences, we rely on the client-side redirect in spa.inline.ts
+            if (originalSlug.toLowerCase() !== lowercaseSlug) {
+              const aliases = file.data.aliases ?? []
+              aliases.push(originalSlug)
+              file.data.aliases = aliases
+              allSlugs.push(originalSlug)
+            }
+            allSlugs.push(lowercaseSlug)
 
             const cssclasses = coerceToArray(coalesceAliases(data, ["cssclasses", "cssclass"]))
             if (cssclasses) data.cssclasses = cssclasses

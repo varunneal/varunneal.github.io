@@ -101,10 +101,14 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options>> = (userOpts)
             const lowercaseSlug = currentSlug.toLowerCase() as FullSlug
             file.data.slug = lowercaseSlug
 
-            // Create redirect alias only if original slug differs by more than just case
-            // (case-only differences cause conflicts on case-insensitive filesystems like macOS)
-            // For case-only differences, we rely on the client-side redirect in spa.inline.ts
-            if (originalSlug.toLowerCase() !== lowercaseSlug) {
+            // Create redirect alias if original slug differs from final slug
+            // For case-only differences: only create in CI (case-sensitive filesystem)
+            // On local dev (often case-insensitive), case-only aliases would overwrite content
+            const pathActuallyChanged = originalSlug.toLowerCase() !== lowercaseSlug
+            const caseOnlyChange = !pathActuallyChanged && originalSlug !== lowercaseSlug
+            const isCI = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true"
+
+            if (pathActuallyChanged || (caseOnlyChange && isCI)) {
               const aliases = file.data.aliases ?? []
               aliases.push(originalSlug)
               file.data.aliases = aliases

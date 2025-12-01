@@ -19,6 +19,6 @@ Graphics
 - [Theory of Human Tetrachromacy](https://imjal.github.io/theory-of-tetrachromacy/) - Best Paper Honorable Mention at Siggraph '24
 - Various experiments/simulations in C++: [Raytracing I](https://varunneal.github.io/cs184-project3/), [II](https://varunneal.github.io/cs184-project3-2/),  [3D Mesh Engine](https://varunneal.github.io/cs184-project2/)
 
-Misc
+<!--Misc
 - [Day One Obsidian plugin](https://github.com/varunneal/day-one-calendar) - Obsidian plugin I wrote for daily journaling.
-- [RSS Reader](https://github.com/varunneal/uv-rss-reader) - Single file RSS reader you can run with UV.
+- [RSS Reader](https://github.com/varunneal/uv-rss-reader) - Single file RSS reader you can run with UV.-->

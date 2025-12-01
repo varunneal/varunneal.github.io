@@ -94,7 +94,7 @@ and Hephaestus, marveling at what he has been granted, knows not what more to as
 <pre class="borderless" style="margin: 0; overflow-x: auto; display: flex; align-items: flex-start; gap: 20px;">
   <span style="flex: 1;">October 2025 <br>
 Tulloch leaves Thinking Machine Labs for Meta, with a compensation package reported to be up to $1.5bn.</span>
-  <img src="images/tulloch-traded.jpeg" alt="Tulloch traded" style="width: 250px; height: auto; flex-shrink: 0;">
+  <img src="images/tulloch-traded.jpeg" alt="Tulloch traded" style="width: 15vw; height: auto; flex-shrink: 0;">
 </pre>
 
 

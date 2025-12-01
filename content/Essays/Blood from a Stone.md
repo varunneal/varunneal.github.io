@@ -12,7 +12,7 @@ title: Blood from a Stone
 # permalink: Essays/blood-from-a-stone
 ---
 
-*This post is a follow-up to [[Two Peaks and the Telepathy Tapes|two peaks and the telepathy tapes]].*
+*This post is a follow-up to [[two peaks]].*
 ## (1) p-values killed the cat
 
 Science has killed magic. The relentless march of science—with its statistical methods, p-values, and falsifiability—has sliced up everything supernatural[^1]. God is scared and has fled to the gaps.

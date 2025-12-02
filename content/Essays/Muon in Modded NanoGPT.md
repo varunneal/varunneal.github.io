@@ -83,7 +83,7 @@ A *critical batch size* $B_{\text{critical}}$  balances both of these considerat
 
 <img src="../images/Muon/cbs-revisited.png"  class="plot" style="width: 95%; height: auto; flex-shrink: 0;">
 
-**Figure 1: Critical batch sizes for Adam at various token budgets [^ai2]. $B_{\text{critical}}$, chosen as the greatest batch size exceeding below 1% of the lowest loss, is marked in red. Batch size here is in units of 4096 Tokens.**
+**Figure 1: Critical batch sizes for Adam at various token budgets from Allen AI [^ai2]. $B_{\text{critical}}$, chosen as the greatest batch size exceeding below 1% of the lowest loss, is marked in red. Batch size here is in units of 4096 Tokens.**
 
 
 To accurately determine the critical batch size, we need the optimal learning rate at each batch size. Larger batches average over more samples, which reduces gradient variance. For SGD, we can directly model the relationship between the optimal learning rate $\eta$ and batch size $B$ [^Mccandlish]:
@@ -123,7 +123,7 @@ Below the asymptote/saturated batch size, we can approximate the value $p$ in $\
 <img src="../images/Muon/loss_vs_batch_size_light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/Muon/loss_vs_batch_size_dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 3: Results from the previous sweep (Fig1) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss.**
+**Figure 3: Results from the previous sweep (Fig2) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss.**
 
 The above graphs demonstrate an incredible stability in the critical batch size, especially at higher token budget. Consider the flatness in the curve for the highest token budget ($\approx 1T$ parameters): $1024$ steps at a A batch size of $2^{20}$ tokens converges to nearly the same loss at $1024$ steps as a batch size of $2^{18}$ tokens in $4096$ steps. 
 
@@ -134,7 +134,7 @@ Batch size can often be safely increased over the course of training [^ai2]. Con
 
 Modded NanoGPT's recent record [^pr163] uses batch size scheduling in order to maximize token efficiency throughout training. 
 
-[^pr163]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/163) *New Record: Batch size schedule*
+[^pr163]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/163) *Modded NanoGPT PR#163*
 ## (3) Faster orthogonalization: Polar Express and beyond
 The Newton-Schulz iterative algorithm approximates orthogonalization via a quintic polynomial iteration. This iterative approach is agnostic to the conditioning of the underlying matrix. However, if we notice that the conditioning of the matrix improves in each iteration, we can find an optimal polynomial for that iteration. Ansel et al provide optimal coefficients at each iteration step via their algorithm Polar Express [^ansel].
 
@@ -148,20 +148,20 @@ Last month, a paper from Shulgin et al demonstrated that a more precise orthogon
 
 It follows that using Polar Express over Newton Schulz represents an improvement in convergence, and using it led to a new record in Modded NanoGPT.
 
-On ongoing effort in the Modded NanoGPT speedrun is being made for even faster orthogonalization via *Almost-Orthogonal Layers*, though this has not been incorporated yet [^Boission].
+On ongoing effort in the Modded NanoGPT speedrun is being made for even faster orthogonalization via *Almost-Orthogonal Layers*, though this has not been incorporated yet [^Boissin].
 
-[^Boission]: [Thibaut Boissin 2025](https://github.com/KellerJordan/modded-nanogpt/pull/155) *Modded NanoGPT PR#155*
+[^Boissin]: [Thibaut Boissin 2025](https://github.com/KellerJordan/modded-nanogpt/pull/155) *Modded NanoGPT PR#155*
 [^ansel]: [Ansel et al 2025](https://arxiv.org/abs/2505.16932) *The Polar Express*
 
 ## (4) Cautious weight decay
 Decoupled weight decay has been noted as a crucial technique for training with Muon. The Kimi team writes: "While vanilla Muon initially converges faster, we observed that some model weights grew too large over time, potentially limiting the model’s long-term performances. Adding weight decay addressed this issue - the results demonstrate that Muon with weight decay outperforms both vanilla Muon and AdamW" [^kimi].
 
-Inside Modded NanoGPT, weight decay on Muon was doing more harm than good. In October, a variant of decoupled weight decay known as *Cautious Weight Decay* was discovered [^chen25], which only decays parameters that increase in magnitude in the update step:
+Inside Modded NanoGPT, weight decay on Muon was doing more harm than good. In October, a variant of decoupled weight decay known as *Cautious Weight Decay* was discovered [^chen25], which only decays parameters that will increase in magnitude in the update step:
 
-```python {2}
+```python {2} /* mask/
 def apply_update(param, update, learning_rate, weight_decay):
-	param *= (update * param) >= 0
-	update += weight_decay * param
+	mask = (update * param) >= 0
+	update += weight_decay * param * mask
 	return param - learning_rate * update
 ```
 **Algorithm 2: Cautious weight decay (difference from decoupled weight decay highlighted).**
@@ -182,17 +182,17 @@ Second, there are a few tricks to distribute the Muon step over all the GPUs:
 
 For additional information I direct you to Larry Dial's blog post [^larry2025a] and the Modded NanoGPT repo [^moddednanogpt].
 
-[^byron]: [Xu 2025](https://github.com/KellerJordan/modded-nanogpt/pull/109) *Triton kernels for symmetric matmul*. Also part of the [Dion](https://github.com/microsoft/dion) repository. 
+[^byron]: [Xu 2025](https://github.com/KellerJordan/modded-nanogpt/pull/109) *Modded NanoGPT PR#109 (Triton kernels for symmetric matmul)*. Also part of the [Dion](https://github.com/microsoft/dion) repository. 
 ## (6) Implementation Notes
 
-> *"The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns."* —Keller Jordan [^jordan24a]
+> "The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns." —Keller Jordan [^jordan24a]
 
 [^jordan24a]: [Keller Jordan 2025](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
 
 
 I hope this post is broadly useful for pretraining with Muon. I want to highlight some important considerations for the Modded NanoGPT recipe:
 - The model is very small (<124M active params) and has a unique architecture.
-- Adam is used instead of Muon on a few parameters: the linear output head, the embedding dimension, and a few scalar constants, though this is "standard" for Muon.
+- Adam is used instead of Muon on a few parameters: the linear output head, the embedding layer, and a few scalar constants, though this is "standard" for Muon.
 - Adam is stepped with twice the number of gradient accumulation steps as Muon. Effectively, it has a 2x batch size than Muon. In the experiment in [[#(2) Batch size scheduling|Section 2]], I've scaled the Adam learning rate according to the square-root law.
 
 %%

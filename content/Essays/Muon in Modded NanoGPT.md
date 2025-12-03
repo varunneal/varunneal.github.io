@@ -13,7 +13,10 @@ permalink: essays/muon
 modified: November 30, 2025
 ---
 
-The Muon optimizer was developed inside of the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since then, Muon has become widely used, and the Modded NanoGPT record has been pushed from 45 minutes down to just over 2 minutes. In this post, I'll showcase some improvements to Muon from recent record runs and motivate why they improve standard Muon.
+The Muon optimizer was developed inside of the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since then, Muon has become widely adopted, and new variations are proposed regularly. The Modded NanoGPT speedrun, whose record has dropped from 45 minutes to ~2.2 minutes, is a proving ground for these refinements. In this post, I'll showcase the improvements to Muon in record runs and motivate why they enhance the original form of Muon.
+
+> "The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns." —Keller Jordan [^jordan24a]
+
 
 [^jordan-muon]: [Keller Jordan et al 2024b](https://kellerjordan.github.io/posts/muon/) *Muon: An optimizer for hidden layers in neural networks*
 
@@ -24,16 +27,18 @@ The Muon optimizer was developed inside of the Modded NanoGPT speedrun, which ha
 ---
 
 ## (1) Adaptive Muon
-The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^normuon]. Several recent papers have proposed similar adaptive extensions [^adamuon] [^adago] [^frans]. In this section, I want to explain what "adaptive Muon" means and why it helps.
+The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^normuon]. Several recent papers have proposed similar adaptive extensions [^adamuon] [^adago] [^frans] [^asgo]. In this section, I want to explain what "adaptive Muon" means and why it helps.
 
 [^frans]: [Frans et al 2025](https://arxiv.org/abs/2510.25000) *What Really Matters in Matrix-Whitening Optimizers?*
 [^adago]: [Zhang et al 2025](https://arxiv.org/abs/2509.02981) *AdaGrad Meets Muon*
 [^normuon]: [Li et al 2025](https://arxiv.org/abs/2510.05491) *NorMuon*
 [^adamuon]:[Si et al 2025](https://arxiv.org/abs/2507.11005) *AdaMuon*
+[^asgo]: [An et al 2025](https://arxiv.org/pdf/2503.20762) *ASGO*
 
-Let's consider how Muon differs from a much simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM updates parameters using an exponential moving average (EMA) of gradients and, at each step, nudges the weights a small distance in the opposite direction of that averaged gradient. Muon (MomentUm Orthogonalized by Newton-Schulz) takes this same gradient EMA but *orthogonalizes* it via a matrix-sign function before applying the update. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that keeps the gradient's directions but not their overall magnitude (see footnote for more info) [^spectral].
 
-[^spectral]: The spectral directions of a matrix corresponds to how its transformation stretches the input/output space. Formally, spectral directions are the left and right singular vectors in the Singular Value Decomposition (SVD) of a matrix. The amount each direction is stretched corresponds to *singular values* in the SVD. Orthogonalization finds a matrix with identical spectral directions but with all the singular value equal to $1$. %% The resulting matrix has a transformation that has the same directions but is *isometric* between the input and output spaces: distances, lengths, and angles are preserved.  %%Why is this isometry useful? [Bernstein and Newhouse 2024](https://arxiv.org/abs/2410.21265) relate a powerful intuition: implicitly, gradient descent uses the Euclidean/Frobenius norm. SGD will update the weights away from the gradient with magnitude corresponding to the distance in the Euclidean metric. The correct metric for the gradient should consider how much it transforms the input space, which corresponds to the Spectral metric. Orthogonalization is acting as a map from transformation space to weight space so that the update and the weights are in the same geometry. 
+Let's consider how Muon differs from a simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM updates parameters using an exponential moving average (EMA) of gradients and, at each step, nudges the weights a small distance in the opposite direction of that averaged gradient. Muon (MomentUm Orthogonalized by Newton-Schulz) takes this same gradient EMA but *orthogonalizes* it via a matrix-sign function before applying the update. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that aligns the geometry of the update with the geometry of the weight space (see footnote for more info) [^spectral].
+
+[^spectral]: The spectral directions of a matrix corresponds to how its transformation stretches the input/output space. Formally, spectral directions are the left and right singular vectors in the Singular Value Decomposition (SVD) of a matrix. The amount each direction is stretched corresponds to *singular values* in the SVD. Orthogonalization finds a matrix with identical spectral directions but with all the singular values equal to $1$. %%The resulting matrix has a transformation that has the same directions but is *isometric* between the input and output spaces: distances, lengths, and angles are preserved.%% Why is this normalization useful? [Bernstein and Newhouse 2024](https://arxiv.org/abs/2410.21265) relate a powerful intuition: implicitly, gradient descent uses the Euclidean/Frobenius norm. SGD will update the weights away from the gradient with magnitude corresponding to the distance in the Euclidean metric. The correct metric for the gradient should consider how much it transforms the input space, which corresponds to the Spectral metric. Orthogonalization is acting as a map from transformation space to weight space so that the update and the weights are in the same geometry.
 
 Adam (ADaptive Moment Estimation) also builds on SGDM, but in a different way. It keeps an EMA of the squared gradients for each parameter, and then forms a variance-corrected update by dividing the gradient EMA by this squared-gradient EMA.
 
@@ -76,11 +81,11 @@ def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
 The code above conveys the general idea for adaptive Muon variants, though the variant used in Modded NanoGPT, *NorMuon* is a bit longer. It renormalizes the update matrix so that it has the same magnitude (via the Frobenius norm) after dividing by variance. This method yields a $\approx 2\%$ decrease in training time when combined with learning rate tuning.
 
 ## (2) Batch size scheduling
-One advantage of Muon over Adam is a higher *critical batch size* [^essentialai]. To explain what this means, we need to consider two factors:
+One advantage of Muon over Adam is a higher. To explain what this means, we need to consider two factors:
 1) Token efficiency. Smaller batch sizes are more token-efficient. For a fixed token budget, once the batch size is above some threshold, increasing it further tends to hurt final model performance. Beyond this point, the gradient signal from a single batch is saturated, so larger batches just waste tokens.
 2) Token speed: Training at higher batch sizes is faster *per-token* than training with a lower batch size for many steps. This is because GPUs parallelize over the batch dimension, DDP is easy, and every step incurs overhead (optimizers, comms, etc).
 
-A *critical batch size* $B_{\text{critical}}$  balances both of these considerations: low enough to be token-efficient, but high enough to be speed-efficient. 
+A *critical batch size* $B_{\text{critical}}$  balances both of these considerations: low enough to be token-efficient, but high enough to be speed-efficient.
 
 <img src="../images/Muon/cbs-revisited.png"  class="plot" style="width: 95%; height: auto; flex-shrink: 0;">
 
@@ -131,14 +136,14 @@ Below the asymptote/saturated batch size, we can approximate the value $p$ in $\
 
 **Figure 3: Results from the previous sweep (Fig2) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss.**
 
-The above graphs demonstrate an incredible stability in the critical batch size, especially at higher token budget. Consider the flatness in the curve for the highest token budget ($\approx 1T$ parameters): $1024$ steps at a A batch size of $2^{20}$ tokens converges to nearly the same loss at $1024$ steps as a batch size of $2^{18}$ tokens in $4096$ steps. 
+The above graphs demonstrate stability in the critical batch size, especially at higher token budget. Consider the flatness in the curve for the highest token budget ($\approx 1T$ parameters): $1024$ steps at a A batch size of $2^{20}$ tokens converges to nearly the same loss at $1024$ steps as a batch size of $2^{18}$ tokens in $4096$ steps. A paper from Essential AI conducts this experiment at larger scales, validating that Muon's critical batch size is stable and higher than Adam's [^essentialAI].
 
 Batch size can often be safely increased over the course of training [^ai2]. Conceptually, this may be because early training focuses on common patterns, so even small batches provide strong gradient signals. Later training involves learning rarer patterns. These sparse signals remain noisy even at high batch sizes, so the batch size can be increased without saturating the gradient. Notably, two strong models trained with Muon, Kimi K2 and GLM 4.5, both increase batch size mid-training [^kimi] [^glm].
 
 [^glm]: [Zeng et al](https://arxiv.org/abs/2508.06471) *GLM-4.5*
 [^kimi]: [Moonshot AI, Liu et al 2025](https://arxiv.org/abs/2502.16982) *Muon is Scalable for LLM Training*
 
-Modded NanoGPT's recent record [^pr163] uses batch size scheduling in order to maximize token efficiency throughout training. 
+Modded NanoGPT's recent record [^pr163] uses batch size scheduling in order to maximize token efficiency throughout training.
 
 [^pr163]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/163) *Modded NanoGPT PR#163*
 ## (3) Faster orthogonalization: Polar Express and beyond
@@ -177,21 +182,20 @@ This technique proved highly effective in Modded NanoGPT when paired with a sche
 [^chen25]: [Chen et al 2025](https://arxiv.org/abs/2510.12402) *Cautious Weight Decay*
 ## (5) Distributed and efficient computation
 The implementation of Muon has been optimized in order to distribute the implementation over 8 devices. First, there are several tricks used to speed up orthogonalization over the basic Newton-Schulz algorithm:
-* Parameters of the same shape are stacked together so that orthogonalization is vectorized. 
+* Parameters of the same shape are stacked together so that orthogonalization is vectorized.
 * Additionally, the attention weights `qkvo` are concatenated so that they are the same shape as MLPs. This allows attention and MLP weights to be stacked.
 * The Newton-Schulz iteration involves the manipulation of symmetric matrices. Using this fact can cut down the number of computations in half in some cases. Custom triton kernels have been written for these steps. [^byron]
 
 Second, there are a few tricks to distribute the Muon step over all the GPUs:
 * Each GPU receives an equal subset of the parameter gradients (via a reduce-scatter).
-* Each GPU processes gradients in groups. Each group has a "nice" number of parameters, e.g. $8$ or a power  of $2$, which is important for underlying kernels. 
+* Each GPU processes gradients in groups. Each group has a "nice" number of parameters, e.g. $8$ or a power  of $2$, which is important for underlying kernels.
 * The groups are handled concurrently so that gradients are being communicated across GPUs while other gradients are being processed inside the GPUs.
 
 For additional information I direct you to Larry Dial's blog post [^larry2025a] and the Modded NanoGPT repo [^moddednanogpt].
 
-[^byron]: [Xu 2025](https://github.com/KellerJordan/modded-nanogpt/pull/109) *Modded NanoGPT PR#109 (Triton kernels for symmetric matmul)*. Also part of the [Dion](https://github.com/microsoft/dion) repository. 
+[^byron]: [Xu 2025](https://github.com/KellerJordan/modded-nanogpt/pull/109) *Modded NanoGPT PR#109 (Triton kernels for symmetric matmul)*. Also part of the [Dion](https://github.com/microsoft/dion) repository.
 ## (6) Implementation Notes
 
-> "The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns." —Keller Jordan [^jordan24a]
 
 [^jordan24a]: [Keller Jordan 2025](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
 
@@ -228,7 +232,7 @@ Jeremy Bernstein proves that Muon's optimal learning rate is stable across vario
 Li et al 2024 [^Li] has a great overview on learning rate scaling for adaptive optimizers. They propose that $\eta$  is asymptotic for Adam as well. They attribute this convergence due to the second moment's effect on the gradient, which normalizes the update in such a way that the variance of the update will also saturate at sufficiently high batch size. Practically, I believe Muon's learning rate saturates much earlier than Adam's, though this argument requires future work.
  %%
 
-This post summarizes the work of many people on the Modded NanoGPT speedrun. Section 1 primarily corresponds to the work of an author of *NorMuon*, Zichong Li. Sections 2, 3, and 4 correspond to records added by myself. Section 5 is the result of many people over many iterations, though in the last few months Larry Dial especially. 
+This post summarizes the work of many people on the Modded NanoGPT speedrun. Section 1 primarily corresponds to the work of an author of *NorMuon*, Zichong Li. Sections 2, 3, and 4 correspond to records added by myself. Section 5 is the result of many people over many iterations, though in the last few months Larry Dial especially.
 
 ---
 

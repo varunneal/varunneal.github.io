@@ -13,9 +13,13 @@ permalink: essays/muon
 modified: November 30, 2025
 ---
 
-The Muon optimizer was developed inside of the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since then, Muon has become widely adopted, and new variations are proposed regularly. The speedrun, whose record has dropped from 45 minutes to ~2.2 minutes, remains an effective proving ground for new optimizers and Muon refinements. In this post, I'll showcase some of the improvements to Muon in record runs and motivate why they enhance the original form of Muon.
+The Muon optimizer was developed in the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since then, Muon has become widely adopted, and new variations are proposed regularly. The speedrun, whose record has dropped from 45 minutes to ~2.2 minutes, remains an effective proving ground for new optimizers and Muon refinements. In this post, I'll showcase some of the improvements to Muon in record runs and motivate why they enhance the original form of Muon.
 
 > "The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns." —Keller Jordan [^jordan24a]
+
+
+[^jordan24a]: [Keller Jordan 2025](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
+
 
 
 [^jordan-muon]: [Keller Jordan et al 2024b](https://kellerjordan.github.io/posts/muon/) *Muon: An optimizer for hidden layers in neural networks*
@@ -81,7 +85,7 @@ def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
 The code above conveys the general idea for adaptive Muon variants, though the variant used in Modded NanoGPT, *NorMuon* is a bit longer. It renormalizes the update matrix so that it has the same magnitude (via the Frobenius norm) after dividing by variance. This method yields a $\approx 2\%$ decrease in training time when combined with learning rate tuning.
 
 ## (2) Batch size scheduling
-One advantage of Muon over Adam is a higher. To explain what this means, we need to consider two factors:
+One major advantage of Muon is a higher critical batch size than Adam. To explain what this means, we need to consider two factors:
 1) Token efficiency. Smaller batch sizes are more token-efficient. For a fixed token budget, once the batch size is above some threshold, increasing it further tends to hurt final model performance. Beyond this point, the gradient signal from a single batch is saturated, so larger batches just waste tokens.
 2) Token speed: Training at higher batch sizes is faster *per-token* than training with a lower batch size for many steps. This is because GPUs parallelize over the batch dimension, DDP is easy, and every step incurs overhead (optimizers, comms, etc).
 
@@ -136,7 +140,7 @@ Below the asymptote/saturated batch size, we can approximate the value $p$ in $\
 
 **Figure 3: Results from the previous sweep (Fig2) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss.**
 
-The above graphs demonstrate stability in the critical batch size, especially at higher token budget. Consider the flatness in the curve for the highest token budget ($\approx 1T$ parameters): $1024$ steps at a A batch size of $2^{20}$ tokens converges to nearly the same loss at $1024$ steps as a batch size of $2^{18}$ tokens in $4096$ steps. A paper from Essential AI conducts this experiment at larger scales, validating that Muon's critical batch size is stable and higher than Adam's [^essentialAI].
+The above graphs demonstrate stability in the critical batch size, especially at higher token budget. Consider the flatness in the curve for the highest token budget ($\approx 1T$ tokens): $1024$ steps at a batch size of $2^{20}$ tokens converges to nearly the same loss at $1024$ steps as a batch size of $2^{18}$ tokens in $4096$ steps. A paper from Essential AI conducts this experiment at larger scales, validating that Muon's critical batch size is stable and higher than Adam's [^essentialAI].
 
 Batch size can often be safely increased over the course of training [^ai2]. Conceptually, this may be because early training focuses on common patterns, so even small batches provide strong gradient signals. Later training involves learning rarer patterns. These sparse signals remain noisy even at high batch sizes, so the batch size can be increased without saturating the gradient. Notably, two strong models trained with Muon, Kimi K2 and GLM 4.5, both increase batch size mid-training [^kimi] [^glm].
 
@@ -147,7 +151,7 @@ Modded NanoGPT's recent record [^pr163] uses batch size scheduling in order to m
 
 [^pr163]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/163) *Modded NanoGPT PR#163*
 ## (3) Faster orthogonalization: Polar Express and beyond
-The Newton-Schulz iterative algorithm approximates orthogonalization via a quintic polynomial iteration. This iterative approach is agnostic to the conditioning of the underlying matrix. However, if we notice that the conditioning of the matrix improves in each iteration, we can find an optimal polynomial for that iteration. Ansel et al provide optimal coefficients at each iteration step via their algorithm Polar Express [^ansel].
+The Newton-Schulz iterative algorithm approximates orthogonalization via a quintic polynomial iteration. This iterative approach is agnostic to the conditioning of the underlying matrix. However, since the matrix becomes better-conditioned over iterations, you can find an optimal polynomial per-iteration, which results in faster convergence. Ansel et al provide optimal coefficients at each iteration step via their algorithm Polar Express [^ansel].
 
 Last month, a paper from Shulgin et al demonstrated that a more precise orthogonalization improves Muon convergence, especially when accompanied with appropriate learning rate tuning [^shulgin]:
 
@@ -167,7 +171,7 @@ On ongoing effort in the Modded NanoGPT speedrun is being made for even faster o
 ## (4) Cautious weight decay
 Decoupled weight decay has been noted as a crucial technique for training with Muon. The Kimi team writes: "While vanilla Muon initially converges faster, we observed that some model weights grew too large over time, potentially limiting the model’s long-term performances. Adding weight decay addressed this issue - the results demonstrate that Muon with weight decay outperforms both vanilla Muon and AdamW" [^kimi].
 
-Inside Modded NanoGPT, weight decay on Muon was doing more harm than good. In October, a variant of decoupled weight decay known as *Cautious Weight Decay* was discovered [^chen25], which only decays parameters that will increase in magnitude in the update step:
+Inside Modded NanoGPT, weight decay on Muon was doing more harm than good. In October, a variant of decoupled weight decay known as *Cautious Weight Decay* was proposed [^chen25], which only decays parameters that will increase in magnitude in the update step:
 
 ```python {2} /* mask/
 def apply_update(param, update, learning_rate, weight_decay):
@@ -177,28 +181,25 @@ def apply_update(param, update, learning_rate, weight_decay):
 ```
 **Algorithm 2: Cautious weight decay (difference from decoupled weight decay highlighted).**
 
-This technique proved highly effective in Modded NanoGPT when paired with a schedule that decreases weight decay to $0$ by the end of training.
+Intuitively, CWD avoids shrinking weights that are already being moved toward zero by the gradient, so you avoid over-regularizing parameters that are actively decaying. This technique proved effective in Modded NanoGPT when paired with a schedule that decreases weight decay to $0$ by the end of training, improving the record by $\approx 1.25\%$.
 
 [^chen25]: [Chen et al 2025](https://arxiv.org/abs/2510.12402) *Cautious Weight Decay*
 ## (5) Distributed and efficient computation
 The implementation of Muon has been optimized in order to distribute the implementation over 8 devices. First, there are several tricks used to speed up orthogonalization over the basic Newton-Schulz algorithm:
 * Parameters of the same shape are stacked together so that orthogonalization is vectorized.
 * Additionally, the attention weights `qkvo` are concatenated so that they are the same shape as MLPs. This allows attention and MLP weights to be stacked.
-* The Newton-Schulz iteration involves the manipulation of symmetric matrices. Using this fact can cut down the number of computations in half in some cases. Custom triton kernels have been written for these steps. [^byron]
+* The Newton-Schulz iteration involves the manipulation of symmetric matrices. Using this fact can cut down the number of computations in half for parts of the iteration. Custom triton kernels have been written for these steps. [^byron]
 
 Second, there are a few tricks to distribute the Muon step over all the GPUs:
 * Each GPU receives an equal subset of the parameter gradients (via a reduce-scatter).
 * Each GPU processes gradients in groups. Each group has a "nice" number of parameters, e.g. $8$ or a power  of $2$, which is important for underlying kernels.
 * The groups are handled concurrently so that gradients are being communicated across GPUs while other gradients are being processed inside the GPUs.
 
-For additional information I direct you to Larry Dial's blog post [^larry2025a] and the Modded NanoGPT repo [^moddednanogpt].
+For additional information I direct you to Larry Dial's blog post [^larry2025a] and the Modded NanoGPT repo.
 
 [^byron]: [Xu 2025](https://github.com/KellerJordan/modded-nanogpt/pull/109) *Modded NanoGPT PR#109 (Triton kernels for symmetric matmul)*. Also part of the [Dion](https://github.com/microsoft/dion) repository.
-## (6) Implementation Notes
 
-
-[^jordan24a]: [Keller Jordan 2025](https://x.com/kellerjordan0/status/1890178773586489716) *The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns.*
-
+## (6) Conclusion
 
 I hope this post is broadly useful for pretraining with Muon. I want to highlight some important considerations for the Modded NanoGPT recipe:
 - The model is very small (<124M active params) and has a unique architecture.
@@ -232,7 +233,16 @@ Jeremy Bernstein proves that Muon's optimal learning rate is stable across vario
 Li et al 2024 [^Li] has a great overview on learning rate scaling for adaptive optimizers. They propose that $\eta$  is asymptotic for Adam as well. They attribute this convergence due to the second moment's effect on the gradient, which normalizes the update in such a way that the variance of the update will also saturate at sufficiently high batch size. Practically, I believe Muon's learning rate saturates much earlier than Adam's, though this argument requires future work.
  %%
 
-This post summarizes the work of many people on the Modded NanoGPT speedrun. Section 1 primarily corresponds to the work of an author of *NorMuon*, Zichong Li. Sections 2, 3, and 4 correspond to records added by myself. Section 5 is the result of many people over many iterations, though in the last few months Larry Dial especially.
+If you are considering using Muon for your pretraining needs, I recommend trying the each of the methods in this post. In summary,
+1) You may find an adaptive variant to by highly effective.
+2) You should consider generously increasing the batch size throughout training.
+3) Adopt Polar Express instead of Newton-Schulz as your matrix-sign function.
+4) Ensure you use weight decay, and test a simple variation (Cautious Weight Decay) for improved convergence.
+5) If your device can fit them, batch parameters together in the matrix-sign iteration.
+
+I expect in the near future some of these changes will appear in model training recipes of frontier models, or are integrated in widely-used libraries containing Muon, such as PyTorch, Dion, or Huggingface's Optimizers. At the same time, I expect increasingly effective tricks will be discovered, and the Modded NanoGPT speedrun time will continue to improve.
+
+This post summarizes the work of many people on the Modded NanoGPT speedrun. Section 1 primarily corresponds to the work of an author of *NorMuon*, Zichong Li. Sections 2, 3, and 4 correspond to records added by myself, mostly through trying the work detailed in the referenced papers. Section 5 is the result of many people over many iterations, though especially from Larry Dial in the last few months.
 
 ---
 

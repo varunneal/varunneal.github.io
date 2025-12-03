@@ -33,7 +33,7 @@ The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^no
 
 Let's consider how Muon differs from a much simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM updates parameters using an exponential moving average (EMA) of gradients and, at each step, nudges the weights a small distance in the opposite direction of that averaged gradient. Muon (MomentUm Orthogonalized by Newton-Schulz) takes this same gradient EMA but *orthogonalizes* it via a matrix-sign function before applying the update. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that keeps the gradient's directions but not their overall magnitude (see footnote for more info) [^spectral].
 
-[^spectral]: The spectral directions of a matrix corresponds to how its transformation stretches the input/output space. Formally, spectral directions are the left and right singular vectors in the Singular Value Decomposition (SVD) of a matrix. The amount each direction is stretched corresponds to *singular values* in the SVD. Orthogonalization finds a matrix with identical spectral directions but with all the singular value equal to $1$. The resulting matrix has a transformation that has the same directions but is *isometric* between the input and output spaces: distances, lengths, and angles are preserved. Why is this isometry useful? [Bernstein and Newhouse 2024](https://arxiv.org/abs/2410.21265) relate a powerful intuition: implicitly, gradient descent uses the Euclidean/Frobenius norm. SGD will update the weights away from the gradient with magnitude corresponding to the distance in the Euclidean metric.  The correct metric for the gradient is as according to how much it transforms the input space—it measures of the sensitivity of the matrix-as-a-function—which would make it an element of the dual space. Orthogonalization is acting as a map from transformation space to weight space so that the update and the weights are in the same geometry. 
+[^spectral]: The spectral directions of a matrix corresponds to how its transformation stretches the input/output space. Formally, spectral directions are the left and right singular vectors in the Singular Value Decomposition (SVD) of a matrix. The amount each direction is stretched corresponds to *singular values* in the SVD. Orthogonalization finds a matrix with identical spectral directions but with all the singular value equal to $1$. %% The resulting matrix has a transformation that has the same directions but is *isometric* between the input and output spaces: distances, lengths, and angles are preserved.  %%Why is this isometry useful? [Bernstein and Newhouse 2024](https://arxiv.org/abs/2410.21265) relate a powerful intuition: implicitly, gradient descent uses the Euclidean/Frobenius norm. SGD will update the weights away from the gradient with magnitude corresponding to the distance in the Euclidean metric. The correct metric for the gradient should consider how much it transforms the input space, which corresponds to the Spectral metric. Orthogonalization is acting as a map from transformation space to weight space so that the update and the weights are in the same geometry. 
 
 Adam (ADaptive Moment Estimation) also builds on SGDM, but in a different way. It keeps an EMA of the squared gradients for each parameter, and then forms a variance-corrected update by dividing the gradient EMA by this squared-gradient EMA.
 
@@ -45,7 +45,7 @@ Variance correction is hypothesized to be useful in two distinct ways:
 [^cohen]: [Cohen et al 2024](https://arxiv.org/abs/2410.24206) *Understanding Optimization in Deep Learning with Central Flows*, with a shorter accompanying blogpost [here](https://centralflows.github.io/part3/).
 
 
-Despite not being a variance-adaptive method, Muon is "curvature-aware" [^kovalev][^anonymous26][^su25], which addresses point (2). Intuitively, this comes from orthogonalization: after orthogonalization, Muon's update is "well-rounded" in parameter space, avoiding directions of steep change [^spectral]. Formally, each update is perfectly-conditioned (all spectral values are $1$), which keeps the weights themselves well-conditioned (their singular values remain small and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a constrained submanifold of the full parameter space. Along these lines, Jeremy Bernstein has proposed *Manifold Muon*, which tweaks Muon such that the weights remain perfectly-conditioned  [^bernstein25].
+Despite not being a variance-adaptive method, Muon is "curvature-aware" [^kovalev][^anonymous26][^su25], which addresses point (2). Intuitively, this comes from orthogonalization: after orthogonalization, Muon's update is "well-rounded" in parameter space, avoiding directions of steep change. Formally, each update is perfectly-conditioned (all spectral values are $1$), which keeps the weights themselves well-conditioned (their singular values remain small and near each other)[^Boreiko]. Muon is effectively performing gradient descent down a constrained submanifold of the full parameter space. Along these lines, Jeremy Bernstein has proposed *Manifold Muon*, which tweaks Muon such that the weights remain perfectly-conditioned  [^bernstein25].
 
 
 
@@ -97,12 +97,17 @@ where $\text{SNR}(G)$ is the signal-to-noise ratio of the gradient estimate [^sn
 
 [^snr]: I'm being somewhat imprecise with how we define the signal to noise ratio. McCandlish et al [^mccandlish] defines a critical batch size $B_{\text{noise}} =  \text{Cov}(G) / \mathbb{E}(G)^2$ for their analysis of SGD. I'm using its inverse as the SNR.
 
-Adam dampens update variance, so its optimal scaling is closer to $\eta \sim \sqrt{B}$[^mccandlish] [^granziol] before also becoming asymptotic[^li].
+Adam dampens update variance, so its optimal scaling is closer to $\eta \sim \sqrt{B}$ [^granziol] before also becoming asymptotic[^Li].
 
 %% $$
 \eta \propto \frac{\sqrt{B \cdot \text{SNR}(G)}}{1+ {B \cdot \text{SNR}(G)}} \qquad \text{for} \; B \cdot SNR(G) << 1
 $$ %%
 
+
+
+[^McCandlish]: [McCandlish et al 2018](https://arxiv.org/pdf/1812.06162) *An Empirical Model of Large-Batch Training*
+[^granziol]: [Granziol et al 2020](https://arxiv.org/pdf/2006.09092) *Learning Rates as a Function of Batch Size* contains a proof.
+[^Li]: [Li et al 2024](https://arxiv.org/abs/2405.14578) *Surge Phenomenon in Optimal Learning Rate and Batch Size Scaling*
 
 A power-law relationship ($\eta \propto B^p$) is often assumed to hold for Muon as well[^sato][^ryu], though in practice it will asymptote quickly:
 
@@ -228,7 +233,7 @@ This post summarizes the work of many people on the Modded NanoGPT speedrun. Sec
 ---
 
 <br>
-Thank you to Prime Intellect, who sponsors my research. If this blog post was useful for you, you can cite:
+Thank you to Prime Intellect, who sponsors my research with GPU credits. If this blog post was useful for you, you can cite:
 
 ```
 @misc{
@@ -240,9 +245,6 @@ Thank you to Prime Intellect, who sponsors my research. If this blog post was us
 }
 ```
 
-[^McCandlish]: [McCandlish et al 2018](https://arxiv.org/pdf/1812.06162) *An Empirical Model of Large-Batch Training*
-[^granziol]: [Granziol et al 2020](https://arxiv.org/pdf/2006.09092) *Learning Rates as a Function of Batch Size* contains a proof.
-[^Li]: [Li et al 2024](https://arxiv.org/abs/2405.14578) *Surge Phenomenon in Optimal Learning Rate and Batch Size Scaling*
 
 [^Boreiko]: [Boreiko et al 2025](https://openreview.net/forum?id=ppmyFtr9EW)  *Towards Understanding Orthogonalization in Muon*
 [^ai2]: [Ai2, Merrill et al 2025](https://arxiv.org/abs/2505.23971) *Critical Batch Size Revisited*

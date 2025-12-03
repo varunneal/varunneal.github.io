@@ -202,7 +202,7 @@ For additional information I direct you to Larry Dial's blog post [^larry2025a] 
 ## (6) Conclusion
 
 I hope this post is broadly useful for pretraining with Muon. I want to highlight some important considerations for the Modded NanoGPT recipe:
-- The model is very small (<124M active params) and has a unique architecture.
+- The model is small (<124M active params) and has a unique architecture.
 - Adam is used instead of Muon on a few parameters: the linear output head, the embedding layer, and a few scalar constants, though this is "standard" for Muon.
 - Adam is stepped with twice the number of gradient accumulation steps as Muon. Effectively, it has a 2x batch size than Muon. In the experiment in [[#(2) Batch size scheduling|Section 2]], I've scaled the Adam learning rate according to the square-root law.
 
@@ -240,7 +240,7 @@ If you are considering using Muon for your pretraining needs, I recommend trying
 4) Ensure you use weight decay, and test a simple variation (Cautious Weight Decay) for improved convergence.
 5) If your device can fit them, batch parameters together in the matrix-sign iteration.
 
-I expect in the near future some of these changes will appear in model training recipes of frontier models, or are integrated in widely-used libraries containing Muon, such as PyTorch, Dion, or Huggingface's Optimizers. At the same time, I expect increasingly effective tricks will be discovered, and the Modded NanoGPT speedrun time will continue to improve.
+I hope in the near future some of these changes will appear in model training recipes of frontier models, or will be integrated in widely-used libraries containing Muon, such as PyTorch, Dion, or Huggingface's Optimizers. Simultaneously, I expect increasingly effective tricks will be discovered, and the Modded NanoGPT speedrun time will continue to improve.
 
 This post summarizes the work of many people on the Modded NanoGPT speedrun. Section 1 primarily corresponds to the work of an author of *NorMuon*, Zichong Li. Sections 2, 3, and 4 correspond to records added by myself, mostly through trying the work detailed in the referenced papers. Section 5 is the result of many people over many iterations, though especially from Larry Dial in the last few months.
 

@@ -13,7 +13,7 @@ permalink: essays/muon
 modified: November 30, 2025
 ---
 
-The Muon optimizer was developed inside of the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since then, Muon has become widely adopted, and new variations are proposed regularly. The Modded NanoGPT speedrun, whose record has dropped from 45 minutes to ~2.2 minutes, is a proving ground for these refinements. In this post, I'll showcase the improvements to Muon in record runs and motivate why they enhance the original form of Muon.
+The Muon optimizer was developed inside of the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since then, Muon has become widely adopted, and new variations are proposed regularly. The speedrun, whose record has dropped from 45 minutes to ~2.2 minutes, remains an effective proving ground for new optimizers and Muon refinements. In this post, I'll showcase some of the improvements to Muon in record runs and motivate why they enhance the original form of Muon.
 
 > "The reason I didn't write a proper arxiv paper for Muon is because I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns." —Keller Jordan [^jordan24a]
 

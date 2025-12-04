@@ -112,8 +112,10 @@ async function mouseEnterHandler(
         offsetTop += currentElement.offsetTop
         currentElement = currentElement.offsetParent as HTMLElement | null
       }
-      // scroll with buffer to show context before the target
-      popoverInner.scroll({ top: offsetTop - 60, behavior: "instant" })
+      // Only add context buffer for footnote back-refs (the ^ links)
+      const isFootnoteBackref = link.hasAttribute("data-footnote-backref")
+      const buffer = isFootnoteBackref ? 60 : 8
+      popoverInner.scroll({ top: offsetTop - buffer, behavior: "instant" })
     }
   }
 }

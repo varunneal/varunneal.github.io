@@ -85,7 +85,7 @@ The code above conveys the general idea for adaptive Muon variants, though the v
 [^record42]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/146) *Modded NanoGPT Record 42*
 
 ## (2) Batch size scheduling
-One major advantage of Muon is a higher critical batch size than Adam. To explain what this means, we need to consider two factors:
+One advantage of Muon over Adam is a higher _critical batch size_. To explain what this means, we need to consider two factors:
 1) Token efficiency. Smaller batch sizes are more token-efficient. For a fixed token budget, once the batch size is above some threshold, increasing it further tends to hurt final model performance. Beyond this point, the gradient signal from a single batch is saturated, so larger batches just waste tokens.
 2) Token speed: Training at higher batch sizes is faster *per-token* than training with a lower batch size for many steps. This is because GPUs parallelize over the batch dimension, DDP is easy, and every step incurs overhead (optimizers, comms, etc).
 
@@ -102,7 +102,7 @@ $$
 \eta \propto 1 - \frac{1}{1 + B \cdot \text{SNR}(G)}
 $$
 
-where $\text{SNR}(G)$ is the signal-to-noise ratio of the gradient estimate [^snr]. When $B \cdot SNR(G) << 1$, this is approximately $B \cdot SNR(G)$, which is why the "linear scaling law" $\eta \propto B$ is a good heuristic.
+where $\text{SNR}(G)$ is the signal-to-noise ratio of the gradient estimate (see footnote).[^snr] When $B \cdot SNR(G) << 1$, this is approximately $B \cdot SNR(G)$, which is why the "linear scaling law" $\eta \propto B$ is a good heuristic.
 
 [^snr]: I'm being somewhat imprecise with how we define the signal to noise ratio. McCandlish et al [^mccandlish] defines a critical batch size $B_{\text{noise}} =  \text{Cov}(G) / \mathbb{E}(G)^2$ for their analysis of SGD. I'm using its inverse as the SNR.
 

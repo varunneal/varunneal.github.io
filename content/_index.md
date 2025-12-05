@@ -10,5 +10,5 @@ If you are interested in me professionally take a look at my [resume](./resume.p
 Otherwise, I invite you to read some of my [essays](essays/) or connect with me on my socials below.
 
 **Featured essays:** 
-* [[Muon in Modded NanoGPT]]
-* [[Nietzsche and the Gut]]
+* [[muon|Muon in Modded NanoGPT]]
+* [[indigestion|Nietzsche and the Gut]]

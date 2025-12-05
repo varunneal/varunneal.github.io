@@ -357,8 +357,12 @@ a.footnote-ref {
   position: fixed;
   top: 0;
   right: 0;
-  width: 30px;
-  height: 30px;
+  width: min(5vw, 5vh);
+  height: min(5vw, 5vh);
+  min-width: 25px;
+  min-height: 25px;
+  max-width: 50px;
+  max-height: 50px;
   margin: 0;
   padding: 0;
   background: var(--dark);

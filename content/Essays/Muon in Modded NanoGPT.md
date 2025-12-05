@@ -13,7 +13,7 @@ permalink: essays/muon
 modified: November 30, 2025
 ---
 
-The Muon optimizer was developed in the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible [^jordan-muon] [^moddednanogpt]. Since then, Muon has become widely adopted, and new variations are proposed regularly. The speedrun, whose record has dropped from 45 minutes to ~2.2 minutes, remains an effective proving ground for new optimizers and Muon refinements. In this post, I'll showcase some of the improvements to Muon in record runs and motivate why they enhance the original form of Muon.
+The Muon optimizer was developed in the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible.[^moddednanogpt] In the past year, Muon has been adopted for large-scale training, including for the Chinese LLMs Kimi K2 and GLM 4.5. Over the same period, driven by competitive testing of refinements to the optimizer, the speedrun record has dropped from 45 minutes to ~2.2 minutes. In this post, I'll showcase some of the Muon improvements used in record runs and motivate why they are effective. 
 
 > "I simply don't think there's any relationship between the ability to publish a paper with lots of good-looking results about a new optimizer, and whether that optimizer actually works. I only trust speedruns." —Keller Jordan [^jordan24a]
 
@@ -38,9 +38,11 @@ The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^no
 [^asgo]: [An et al 2025](https://arxiv.org/pdf/2503.20762) *ASGO*
 
 
-Let's consider how Muon differs from a simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM updates parameters using an exponential moving average (EMA) of gradients and, at each step, nudges the weights a small distance in the opposite direction of that averaged gradient. Muon (MomentUm Orthogonalized by Newton-Schulz) takes this same gradient EMA but *orthogonalizes* it via a matrix-sign function before applying the update. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that aligns the geometry of the update with the geometry of the weight space (see footnote for more info) [^spectral].
+Let's consider how Muon differs from a simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM updates parameters using an exponential moving average (EMA) of gradients and, at each step, nudges the weights a small distance in the opposite direction of that averaged gradient. Muon (MomentUm Orthogonalized by Newton-Schulz) takes this same gradient EMA but *orthogonalizes* it via a matrix-sign function before applying the update. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that "rounds" the gradient [^rounding].
 
-[^spectral]: The spectral directions of a matrix corresponds to how its transformation stretches the input/output space. Formally, spectral directions are the left and right singular vectors in the Singular Value Decomposition (SVD) of a matrix. The amount each direction is stretched corresponds to *singular values* in the SVD. Orthogonalization finds a matrix with identical spectral directions but with all the singular values equal to $1$. %%The resulting matrix has a transformation that has the same directions but is *isometric* between the input and output spaces: distances, lengths, and angles are preserved.%% Why is this normalization useful? [Bernstein and Newhouse 2024](https://arxiv.org/abs/2410.21265) relate a powerful intuition: implicitly, gradient descent uses the Euclidean/Frobenius norm. SGD will update the weights away from the gradient with magnitude corresponding to the distance in the Euclidean metric. The correct metric for the gradient should consider how much it transforms the input space, which corresponds to the Spectral metric. Orthogonalization is acting as a map from transformation space to weight space so that the update and the weights are in the same geometry.
+[^rounding]: Every matrix corresponds to an of ellipsoid-like transformation. Orthogonalization makes the underlying ellipsoid into perfect sphere. More formally, the spectral theorem tells us that any matrix transformation can be decomposed into a rotation/reflection + an ellipsoid transformation + a rotation/reflection. This is exactly what the singular value decomposition $A = U \Sigma V^{\intercal}$ is describing ($\Sigma$ is the ellipsoid transformation, $U$ and $V$ are unitary matrices). $\Sigma$ is a diagonal matrix, and its entries are called the singular values. A spherical transformation will have singular values all equal to $1$, and the its matrix will be orthogonal/semi-orthogonal (if it's rectangular).
+
+
 
 Adam (ADaptive Moment Estimation) also builds on SGDM, but in a different way. It keeps an EMA of the squared gradients for each parameter, and then forms a variance-corrected update by dividing the gradient EMA by this squared-gradient EMA.
 
@@ -52,17 +54,18 @@ Variance correction is hypothesized to be useful in two distinct ways:
 [^cohen]: [Cohen et al 2024](https://arxiv.org/abs/2410.24206) *Understanding Optimization in Deep Learning with Central Flows*, with a shorter accompanying blogpost [here](https://centralflows.github.io/part3/).
 
 
-Despite not being a variance-adaptive method, Muon is "curvature-aware" [^kovalev][^anonymous26][^su25], which addresses point (2). Intuitively, this comes from orthogonalization: after orthogonalization, Muon's update is "well-rounded" in parameter space, avoiding directions of steep change (see footnote)[^geometry]. 
+Despite not being a variance-adaptive method, Muon is "curvature-aware" [^kovalev][^anonymous26][^su25], which addresses point (2). Intuitively, this comes from the nice geometric properties of orthogonalization (see footnote).[^geometry]
 
-[^geometry]: We can think of the weight matrix as an ellipsoid transformation whose principal axes are determined by its eigenvalues/singular values. Orthogonalization deforms this ellipsoid into a sphere. We can alternatively view orthogonalization as constraining the parameter space. If each update is orthogonal (all singular values are $1$),  the weights themselves will be well-conditioned (singular values will be somewhat near $1$). This is demonstrated in practice (see [Damek and Deusvyatskiy 2025](https://github.com/damek/specgd/blob/main/stable_rank.pdf) and [Boreiko et al 2025](https://openreview.net/forum?id=ppmyFtr9EW)), even though orthogonalization is of course approximate. We can therefore view Muon as effectively performing gradient descent down a constrained submanifold of the full parameter space. Understanding Muon as descending down this manifold, where all its points are well-conditioned matrices, helps me visualize why Muon can avoid ill-conditioned minima. Along these lines, Jeremy Bernstein has proposed [Manifold Muon](https://thinkingmachines.ai/blog/modular-manifolds/), which tweaks Muon such that the weights remain orthogonal throughout training. 
+[^geometry]: An earlier footnote explains why orthogonalization makes the update "well-rounded". This prevents steps that are too steep in any direction, which may help to avoid "sharp minima". Another geometric intuition for orthogonalization is conveyed in [Bernstein and Newhouse 2024](https://arxiv.org/abs/2410.21265). To summarize, SGD will update the weights away from the gradient with magnitude corresponding to the distance in the Euclidean metric. It turns out that the correct metric for the gradient is actually the spectral metric, e.g. with respect to the transformation. Orthogonalization acts as a map ("dual map") from transformation space to weight space. This aligns the geometry of the update with the geometry of the weight space. Another geometric intuition I have is by instead considering the effect of orthogonalization on the weights: if each update is orthogonal (all singular values are $1$),  the weights themselves will be well-conditioned (singular values will be somewhat near $1$). This is demonstrated in practice (see [Damek and Deusvyatskiy 2025](https://github.com/damek/specgd/blob/main/stable_rank.pdf) and [Boreiko et al 2025](https://openreview.net/forum?id=ppmyFtr9EW)), even though orthogonalization is of course approximate. We can therefore view Muon as effectively performing gradient descent down a constrained submanifold of the full parameter space. Understanding Muon as descending down this manifold, where all its points are well-conditioned matrices, helps me visualize why Muon can avoid ill-conditioned minima. Along these lines, Jeremy Bernstein has proposed [Manifold Muon](https://thinkingmachines.ai/blog/modular-manifolds/), which tweaks Muon such that the weights remain orthogonal throughout training. 
 
 [^anonymous26]: [Anonymous ICLR Conference Submission 2025](https://openreview.net/forum?id=go388T3QjQ) *Long-tailed Learning with Muon Optimizer*
-[^su25]: [Su 2025](https://arxiv.org/abs/2511.00674) *Isotropic Curvature Model for Understanding Deep Learning Optimization*
-[^kovalev]: derstanding Gradient Orthogonalization for Deep Learning via Non-Euclidean Trust-Region Optimization*
+[^su25]: [Weijie Su 2025](https://arxiv.org/abs/2511.00674) *Isotropic Curvature Model for Understanding Deep Learning Optimization*
+[^kovalev]: Understanding Gradient Orthogonalization for Deep Learning via Non-Euclidean Trust-Region Optimization*
 
 [^bernstein25]: [Jeremy Bernstein 2025](https://thinkingmachines.ai/blog/modular-manifolds/) *Modular Manifolds*
 
 To the best of my knowledge, there is no argument that Muon solves (1)—e.g. that orthogonalization corrects for noise in the gradient estimation. To account for this, we want to estimate the noise along each spectral direction and correct for it. After orthogonalization, the columns of the update matrix correspond to the spectral directions, so we can estimate spectral variance by calculating column-wise RMS. For this reason, variance adaptation methods for Muon only require variance estimates along a single dimension[^frans].
+
 
 ```python {5-6}
 def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
@@ -75,11 +78,11 @@ def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
 	return update
 ```
 
-**Algorithm 1: Typical-ish Adaptive Muon update (differences from standard Muon highlighted).**
+**Algorithm 1: Naive Adaptive Muon update (differences from standard Muon highlighted).**
 
 %% Note that the above technique estimates variance for the $i$th strongest spectral component, but the corresponding direction can drift over subsequent steps. Future work might account for this fluctuation, or find alternative ways to estimate spectral noise. %%
 
-The code above conveys the general idea for adaptive Muon variants, though the variant used in Modded NanoGPT, *NorMuon* is a bit longer. It renormalizes the update matrix so that it has the same magnitude (via the Frobenius norm) after dividing by variance. This method yields a $\approx 2\%$ decrease in training time when combined with learning rate tuning.[^record41][^record42]
+The code above conveys the general idea for adaptive Muon variants, though the variant used in Modded NanoGPT, *NorMuon*, has an additional renormalization step so that the update matrix has the same magnitude after dividing by variance. Using this adaptive method yields a $\approx 2\%$ decrease in training time when combined with learning rate tuning.[^record41][^record42]
 
 [^record41]: [Li 2025](https://github.com/KellerJordan/modded-nanogpt/pull/144) *Modded NanoGPT Record 41* 
 [^record42]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/146) *Modded NanoGPT Record 42*
@@ -118,20 +121,20 @@ $$ %%
 [^granziol]: [Granziol et al 2020](https://arxiv.org/pdf/2006.09092) *Learning Rates as a Function of Batch Size* contains a proof.
 [^Li]: [Li et al 2024](https://arxiv.org/abs/2405.14578) *Surge Phenomenon in Optimal Learning Rate and Batch Size Scaling*
 
-A power-law relationship ($\eta \propto B^p$) is often assumed to hold for Muon as well[^sato][^ryu], though in practice it will asymptote quickly:
+A square-root law relationship ($\eta \propto \sqrt{B}$) theoretically holds for low batch sizes in Muon as well[^sujianlin][^ryu]. In order to validate this empirically, as well as check that it is true for adaptive muon, I conducted an experiment on Modded NanoGPT:
 
-[^sato]: [Sato et al 2025](https://arxiv.org/abs/2507.01598) *Convergence Bound and Critical Batch Size of Muon Optimizer*.
+[^sujianlin]: [Jianlin Su 2025](https://kexue.fm/archives/11285) *Rethinking Learning Rate and Batch Size (Part 3): Muon*
 [^ryu]: [Simo Ryu 2025](https://x.com/cloneofsimo/status/1907731069878825400) *Adam vs Shampoo vs Muon on MNIST. all follow the lr ~ sqrt(BS) law.*
 
 <img src="../images/Muon/validation_loss_heatmap_medium_light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/Muon/validation_loss_heatmap_medium_dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 
-**Figure 2: Sweeping Adaptive Muon at a learning rate x log(batch size) grid at three different token budgets. The lowest loss per batch size is selected in red.**
+**Figure 2: Sweeping Modded nanoGPT at a learning rate x log(batch size) grid at three different token budgets. The lowest loss per batch size is selected in red.**
 
 At token budgets of $\approx 134M$, $536M$, $1073M$ tokens, the optimal learning rate seems to converge around $\eta \approx 0.035$, $0.025$, and $0.015$, respectively. Note that $B = 4 \times 2^{14}$ does not appear to converge at the highest token budget for any of the swept learning rates.
 
-Below the asymptote/saturated batch size, we can approximate the value $p$ in $\eta \propto B^p$ via the log-slope of the red boxes. At this granularity, $p \approx 0.6-1.0$ seems approximately correct. Convergence to the optimal learning rate appears to be very fast for this variant of Muon.
+ The learning rate appears to increase until around $B < 32 \times 2^{14}$  tokens, though convergence appears to be faster at higher token budgets. In general, higher token budgets are less sensitive to differences in learning rate or learning rate:
 
 
 
@@ -247,7 +250,8 @@ Thank you to Prime Intellect, who sponsors my research with GPU credits. If this
 [^essentialAI]: [Essential AI, Shah 2025](https://arxiv.org/abs/2505.02222) *Practical Efficiency of Muon for Pretraining*.
 
 
-[^su]: [Su 2025](https://kexue.fm/archives/11416) *Muon Optimizer Guide* has a comprehensive overview on different per-shape learning rate strategies.
+
+%% [^su]: [Su 2025](https://kexue.fm/archives/11416) *Muon Optimizer Guide* has a comprehensive overview on different per-shape learning rate strategies. %%
 [^larry]: [Larry 2025](https://github.com/KellerJordan/modded-nanogpt/pull/136#issuecomment-3536835289)
 [^wen]: [Wen et al 2025](https://arxiv.org/pdf/2509.02046) *Fantastic Optimizers and Where to Find Them* performs a hyperparameter sweep on various optimizers including Muon. The optimal configs from their sweep can be found [here](https://github.com/WhenWen/marin/tree/kaiyue/optimizers/experiments/optimizer_sweep/Analysis/Results/).
 [^jordan-warmup]: [Jordan 2024](https://x.com/kellerjordan0/status/1845867151946899852) "Removed learning rate warmup, since the optimizer (Muon) doesn't need it"

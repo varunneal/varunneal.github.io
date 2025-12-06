@@ -38,13 +38,12 @@ The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^no
 [^asgo]: [An et al 2025](https://arxiv.org/pdf/2503.20762) *ASGO*
 
 
-Let's consider how Muon differs from a simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM updates parameters using an exponential moving average (EMA) of gradients and, at each step, nudges the weights a small distance in the opposite direction of that averaged gradient. Muon (MomentUm Orthogonalized by Newton-Schulz) takes this same gradient EMA but *orthogonalizes* it via a matrix-sign function before applying the update. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that "rounds" the gradient [^rounding].
+Let's consider how Muon differs from a simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM updates parameters using an exponential moving average (EMA) of gradients and, at each step, nudges the weights a small distance in the opposite direction of that averaged gradient. Muon (**M**oment**u**m **o**rthogonalized by **N**ewton-**S**chulz) takes this same gradient EMA but *orthogonalizes* it via a matrix-sign function before applying the update. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that "rounds" the gradient (see footnote).[^rounding]
 
 [^rounding]: Every matrix corresponds to an of ellipsoid-like transformation. Orthogonalization makes the underlying ellipsoid into perfect sphere. More formally, the spectral theorem tells us that any matrix transformation can be decomposed into a rotation/reflection + an ellipsoid transformation + a rotation/reflection. This is exactly what the singular value decomposition $A = U \Sigma V^{\intercal}$ is describing ($\Sigma$ is the ellipsoid transformation, $U$ and $V$ are unitary matrices). $\Sigma$ is a diagonal matrix, and its entries are called the singular values. A spherical transformation will have singular values all equal to $1$, and the its matrix will be orthogonal/semi-orthogonal (if it's rectangular).
 
 
-
-Adam (ADaptive Moment Estimation) also builds on SGDM, but in a different way. It keeps an EMA of the squared gradients for each parameter, and then forms a variance-corrected update by dividing the gradient EMA by this squared-gradient EMA.
+Adam (Adaptive moment estimation) also builds on SGDM, but in a different way. It keeps an EMA of the squared gradients for each parameter, and then forms a variance-corrected update by dividing the gradient EMA by this squared-gradient EMA.
 
 Variance correction is hypothesized to be useful in two distinct ways:
 1) Stochastic noise: At a fixed batch size, some features may be very noisy while other features will have high signal. Adaptivity allows noisier gradient estimates to get dampened, effectively giving each parameter its own adaptive learning rate.
@@ -64,8 +63,7 @@ Despite not being a variance-adaptive method, Muon is "curvature-aware" [^kovale
 
 [^bernstein25]: [Jeremy Bernstein 2025](https://thinkingmachines.ai/blog/modular-manifolds/) *Modular Manifolds*
 
-To the best of my knowledge, there is no argument that Muon solves (1)—e.g. that orthogonalization corrects for noise in the gradient estimation. To account for this, we want to estimate the noise along each spectral direction and correct for it. After orthogonalization, the columns of the update matrix correspond to the spectral directions, so we can estimate spectral variance by calculating column-wise RMS. For this reason, variance adaptation methods for Muon only require variance estimates along a single dimension[^frans].
-
+On the other hand, Muon does not solve for (1)—e.g. it does not estimate the sampling error at a granular level. In fact, this turns out to be very easy to add to Muon. After orthogonalization, the columns of the update matrix correspond to "spectral directions". These correspond to orthogonal directions in parameter space, and may have distinct signal-to-noise ratios from each other. To account for this error, we can track the norm of each column as a proxy for spectral variance. Dividing by this gives each spectral direction a variance-adaptive learning rate:
 
 ```python {5-6}
 def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
@@ -82,7 +80,7 @@ def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
 
 %% Note that the above technique estimates variance for the $i$th strongest spectral component, but the corresponding direction can drift over subsequent steps. Future work might account for this fluctuation, or find alternative ways to estimate spectral noise. %%
 
-The code above conveys the general idea for adaptive Muon variants, though the variant used in Modded NanoGPT, *NorMuon*, has an additional renormalization step so that the update matrix has the same magnitude after dividing by variance. Using this adaptive method yields a $\approx 2\%$ decrease in training time when combined with learning rate tuning.[^record41][^record42]
+The code above conveys the general idea for adaptive Muon variants. The variant used in Modded NanoGPT, *NorMuon*, has an additional renormalization step so that the update matrix has the same magnitude after dividing by variance. Using this adaptive method improved the record's training time by $\approx 2\%$ when combined with learning rate tuning.[^record41][^record42]
 
 [^record41]: [Li 2025](https://github.com/KellerJordan/modded-nanogpt/pull/144) *Modded NanoGPT Record 41* 
 [^record42]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/146) *Modded NanoGPT Record 42*

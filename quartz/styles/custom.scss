@@ -352,32 +352,39 @@ a.footnote-ref {
    UI Components
    ======================================================================== */
 
-/* Dark mode toggle - small square in top right */
+/* Dark mode toggle - sun/moon in top right */
 .darkmode {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: min(5vw, 5vh);
-  height: min(5vw, 5vh);
-  min-width: 25px;
-  min-height: 25px;
-  max-width: 50px;
-  max-height: 50px;
+  top: 8px;
+  right: 8px;
+  width: min(6vw, 6vh);
+  height: min(6vw, 6vh);
+  min-width: 30px;
+  min-height: 30px;
+  max-width: 55px;
+  max-height: 55px;
   margin: 0;
   padding: 0;
-  background: var(--dark);
+  background: transparent;
   border: none;
   border-radius: 0;
   cursor: pointer;
   z-index: 999;
   transition: opacity 0.2s ease;
 
-  &:hover {
-    opacity: 0.8;
+  & .theme-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--dark);
+    box-sizing: border-box;
+    filter: drop-shadow(0 0 1px var(--dark));
+    box-shadow: 0 0 2px var(--dark);
+    transition: box-shadow 0.2s ease;
   }
 
-  & svg {
-    display: none !important;
+  &:hover .theme-circle {
+    box-shadow: 0 0 16px var(--dark);
   }
 }
 

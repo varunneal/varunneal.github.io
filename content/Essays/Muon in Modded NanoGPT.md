@@ -160,7 +160,7 @@ Last month, a paper from Shulgin et al demonstrated that a more precise orthogon
 
 <img src="../images/Muon/shulgin-heatmap.png"  class="plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 4: Validation Loss at two levels of convergence for orthogonalization. Caption from Shulgin: "the optimal learning rate couples with approximation quality \[...\] higher precision → higher optimal LR + wider stability,"**
+**Figure 4: Validation Loss at two levels of convergence for orthogonalization. Shulgin writes "the optimal learning rate couples with approximation quality", so "higher precision → higher optimal LR + wider stability"**
 
 [^shulgin]: [Shulgin et al 2025](https://arxiv.org/abs/2510.19933) *Beyond the Ideal: Analyzing the Inexact Muon Update*. Corresponding tweet thread [here](https://x.com/egor_shulg/status/1982802516665373038).
 

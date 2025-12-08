@@ -378,13 +378,12 @@ a.footnote-ref {
     border-radius: 50%;
     border: 3px solid var(--dark);
     box-sizing: border-box;
-    filter: drop-shadow(0 0 1px var(--dark));
     box-shadow: 0 0 2px var(--dark);
     transition: box-shadow 0.2s ease;
   }
 
   &:hover .theme-circle {
-    box-shadow: 0 0 16px var(--dark);
+    box-shadow: 0 0 1px var(--dark), 0 0 16px var(--dark);
   }
 }
 

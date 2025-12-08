@@ -94,5 +94,10 @@ export const defaultListPageLayout: PageLayout = {
     afterBody: [
         Component.ListPageImage(),
     ],
-    right: [],
+    right: [
+      Component.Fractal({
+          height: 289,
+          width: 289
+      }),
+    ],
 }

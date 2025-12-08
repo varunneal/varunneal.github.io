@@ -32,6 +32,8 @@ The Muon optimizer was developed in the Modded NanoGPT speedrun, which has the e
 The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^normuon]. Several recent papers have proposed similar adaptive extensions [^adamuon] [^adago] [^frans] [^asgo]. In this section, I want to explain what "adaptive Muon" means and why it helps.
 
 [^frans]: [Frans et al 2025](https://arxiv.org/abs/2510.25000) *What Really Matters in Matrix-Whitening Optimizers?*
+[^kovalev-shampoo]: [Kovalev 2025](https://arxiv.org/abs/2506.23803) *SGD with Adaptive Preconditioning: Unified Analysis and Momentum Acceleration*
+[^xie]: [Xie et al 2025](https://arxiv.org/abs/2503.10537) *Structured Preconditioners in Adaptive Optimization*
 [^adago]: [Zhang et al 2025](https://arxiv.org/abs/2509.02981) *AdaGrad Meets Muon*
 [^normuon]: [Li et al 2025](https://arxiv.org/abs/2510.05491) *NorMuon*
 [^adamuon]:[Si et al 2025](https://arxiv.org/abs/2507.11005) *AdaMuon*
@@ -59,11 +61,13 @@ Despite not being a variance-adaptive method, Muon is "curvature-aware" [^kovale
 
 [^anonymous26]: [Anonymous ICLR Conference Submission 2025](https://openreview.net/forum?id=go388T3QjQ) *Long-tailed Learning with Muon Optimizer*
 [^su25]: [Weijie Su 2025](https://arxiv.org/abs/2511.00674) *Isotropic Curvature Model for Understanding Deep Learning Optimization*
-[^kovalev]: Understanding Gradient Orthogonalization for Deep Learning via Non-Euclidean Trust-Region Optimization*
+[^kovalev]: [Kovalev 2025](https://arxiv.org/abs/2503.12645) *Understanding Gradient Orthogonalization for Deep Learning via Non-Euclidean Trust-Region Optimization*
 
 [^bernstein25]: [Jeremy Bernstein 2025](https://thinkingmachines.ai/blog/modular-manifolds/) *Modular Manifolds*
 
-On the other hand, Muon does not solve for (1)—e.g. it does not estimate the sampling error at a granular level. In fact, this turns out to be very easy to add to Muon. After orthogonalization, the columns of the update matrix correspond to "spectral directions". These correspond to orthogonal directions in parameter space, and may have distinct signal-to-noise ratios from each other. To account for this error, we can track the norm of each column as a proxy for spectral variance. Dividing by this gives each spectral direction a variance-adaptive learning rate:
+On the other hand, Muon does not solve for (1)—e.g. it does not estimate the sampling error at a granular level. %% In fact, this turns out to be very easy to add to Muon. After orthogonalization, the columns of the update matrix correspond to "spectral directions". These correspond to orthogonal directions in parameter space, and may have distinct signal-to-noise ratios from each other.  %% At a fixed batch size, each spectral direction might have a distinct signal-to-noise ratio. To account for this error, we can track the norm of each column as a proxy for variance in each spectral direction.[^spectral-variance] Dividing by this gives each column a variance-adapted learning rate:
+
+[^spectral-variance]: In fact, the columns are the output singular vectors weighed by the input singular vectors. The orthogonalized update is just a rotation matrix that aligns the input space with the output space. The column-wise RMS therefore tells us how much how much the input neuron contributes to the output spectral direction. 
 
 ```python {5-6}
 def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
@@ -80,7 +84,9 @@ def adaptive_muon_update(grad, momentum1, momentum2, beta1, beta2):
 
 %% Note that the above technique estimates variance for the $i$th strongest spectral component, but the corresponding direction can drift over subsequent steps. Future work might account for this fluctuation, or find alternative ways to estimate spectral noise. %%
 
-The code above conveys the general idea for adaptive Muon variants. The variant used in Modded NanoGPT, *NorMuon*, has an additional renormalization step so that the update matrix has the same magnitude after dividing by variance. Using this adaptive method improved the record's training time by $\approx 2\%$ when combined with learning rate tuning.[^record41][^record42]
+The code above conveys the general idea for adaptive Muon variants. %% The columns of the orthogonalized update correspond to the output spectral directions in the basis of the input spectral directions.  %%
+
+The variant used in Modded NanoGPT, *NorMuon*, has an additional renormalization step so that the update matrix has the same magnitude after dividing by variance. Using this adaptive method improved the record's training time by $\approx 2\%$ when combined with learning rate tuning.[^record41][^record42]
 
 [^record41]: [Li 2025](https://github.com/KellerJordan/modded-nanogpt/pull/144) *Modded NanoGPT Record 41* 
 [^record42]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/146) *Modded NanoGPT Record 42*

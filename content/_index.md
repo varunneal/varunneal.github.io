@@ -1,6 +1,5 @@
 ---
 title: welcome
-fractal: ship
 ---
 
 I'm Varun. I am a Machine Learning researcher and engineer.

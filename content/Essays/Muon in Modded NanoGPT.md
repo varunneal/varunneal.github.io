@@ -138,7 +138,7 @@ A square-root law relationship ($\eta \propto \sqrt{B}$) theoretically holds for
 
 At token budgets of $\approx 134M$, $536M$, $1073M$ tokens, the optimal learning rate seems to converge around $\eta \approx 0.035$, $0.025$, and $0.015$, respectively. Note that $B = 4 \times 2^{14}$ does not appear to converge at the highest token budget for any of the swept learning rates.
 
- The learning rate appears to increase until around $B < 32 \times 2^{14}$  tokens, though convergence appears to be faster at higher token budgets. In general, higher token budgets are less sensitive to differences in learning rate or learning rate:
+ The learning rate appears to increase until around $B < 32 \times 2^{14}$  tokens, though convergence appears to be faster at higher token budgets. In general, higher token budgets are less sensitive to differences in learning rate or batch size:
 
 
 

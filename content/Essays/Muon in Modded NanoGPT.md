@@ -11,6 +11,7 @@ image: ../images/Muon/descent.png
 imageAlt: Descent of Everest
 permalink: essays/muon
 modified: November 30, 2025
+description: "How the Muon optimizer is used in Modded NanoGPT NanoGPT. Key techniques: adaptive Muon, cautious weight decay batch scheduling, faster orthogonalization (polar express). Key concepts: gradient variance/curvature estimation, learning rate tuning, GPU optimization."
 ---
 
 The Muon optimizer was developed in the Modded NanoGPT speedrun, which has the expressed goal of training a GPT-style model as fast as possible.[^moddednanogpt] In the past year, Muon has been adopted for large-scale training, including for the Chinese LLMs Kimi K2 and GLM 4.5. Over the same period, driven by competitive testing of refinements to the optimizer, the speedrun record has dropped from 45 minutes to ~2.2 minutes. In this post, I'll showcase some of the Muon improvements used in record runs and motivate why they are effective. 
@@ -42,7 +43,7 @@ The Modded NanoGPT speedrun uses an adaptive variant of Muon called NorMuon [^no
 
 Let's consider how Muon differs from a simpler optimizer, Stochastic Gradient Descent with Momentum (SGDM). SGDM updates parameters using an exponential moving average (EMA) of gradients and, at each step, nudges the weights a small distance in the opposite direction of that averaged gradient. Muon (**M**oment**u**m **o**rthogonalized by **N**ewton-**S**chulz) takes this same gradient EMA but *orthogonalizes* it via a matrix-sign function before applying the update. Orthogonalization is a rich concept; for now, you can think of it as a special form of normalization that "rounds" the gradient (see footnote).[^rounding]
 
-[^rounding]: Every matrix corresponds to an of ellipsoid-like transformation. Orthogonalization makes the underlying ellipsoid into perfect sphere. More formally, the spectral theorem tells us that any matrix transformation can be decomposed into a rotation/reflection + an ellipsoid transformation + a rotation/reflection. This is exactly what the singular value decomposition $A = U \Sigma V^{\intercal}$ is describing ($\Sigma$ is the ellipsoid transformation, $U$ and $V$ are unitary matrices). $\Sigma$ is a diagonal matrix, and its entries are called the singular values. A spherical transformation will have singular values all equal to $1$, and the its matrix will be orthogonal/semi-orthogonal (if it's rectangular).
+[^rounding]: Every matrix corresponds to an ellipsoid-like transformation. Orthogonalization makes the underlying ellipsoid into perfect sphere. More formally, the spectral theorem tells us that any matrix transformation can be decomposed into a rotation/reflection + an ellipsoid transformation + a rotation/reflection. This is exactly what the singular value decomposition $A = U \Sigma V^{\intercal}$ is describing ($\Sigma$ is the ellipsoid transformation, $U$ and $V$ are unitary matrices). $\Sigma$ is a diagonal matrix, and its entries are called the singular values. A spherical transformation will have singular values all equal to $1$, and the its matrix will be orthogonal/semi-orthogonal (if it's rectangular).
 
 
 Adam (Adaptive moment estimation) also builds on SGDM, but in a different way. It keeps an EMA of the squared gradients for each parameter, and then forms a variance-corrected update by dividing the gradient EMA by this squared-gradient EMA.
@@ -98,7 +99,7 @@ One advantage of Muon over Adam is a higher _critical batch size_. To explain w
 
 A *critical batch size* $B_{\text{critical}}$  balances both of these considerations: low enough to be token-efficient, but high enough to be speed-efficient.
 
-<img src="../images/Muon/cbs-revisited.png"  class="plot" style="width: 95%; height: auto; flex-shrink: 0;">
+<img src="../images/Muon/cbs-revisited.png" alt="Critical batch sizes for Adam" class="plot" style="width: 95%; height: auto; flex-shrink: 0;">
 
 **Figure 1: Critical batch sizes for Adam at various token budgets from Allen AI [^ai2]. $B_{\text{critical}}$, chosen as the greatest batch size exceeding below 1% of the lowest loss, is marked in red. Batch size here is in units of 4096 Tokens.**
 
@@ -130,11 +131,11 @@ A square-root law relationship ($\eta \propto \sqrt{B}$) theoretically holds for
 [^sujianlin]: [Jianlin Su 2025](https://kexue.fm/archives/11285) *Rethinking Learning Rate and Batch Size (Part 3): Muon*
 [^ryu]: [Simo Ryu 2025](https://x.com/cloneofsimo/status/1907731069878825400) *Adam vs Shampoo vs Muon on MNIST. all follow the lr ~ sqrt(BS) law.*
 
-<img src="../images/Muon/validation_loss_heatmap_medium_light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
-<img src="../images/Muon/validation_loss_heatmap_medium_dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
+<img src="../images/Muon/validation_loss_heatmap_medium_light.png" alt="Learning rate sweep for Muon" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
+<img src="../images/Muon/validation_loss_heatmap_medium_dark.png" alt="Learning rate sweep for Muon" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 
-**Figure 2: Sweeping Modded nanoGPT at a learning rate x log(batch size) grid at three different token budgets. The lowest loss per batch size is selected in red.**
+**Figure 2: Sweeping Modded NanoGPT at a learning rate x log(batch size) grid at three different token budgets. The lowest loss per batch size is selected in red.**
 
 At token budgets of $\approx 134M$, $536M$, $1073M$ tokens, the optimal learning rate seems to converge around $\eta \approx 0.035$, $0.025$, and $0.015$, respectively. Note that $B = 4 \times 2^{14}$ does not appear to converge at the highest token budget for any of the swept learning rates.
 
@@ -142,8 +143,8 @@ At token budgets of $\approx 134M$, $536M$, $1073M$ tokens, the optimal learning
 
 
 
-<img src="../images/Muon/loss_vs_batch_size_light.png" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
-<img src="../images/Muon/loss_vs_batch_size_dark.png" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
+<img src="../images/Muon/loss_vs_batch_size_light.png" alt="Critical batch size for Muon" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
+<img src="../images/Muon/loss_vs_batch_size_dark.png" alt="Critical batch size for Muon"  class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 3: Results from the previous sweep (Fig2) while choosing the optimal learning rate for each batch size. For a fixed token budget, increasing batch size will tend to decrease final validation loss. $B_{\text{critical}}$ is the highest acceptable batch size given some tolerance for loss.**
 
@@ -162,7 +163,7 @@ The Newton-Schulz iterative algorithm approximates orthogonalization via a quint
 
 Last month, a paper from Shulgin et al demonstrated that a more precise orthogonalization improves Muon convergence, especially when accompanied with appropriate learning rate tuning [^shulgin]:
 
-<img src="../images/Muon/shulgin-heatmap.png"  class="plot" style="width: 100%; height: auto; flex-shrink: 0;">
+<img src="../images/Muon/shulgin-heatmap.png"  alt="Polar Express Muon algorithm by number iterations" class="plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 4: Validation Loss at two levels of convergence for orthogonalization. Shulgin writes "the optimal learning rate couples with approximation quality", so "higher precision → higher optimal LR + wider stability"**
 

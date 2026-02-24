@@ -180,7 +180,7 @@ On ongoing effort in the Modded NanoGPT speedrun is being made for even faster o
 ## (4) Cautious weight decay
  Weight decay is important for large-scale training with Muon. The Kimi team writes: "While vanilla Muon initially converges faster, we observed that some model weights grew too large over time, potentially limiting the model’s long-term performances. Adding weight decay addressed this issue - the results demonstrate that Muon with weight decay outperforms both vanilla Muon and AdamW" [^kimi].
 
-At the relatively small scale of Modded NanoGPT, however, weight decay was doing more harm than good. Weight decay typically involves a tradeoff between immediate convergence and long term stability. In October, a variant of weight decay known as *cautious weight decay* was proposed [^chen25], which only decays parameters that will increase in magnitude in the update step:
+At the relatively small scale of Modded NanoGPT, however, weight decay was doing more harm than good. Weight decay typically involves a tradeoff between immediate convergence and long term stability. In October, a variant of weight decay known as *cautious weight decay* was proposed [^chen25], which only decays parameters that are already decreasing in magnitude in the update step:
 
 ```python {2} /* mask/
 def apply_update(param, update, learning_rate, weight_decay):
@@ -190,10 +190,13 @@ def apply_update(param, update, learning_rate, weight_decay):
 ```
 **Algorithm 2: Cautious weight decay (difference from decoupled weight decay highlighted).**
 
-Cautious weight decay avoids shrinking weights that are already being moved toward zero by the gradient, so you avoid over-regularizing parameters that are actively decaying. This technique proved effective in Modded NanoGPT. Using cautious weight decay with a decaying schedule improved the record by $\approx 1.3\%$, with final weights $\approx 15\%$ smaller in magnitude than in the unregularized case. [^pr154]
+This technique proved effective in Modded NanoGPT. Using cautious weight decay with a decaying schedule improved the record by $\approx 1.3\%$, with final weights $\approx 15\%$ smaller in magnitude than in the unregularized case. [^pr154]
+
+*(February 2026 Update: Cautious Weight Decay is also successful in Andrej Karpathy's NanoChat[^karpathy-cwd])*
 
 [^pr154]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/154) *Modded NanoGPT Record 43*
 [^chen25]: [Chen et al 2025](https://arxiv.org/abs/2510.12402) *Cautious Weight Decay*
+[^karpathy-cwd]: [Karpathy 2026](https://x.com/karpathy/status/2011538774543777986) 
 ## (5) Distributed and efficient computation
 The implementation of Muon has been optimized in order to distribute the implementation over 8 devices. First, there are several tricks used to speed up orthogonalization over the basic Newton-Schulz algorithm:
 * Parameters of the same shape are stacked together so that orthogonalization is vectorized.[^record20]

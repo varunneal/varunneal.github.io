@@ -8,12 +8,12 @@ title: Projects
 (I've been working on . . .)
 
  Machine Learning
-- [Modded NanoGPT](https://github.com/KellerJordan/modded-nanogpt/) - an LLM speedrunning competition where I have set several records [^records]. I've written a corresponding blogpost on [[muon]].
+- [Modded NanoGPT](https://github.com/KellerJordan/modded-nanogpt/) - an LLM speedrunning competition where I have set several records [^records]. I've written a corresponding blogpost on [[muon]]. My work here has been extensively tested and used in Andrej Karpathy's [Nanochat](https://github.com/karpathy/nanochat) (>42k github stars).  
 - [Prime Environments](https://github.com/PrimeIntellect-ai/prime-rl) - creating Reinforcement Learning envs to test and train agents, including [SWE Bench](https://github.com/PrimeIntellect-ai/prime-environments/pull/136)
 - [Spotify MCP Server](https://github.com/varunneal/spotify-mcp) - get your LLM to control spotify (>500 github stars!)
 - [Semantic Finder](https://do-me.github.io/SemanticFinder/) - vector search in your browser (>300 github stars!)
 
-[^records]: At the time of writing this, 5 records: [incorporating Flash Attention 3](https://github.com/KellerJordan/modded-nanogpt/pull/118), [adding a better matrix sign function](https://github.com/KellerJordan/modded-nanogpt/pull/134), [speeding up Muon](https://github.com/KellerJordan/modded-nanogpt/pull/146), [improving weight decay](https://github.com/KellerJordan/modded-nanogpt/pull/154), and [adding batch size scheduling](https://github.com/KellerJordan/modded-nanogpt/pull/163).
+[^records]: At the time of writing this, 8 records including: [incorporating Flash Attention 3](https://github.com/KellerJordan/modded-nanogpt/pull/118), [adding a better matrix sign function](https://github.com/KellerJordan/modded-nanogpt/pull/134), [speeding up Muon](https://github.com/KellerJordan/modded-nanogpt/pull/146), [improving weight decay](https://github.com/KellerJordan/modded-nanogpt/pull/154), [adding batch size scheduling](https://github.com/KellerJordan/modded-nanogpt/pull/163), and inventing an [efficient form of multitoken prediction](https://github.com/KellerJordan/modded-nanogpt/pull/178). 
 
 Graphics
 - [Theory of Human Tetrachromacy](https://imjal.github.io/theory-of-tetrachromacy/) - Best Paper Honorable Mention at Siggraph '24

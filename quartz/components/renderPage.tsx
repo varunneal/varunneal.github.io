@@ -231,10 +231,11 @@ export function renderPage(
   )
 
   const lang = componentData.fileData.frontmatter?.lang ?? cfg.locale?.split("-")[0] ?? "en"
+  const articleType = componentData.fileData.frontmatter?.type as string | undefined
   const doc = (
     <html lang={lang}>
       <Head {...componentData} />
-      <body data-slug={slug}>
+      <body data-slug={slug} {...(articleType ? { "data-article-type": articleType } : {})}>
         <div id="quartz-root" class="page">
           <Body {...componentData}>
             {LeftComponent}

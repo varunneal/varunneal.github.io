@@ -59,16 +59,7 @@ ul,
   /* tr and td removed from list of selectors for overflow-wrap, allowing them to use default 'normal' property value */
 }
 
-.math {
-  font-size: 1rem;
-  &.math-display {
-    text-align: center;
-  }
-}
 
-strong {
-  font-weight: $semiBoldWeight;
-}
 
 a {
   font-weight: $semiBoldWeight;
@@ -310,12 +301,6 @@ input[type="checkbox"] {
   }
 }
 
-blockquote {
-  margin: 1rem 0;
-  border-left: 3px solid var(--secondary);
-  padding-left: 1rem;
-  transition: border-color 0.2s ease;
-}
 
 h1,
 h2,
@@ -529,13 +514,6 @@ p > img + em {
   transform: translateY(-1rem);
 }
 
-hr {
-  width: 100%;
-  margin: 2rem auto;
-  height: 1px;
-  border: none;
-  background-color: var(--lightgray);
-}
 
 audio,
 video {

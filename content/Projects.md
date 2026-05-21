@@ -3,6 +3,7 @@ aliases:
   - technical projects
 fractal: mandelbrot
 title: Projects
+type: technical
 ---
 
 (I've been working on . . .)
@@ -13,7 +14,7 @@ title: Projects
 - [Spotify MCP Server](https://github.com/varunneal/spotify-mcp) - get your LLM to control spotify (>500 github stars!)
 - [Semantic Finder](https://do-me.github.io/SemanticFinder/) - vector search in your browser (>300 github stars!)
 
-[^records]: At the time of writing this, 8 records including: [incorporating Flash Attention 3](https://github.com/KellerJordan/modded-nanogpt/pull/118), [adding a better matrix sign function](https://github.com/KellerJordan/modded-nanogpt/pull/134), [speeding up Muon](https://github.com/KellerJordan/modded-nanogpt/pull/146), [improving weight decay](https://github.com/KellerJordan/modded-nanogpt/pull/154), [adding batch size scheduling](https://github.com/KellerJordan/modded-nanogpt/pull/163), and inventing an [efficient form of multitoken prediction](https://github.com/KellerJordan/modded-nanogpt/pull/178). 
+[^records]: At the time of writing this, 8 records including: [incorporating Flash Attention 3](https://github.com/KellerJordan/modded-nanogpt/pull/118), [adding a better matrix sign function](https://github.com/KellerJordan/modded-nanogpt/pull/134), [speeding up Muon,](https://github.com/KellerJordan/modded-nanogpt/pull/146) [improving weight decay](https://github.com/KellerJordan/modded-nanogpt/pull/154), [adding batch size scheduling](https://github.com/KellerJordan/modded-nanogpt/pull/163), and inventing an [efficient form of multitoken prediction](https://github.com/KellerJordan/modded-nanogpt/pull/178). 
 
 Graphics
 - [Theory of Human Tetrachromacy](https://imjal.github.io/theory-of-tetrachromacy/) - Best Paper Honorable Mention at Siggraph '24

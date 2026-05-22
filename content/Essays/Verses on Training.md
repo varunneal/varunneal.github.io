@@ -147,7 +147,7 @@ he longs neither for this world nor the next.
 <br>
 
  #### *On* reward 
- from the Bhagavad Gita:[^2]
+ From the Bhagavad Gita:[^2]
 
 ```baskerville
 You have the right to work, but only for the work's sake only.  

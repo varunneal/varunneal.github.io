@@ -101,7 +101,6 @@ One advantage of Muon over Adam is a higher _critical batch size_. To explain w
 A *critical batch size* $B_{\text{critical}}$  balances both of these considerations: low enough to be token-efficient, but high enough to be speed-efficient.
 
 <img src="../images/Muon/cbs-revisited.png" alt="Critical batch sizes for Adam" class="plot" style="width: 95%; height: auto; flex-shrink: 0;">
-
 **Figure 1: Critical batch sizes for Adam at various token budgets from Allen AI [^ai2]. $B_{\text{critical}}$, chosen as the greatest batch size exceeding below 1% of the lowest loss, is marked in red. Batch size here is in units of 4096 Tokens.**
 
 

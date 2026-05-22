@@ -160,7 +160,7 @@ Modded NanoGPT's recent record uses batch size scheduling in order to maximize t
 
 [^pr163]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/163) *Modded NanoGPT PR#163/Record 46*
 ## (3) Faster orthogonalization: Polar Express and beyond
-The Newton-Schulz iterative algorithm approximates orthogonalization via a quintic polynomial iteration. This iterative approach is agnostic to the conditioning of the underlying matrix. However, since the matrix becomes better-conditioned over iterations, you can find an optimal polynomial per-iteration, which results in faster convergence. Ansel et al provide optimal coefficients at each iteration step via their algorithm Polar Express [^ansel].
+The Newton-Schulz iterative algorithm approximates orthogonalization via a quintic polynomial iteration. This iterative approach is agnostic to the conditioning of the underlying matrix. However, since the matrix becomes better-conditioned over iterations, you can find an optimal polynomial per-iteration, which results in faster convergence. Amsel et al provide optimal coefficients at each iteration step via their algorithm Polar Express [^amsel].
 
 Last month, a paper from Shulgin et al demonstrated that a more precise orthogonalization improves Muon convergence, especially when accompanied with appropriate learning rate tuning [^shulgin]:
 
@@ -176,7 +176,7 @@ On ongoing effort in the Modded NanoGPT speedrun is being made for even faster o
 
 [^pr134]: [Srivastava 2025](https://github.com/KellerJordan/modded-nanogpt/pull/134) *Modded NanoGPT Record 38*
 [^Boissin]: [Thibaut Boissin 2025](https://github.com/KellerJordan/modded-nanogpt/pull/155) *Modded NanoGPT PR#155*
-[^ansel]: [Ansel et al 2025](https://arxiv.org/abs/2505.16932) *The Polar Express*
+[^amsel]: [Amsel et al 2025](https://arxiv.org/abs/2505.16932) *The Polar Express*
 
 ## (4) Cautious weight decay
  Weight decay is important for large-scale training with Muon. The Kimi team writes: "While vanilla Muon initially converges faster, we observed that some model weights grew too large over time, potentially limiting the model’s long-term performances. Adding weight decay addressed this issue - the results demonstrate that Muon with weight decay outperforms both vanilla Muon and AdamW" [^kimi].

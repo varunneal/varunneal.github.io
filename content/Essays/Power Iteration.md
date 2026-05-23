@@ -17,17 +17,19 @@ type: technical
 
 **Figure 1: For any singular value $\sigma \in [0.001, 1]$ we achieve error no worse than $1.65\%$.** 
 
-Let's consider a matrix $M = U \Sigma V^\top$. The [[Muon in Modded NanoGPT|Muon]] optimizer uses several polynomial iterations of $M$ in order to approximate $UV^\top.$ Recent research[^nilin][^dynmuon][^htmuon][^qdwh] has shown interest in $U\Sigma^pV^\top$ for $p \neq 0.$ Continuing the approach by Nilin in Soft Muon, we can use a the iterates of a polynomial sequence as a basis for this approximation. In particular, we find weights $w_k(p)$ and odd quintic polynomials $X_i$ such that
+Let's consider a matrix $M = U \Sigma V^\top$. The [[Muon in Modded NanoGPT|Muon]] optimizer uses several polynomial iterations of $M$ in order to approximate $UV^\top.$ Recent research[^nilin][^dynmuon][^htmuon][^qdwh] has shown interest in $U\Sigma^pV^\top$ for $p \neq 0.$ As shown in Soft Muon, the iterates of a polynomial sequence can be used as a linear basis for this approximation, which has the advantage of requiring only as many matmuls as the original Newton-Schulz method. Soft Muon uses a single polynomial $q(X) = 2X - \tfrac{3}{2}X(X^\top X) + \tfrac{1}{2}X(X^\top X)^2$ with iterates $X_{k+1} = q(X_k)$ as a basis for the approximations $U\Sigma^{0.2}V^\top$ and $U\Sigma^{-0.2}V^\top$. 
 
-$$U\Sigma^p V^\top \approx \sigma_{\max}^p \sum_{k=0}^{8} w_k(p)\, X_k (M)$$
+Unlike in Soft Muon, we define 9 distinct odd quintic polynomials $q_k$ and weights $w_k(p)$ such that
 
-is very good on $p \in [-0.9, 0.9]$ for matrices $M$ with $\sigma_{\max} / \sigma_{\min} \leq 1000$, 
+$$U\Sigma^p V^\top \approx \sigma_{\max}^p \sum_{k=0}^{8} w_k(p)\, X_k$$
+
+is very good on $p \in [-0.9, 0.9]$ for matrices $M$ with $\sigma_{\max} / \sigma_{\min} \leq 1000$. 
 
 Weights $w_k (p)$ are fast to generate for any $p \in [-0.9, 0.9]$, requiring only a single matmul:
 
 $$\mathbf{w}(p) = A \cdot {T}(p/0.9)$$
 
-where $A$ is a fixed ${9 \times 11}$ matrix and $T = [T_0, \dots, T_{11}]$ is a vector with $T_\ell(\tau) = \cos(\ell \arccos \tau).$ 
+where $A$ is a fixed ${9 \times 11}$ matrix and $T = [T_0, \dots, T_{10}]$ is a vector with $T_\ell(\tau) = \cos(\ell \arccos \tau).$ 
 
 For additional details and the method used to search for the optimal polynomial coefficients see the code artifact in the appendix.
 
@@ -110,9 +112,9 @@ def power_express(G, p):
 
 **Streaming exponential iteration**[^su] as articulated by Jianlin Su approximates SVD via a streaming power iteration ($V_t = \text{QR}(M_t^\top M_t V_{t-1})$, $U_t = \text{ColNorm}(M_t V_t)$, $\Sigma_t = \text{diag}(U_t^\top M_t V_t)$), and allows us to manipulate $\Sigma$ directly. This allows arbitrary spectral transformations and is extremely powerful, but requires stateful streaming and a QR solve per step.
 
-**Freon**[^qdwh] uses rational approximations $x R(x^{2b})$ with Remez-optimal coefficients instead of polynomial iterations, avoiding the condition-squaring problem via block-QR. Achieves doubly exponential convergence (5 iterations suffices) and handles any rational power $a/b$ — not just dyadic fractions. Instead of polynomial matmuls per iterate, this method requires a rational function evaluation and QR factorization per step.
+**Freon**[^qdwh] uses rational approximations $x R(x^{2b})$ with Remez-optimal coefficients instead of polynomial iterations, avoiding the condition-squaring problem via block-QR. This converges quickly and can handle $p$ equal to any rational power $a/b$. Instead of polynomial matmuls per iterate, this method requires a rational function evaluation and QR factorization per step.
 
-**Future work** includes characterizing how many polynomial iterates are needed to expand the range beyond $|p| < 0.9$ or below $\sigma = 10^{-3}$; as well as comparing the technique in this blog to traditional coupled iterative matrix-root algorithms. 
+In **future work** I would like to characterize how many polynomial iterates are needed to expand the range beyond $|p| < 0.9$ or below $\sigma = 10^{-3}$; as well as compare the method in this blog to traditional coupled iterative matrix-root algorithms for $p=\pm 0.5.$ 
 
 [^nilin]: [Abrahamsen 2026](https://nilin.github.io/contra-muon-and-soft-muon/) *Contra-Muon and Soft-Muon*
 [^amsel]: [Amsel et al. 2025](https://arxiv.org/abs/2505.16932) *The Polar Express*
@@ -124,9 +126,9 @@ def power_express(G, p):
 
 ## Appendix 
 
-**Reproduction** for finding polynomial coefficients + the Chebyshev approx for the weights. Rough idea: try to maximize the span of a basis of $8$ degree-$5$ polynomials. To do this, use CMA-ES with an optimization target of the max relative error across 10 values of $p$ on $[10^{-3}, 1]$. 
+**Reproduction** for finding polynomial coefficients + the Chebyshev approx for the weights. Rough idea: try to maximize the span of the basis $\{X_0, X_1, \dots X_8\}$ for $X_{k+1} = q_k (X_k), \, X_0 = M,$ and quintic degree-$5$ polynomials $q_1, \dots q_8$. To do this, use CMA-ES with an optimization target of the max relative error across 10 values of $p$ on $[10^{-3}, 1]$. 
 
-The weights for each iterate are continuous in $p$, so I've approximated them using degree-10 Chebyshev polynomials. There are 8 iterates so in total there are $(10 + 1) \times (8 + 1) = 99$ weight parameters. 
+The target function ($x^p$) is analytic in $p$. Linear maps preserve analyticity so it turns out that the weights for our basis can be fitted via low-degree polynomials. I found approximation quality plateaus by degree-10 using Chebyshev polynomials. There are 9 iterates in total, giving $(10 + 1) \times 9 = 99$ weight parameters. 
 
 ```python
 import numpy as np
@@ -158,11 +160,13 @@ def build_basis(coeffs, r_grid):
 def params_to_coeffs(params):
     coeffs = []
     idx = 0
-    for k in range(5):  # layers 0-4: q(1) relaxed
+    # layers 0-4
+    for k in range(5):  
         a, b, d = params[idx], params[idx+1], params[idx+2]
         coeffs.append((a, b, d - a - b))
         idx += 3
-    for k in range(5, 8):  # layers 5-7: q(1) = 1
+	# layers 5-7: q(1) = 1, same constraint as Newton-Schulz/Polar Express
+    for k in range(5, 8):  
         a, b = params[idx], params[idx+1]
         coeffs.append((a, b, 1.0 - a - b))
         idx += 2
@@ -256,7 +260,7 @@ if __name__ == '__main__':
         print(f"    ({a:.6f}, {b:.6f}, {c:.6f}),")
     print("]")
 
-    # Step 2: Joint LP
+    # Step 2: Joint LP 
     print("\nStep 2: Joint LP (99 unknowns)")
     t0 = time.time()
     alpha, t_opt = solve_joint_lp(coeffs)

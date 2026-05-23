@@ -10,30 +10,30 @@ modified: May 22, 2026
 description:
 type: technical
 ---
-[Soft Muon](https://nilin.github.io/contra-muon-and-soft-muon/)[^nilin] uses weighted sums of Newton-Schulz iterates to approximate $U\Sigma^p V^\top$ for $p=\pm 0.2.$ I extend this approximation to $p \in (-0.9, 0.9)$ by optimizing a heterogeneous polynomial basis and computing weights via Chebyshev interpolation.
+**Overview:** [Soft Muon](https://nilin.github.io/contra-muon-and-soft-muon/)[^nilin] uses weighted sums of Newton-Schulz iterates to approximate $U\Sigma^p V^\top$ for $p=\pm 0.2.$ I extend this approximation to $p \in (-0.9, 0.9)$ by optimizing a heterogeneous polynomial basis and computing weights via Chebyshev interpolation.
 
 <img src="../images/power-iteration/main_comparison-light.png" alt="Ours vs Soft Muon" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/power-iteration/main_comparison-dark.png" alt="Ours vs Soft Muon" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 1: For any singular value $\sigma \in [0.001, 1]$ we achieve error no worse than $1.65\%$.** 
 
-Following Soft Muon, we use a weighted average of the iterates of a polynomial sequence:
+Let's consider a matrix $M = U \Sigma V^\top$. The [[Muon in Modded NanoGPT|Muon]] optimizer uses several polynomial iterations of $M$ in order to approximate $UV^\top.$ Recent research[^nilin][^dynmuon][^htmuon][^qdwh] has shown interest in $U\Sigma^pV^\top$ for $p \neq 0.$ Continuing the approach by Nilin in Soft Muon, we can use a the iterates of a polynomial sequence as a basis for this approximation. In particular, we find weights $w_k(p)$ and odd quintic polynomials $X_i$ such that
 
-$$U\Sigma^p V^\top \approx \sigma_{\max}^p \sum_{k=0}^{8} w_k(p)\, X_k$$
+$$U\Sigma^p V^\top \approx \sigma_{\max}^p \sum_{k=0}^{8} w_k(p)\, X_k (M)$$
 
-where $X_i$ are odd quintic polynomials of $M = U \Sigma V^\top$. 
+is very good on $p \in [-0.9, 0.9]$ for matrices $M$ with $\sigma_{\max} / \sigma_{\min} \leq 1000$, 
 
 Weights $w_k (p)$ are fast to generate for any $p \in [-0.9, 0.9]$, requiring only a single matmul:
 
 $$\mathbf{w}(p) = A \cdot {T}(p/0.9)$$
 
-where $A$ is a fixed ${9 \times 11}$ matrix and $T = [T_0, \dots, T_{11}]$ is a vector with $T_\ell(\tau) = \cos(\ell \arccos \tau)$
+where $A$ is a fixed ${9 \times 11}$ matrix and $T = [T_0, \dots, T_{11}]$ is a vector with $T_\ell(\tau) = \cos(\ell \arccos \tau).$ 
 
 For additional details and the method used to search for the optimal polynomial coefficients see the code artifact in the appendix.
 
 Input matrices must be normalized so that singular values are all $< 1$. Soft Muon normalizes by the Schatten-4 norm; I recommend using the Schatten-$\infty$ (spectral norm) instead, which places the largest singular value at exactly 1 and gives the polynomial basis maximum resolution over the spectrum. The spectral norm can be computed cheaply via power iteration, and the final result can be rescaled by $\sigma_{\max}^p$ to recover the normalization-free magnitudes.
 
-This approximation is accurate on singular values $\sigma \in [10^{-3}, 1]$. Therefore, it works well for any initial matrix with condition number $\kappa < 1000.$ Beyond this, small $\sigma$ get sent toward 0 rather than blowing up. This closely matches the behavior of Polar Express[^amsel] at 8 iterations, which uses an optimal heterogenous polynomial basis for $p=0$. 
+This approximation is accurate on singular values $\sigma \in [10^{-3}, 1]$. Therefore, it works well for any initial matrix with condition number $\kappa = \sigma_{\max} / \sigma_{\min} \leq 1000.$ Beyond this, small $\sigma$ get sent toward 0 rather than blowing up. This closely matches the behavior of Polar Express[^amsel] at 8 iterations, which uses an optimal heterogenous polynomial basis for $p=0$. 
 
 <img src="../images/power-iteration/approximation_quality_1e4-light.png" alt="error comparison p=0,-0.2,-0.5,-0.9" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
@@ -96,6 +96,7 @@ def power_express(G, p):
 ```
 
 ## Related work
+**Soft Muon**[^nilin] is the primary inspiration. It uses the iterates of a single polynomial as a basis, and gives distinct weights for $p = 0.2$ and $p=-0.2$. 
 
 **DynMuon**[^dynmuon] decomposes $U\Sigma^p V^\top = (X_n X_n^\top)^{p/2} \cdot UV^\top$ and approximates $(X_n X_n^\top)^{p/2}$ via an order-2 Taylor expansion. Though simple and cheap, the approximation quality is limited:
 

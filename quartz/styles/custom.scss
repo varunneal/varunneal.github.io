@@ -440,8 +440,10 @@ body[data-article-type="technical"] {
     max-width: calc(#{map.get($breakpoints, desktop)} + 200px);
   }
 
-  .page > #quartz-body {
-    grid-template-columns: 160px auto #{$sidePanelWidth};
+  @media all and (min-width: #{map.get($breakpoints, desktop)}) {
+    .page > #quartz-body {
+      grid-template-columns: 160px auto #{$sidePanelWidth};
+    }
   }
 
   .katex {

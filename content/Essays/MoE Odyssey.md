@@ -3,11 +3,11 @@ created: May 17, 2026
 title: "[Translation] MoE Odyssey (MoE环游记)"
 permalink: essays/MoE
 type: technical
-draft: false
 aliases:
   - moe
 imageRaw: ../images/odyssey.png
 unlisted: "true"
+imageStyle: circle
 ---
 
 **Author:** Jianlin Su (苏剑林) | [kexue.fm](https://kexue.fm)

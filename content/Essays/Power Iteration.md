@@ -4,6 +4,7 @@ created: May 22, 2026
 title: Heterogeneous Iteration for Spectral Powers
 aliases:
   - power-iteration
+  - essays/power-iteration
 image:
 imageAlt:
 permalink: essays/spectral-powers

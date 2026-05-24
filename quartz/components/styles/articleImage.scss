@@ -9,6 +9,11 @@
     object-fit: contain;
   }
 
+  img.circle {
+    border-radius: 50%;
+    border: 2px solid var(--dark);
+  }
+
   // Auto-themed image recoloring
   // Light mode - bright beige color (#E5D4D1)
   :root[saved-theme="light"] & .auto-themed-image {

@@ -3,12 +3,16 @@ created: May 17, 2026
 title: "[Translation] MoE Odyssey (MoE环游记)"
 permalink: essays/MoE
 type: technical
-draft: true
+draft: false
+aliases:
+  - moe
+imageRaw: ../images/odyssey.png
+unlisted: "true"
 ---
 
 **Author:** Jianlin Su (苏剑林) | [kexue.fm](https://kexue.fm)
 
-*This is a compilation and AI-generated translation of Jianlin Su's wonderful series of blog posts "MoE环游记", rendered here as MoE Odyssey.*
+*This is a compilation and AI-generated translation of Jianlin Su's wonderful series of blog posts "MoE环游记".*
 
 
 ## [Part 1: Starting from Geometric Interpretation](https://kexue.fm/archives/10699)

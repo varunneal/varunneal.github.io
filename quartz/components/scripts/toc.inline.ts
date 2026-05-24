@@ -34,8 +34,43 @@ function setupToc() {
   }
 }
 
+function setupDynamicTocHeight() {
+  const sidebar = document.querySelector(".sidebar.right") as HTMLElement | null
+  if (!sidebar) return
+
+  const toc = sidebar.querySelector(".toc") as HTMLElement | null
+  if (!toc) return
+
+  const overflowList = toc.querySelector("ul.overflow") as HTMLElement | null
+  if (!overflowList) return
+
+  function updateTocHeight() {
+    if (!sidebar || !toc || !overflowList) return
+
+    const sidebarRect = sidebar.getBoundingClientRect()
+    const tocRect = toc.getBoundingClientRect()
+
+    // Available height = distance from top of TOC to bottom of sidebar
+    const tocHeaderHeight = toc.querySelector(".toc-header")?.getBoundingClientRect().height ?? 40
+    const availableForList = sidebarRect.bottom - tocRect.top - tocHeaderHeight - 16
+
+    if (availableForList > 0) {
+      overflowList.style.maxHeight = `${Math.max(availableForList, 100)}px`
+    }
+  }
+
+  updateTocHeight()
+  window.addEventListener("scroll", updateTocHeight, { passive: true })
+  window.addEventListener("resize", updateTocHeight, { passive: true })
+  window.addCleanup(() => {
+    window.removeEventListener("scroll", updateTocHeight)
+    window.removeEventListener("resize", updateTocHeight)
+  })
+}
+
 document.addEventListener("nav", () => {
   setupToc()
+  setupDynamicTocHeight()
 
   // update toc entry highlighting
   observer.disconnect()

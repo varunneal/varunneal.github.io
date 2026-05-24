@@ -88,6 +88,13 @@ export default ((opts?: Partial<ArticleImageOptions>) => {
             }
         }
 
+        // Check for raw image (no theming)
+        const rawImagePath = fileData.frontmatter?.imageRaw as string | undefined
+        const isRaw = !!rawImagePath
+        if (isRaw) {
+            imagePath = rawImagePath
+        }
+
         // If we still don't have an image, use the default if provided
         if (!imagePath && options.defaultImage) {
             imagePath = options.defaultImage
@@ -98,38 +105,30 @@ export default ((opts?: Partial<ArticleImageOptions>) => {
             return null
         }
 
-        // Generate alt text if not provided
-        // if (!imageAlt) {
-        //     imageAlt = i18n(cfg.locale).components.articleImage?.alt ||
-        //         "Article image"
-        // }
-
         // Determine which classes to apply based on theme-specific images
         const hasThemeImages = darkImagePath && lightImagePath
-        // const themeClass = hasThemeImages ? "theme-specific" : "auto-themed"
+        const imageStyle = fileData.frontmatter?.imageStyle as string | undefined
 
         return (
             <div class={`${displayClass} article-image`}>
-                {/* If we have theme-specific images, render both with theme visibility classes */}
                 {hasThemeImages ? (
                     <>
                         <img
                             src={lightImagePath}
                             alt={imageAlt}
-                            class="light-theme-image"
+                            class={`light-theme-image ${imageStyle ?? ""}`}
                         />
                         <img
                             src={darkImagePath}
                             alt={imageAlt}
-                            class="dark-theme-image"
+                            class={`dark-theme-image ${imageStyle ?? ""}`}
                         />
                     </>
                 ) : (
-                    // Otherwise render single image that will be filtered via CSS
                     <img
                         src={imagePath}
                         alt={imageAlt}
-                        class="auto-themed-image"
+                        class={`${isRaw ? "" : "auto-themed-image"} ${imageStyle ?? ""}`}
                     />
                 )}
             </div>

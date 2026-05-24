@@ -1,13 +1,14 @@
 ---
 draft: "false"
 created: May 22, 2026
-title: Heterogeneous Spectral Power Iteration
+title: Heterogeneous Iteration for Spectral Powers
 aliases:
+  - power-iteration
 image:
 imageAlt:
-permalink: essays/power-iteration
+permalink: essays/spectral-powers
 modified: May 22, 2026
-description:
+description: Extremely fast approximations of matrix powers UΣ^p V^T via a basis of polynomial iterates.
 type: technical
 ---
 **Overview:** [Soft Muon](https://nilin.github.io/contra-muon-and-soft-muon/)[^nilin] uses weighted sums of Newton-Schulz iterates to approximate $U\Sigma^p V^\top$ for $p=\pm 0.2.$ I extend this approximation to $p \in (-0.9, 0.9)$ by optimizing a heterogeneous polynomial basis and computing weights via Chebyshev interpolation.
@@ -41,7 +42,7 @@ This approximation is accurate on singular values $\sigma \in [10^{-3}, 1]$. The
 
 <img src="../images/power-iteration/approximation_quality_1e4-dark.png" alt="error comparison p=0,-0.2,-0.5,-0.9" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 2: (Top) approximation error of our method versus Polar express ($p=0$) and Soft Muon ($p=-0.2$). (Bottom) Error of our method at $p=-0.5$ and $p=-0.9$.**
+**Figure 2: Approximation error of our method for $p=-0.2, -0.5, -0.9$, alongside comparisons to Polar express ($p=0$) and Soft Muon ($p=-0.2$).**
 
 ## Code
 
@@ -98,7 +99,7 @@ def power_express(G, p):
 ```
 
 ## Related work
-**Soft Muon**[^nilin] is the primary inspiration. It uses the iterates of a single polynomial as a basis, and gives distinct weights for $p = 0.2$ and $p=-0.2$. 
+**Soft Muon**[^nilin] is the primary inspiration. It uses the iterates of a single polynomial as a basis, and gives distinct weights for $p = 0.2$ and $p=-0.2$. The key innovation in this post is to optimize a *heterogenous* basis—i.e. uses a new polynomial per iterate.
 
 **DynMuon**[^dynmuon] decomposes $U\Sigma^p V^\top = (X_n X_n^\top)^{p/2} \cdot UV^\top$ and approximates $(X_n X_n^\top)^{p/2}$ via an order-2 Taylor expansion. Though simple and cheap, the approximation quality is limited:
 
@@ -114,7 +115,7 @@ def power_express(G, p):
 
 **Freon**[^qdwh] uses rational approximations $x R(x^{2b})$ with Remez-optimal coefficients instead of polynomial iterations, avoiding the condition-squaring problem via block-QR. This converges quickly and can handle $p$ equal to any rational power $a/b$. Instead of polynomial matmuls per iterate, this method requires a rational function evaluation and QR factorization per step.
 
-In **future work** I would like to characterize how many polynomial iterates are needed to expand the range beyond $|p| < 0.9$ or below $\sigma = 10^{-3}$; as well as compare the method in this blog to traditional coupled iterative matrix-root algorithms for $p=\pm 0.5.$ 
+In **future work** I would like to characterize how many polynomial iterates are needed to expand the range beyond $|p| < 0.9$ or below $\sigma = 10^{-3}$; as well as compare the method in this blog to the well-known coupled iterative matrix-root algorithms for $p=\pm 0.5.$ 
 
 [^nilin]: [Abrahamsen 2026](https://nilin.github.io/contra-muon-and-soft-muon/) *Contra-Muon and Soft-Muon*
 [^amsel]: [Amsel et al. 2025](https://arxiv.org/abs/2505.16932) *The Polar Express*
@@ -287,8 +288,8 @@ if __name__ == '__main__':
 @misc{
 	srivastava2026,
 	author = {Varun Srivastava},
-	title = {Heterogenous Spectral Power Iteration},
+	title = {Heterogeneous Iteration for Spectral Powers},
 	year = {2026},
-	url = {https://varunneal.github.io/essays/power-iteration}
+	url = {https://varunneal.github.io/essays/spectral-powers}
 }
 ```

@@ -47,14 +47,15 @@ function setupDynamicTocHeight() {
   function updateTocHeight() {
     if (!sidebar || !toc || !overflowList) return
 
-    const sidebarRect = sidebar.getBoundingClientRect()
     const tocRect = toc.getBoundingClientRect()
-
-    // Available height = distance from top of TOC to bottom of sidebar
     const tocHeaderHeight = toc.querySelector(".toc-header")?.getBoundingClientRect().height ?? 40
-    const availableForList = sidebarRect.bottom - tocRect.top - tocHeaderHeight - 16
+
+    const bottomBound = window.innerHeight - 32
+    const availableForList = bottomBound - tocRect.top - tocHeaderHeight
 
     if (availableForList > 0) {
+      toc.style.flexShrink = "0"
+      toc.style.height = `${availableForList + tocHeaderHeight}px`
       overflowList.style.maxHeight = `${Math.max(availableForList, 100)}px`
     }
   }

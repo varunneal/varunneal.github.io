@@ -99,6 +99,9 @@ export function createFileParser(ctx: BuildCtx, fps: FilePath[]) {
           file.value = plugin.textTransform!(ctx, file.value.toString())
         }
 
+        // store raw markdown source for copy-to-clipboard
+        file.data.rawMarkdown = file.value.toString()
+
         // base data properties that plugins may use
         file.data.filePath = file.path as FilePath
         file.data.relativePath = path.posix.relative(argv.directory, file.path) as FilePath

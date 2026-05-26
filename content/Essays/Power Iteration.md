@@ -19,7 +19,15 @@ type: technical
 
 **Figure 1: For any singular value $\sigma \in [0.001, 1]$ we achieve error no worse than $1.65\%$.** 
 
-Let's consider a matrix $M = U \Sigma V^\top$. The [[Muon in Modded NanoGPT|Muon]] optimizer uses several polynomial iterations of $M$ in order to approximate $UV^\top.$ Recent research[^nilin][^dynmuon][^htmuon][^qdwh] has shown interest in $U\Sigma^pV^\top$ for $p \neq 0.$ As shown in Soft Muon, the iterates of a polynomial sequence can be used as a linear basis for this approximation, which has the advantage of requiring only as many matmuls as the original Newton-Schulz method. Soft Muon uses a single polynomial $q(X) = 2X - \tfrac{3}{2}X(X^\top X) + \tfrac{1}{2}X(X^\top X)^2$ with iterates $X_{k+1} = q(X_k)$ as a basis for the approximations $U\Sigma^{0.2}V^\top$ and $U\Sigma^{-0.2}V^\top$. 
+Let's consider a matrix $M = U \Sigma V^\top$. The [[Muon in Modded NanoGPT|Muon]] optimizer[^muon] uses several polynomial iterations of $M$ in order to approximate $UV^\top.$ This can be seen as a special case ($p=0$) of the family $U\Sigma^pV^\top$ for arbitrary powers $p$. The full family turns out to be useful, with $p=-1/2, -1/4$ being used in Shampoo/SOAP[^klsoap][^anil][^gupta][^vyas] and $p \in [-0.5, 0.5]$ showing promise in Muon-variants[^nilin][^dynmuon][^htmuon][^qdwh]. 
+
+[^muon]: [Keller Jordan et al 2024](https://kellerjordan.github.io/posts/muon/) *Muon: An optimizer for hidden layers in neural networks*
+[^klsoap]: [Lin et al. 2025](https://arxiv.org/abs/2509.03378) *Understanding and Improving Shampoo and SOAP via Kullback-Leibler Minimization*
+[^anil]: [Anil et al. 2020](https://arxiv.org/abs/2002.09018) *Scalable Second Order Optimization for Deep Learning*
+[^gupta]: [Gupta et al. 2018](https://arxiv.org/pdf/1802.09568) *Shampoo: Preconditioned Stochastic Tensor Optimization*
+[^vyas]: [Vyas et al. 2024](https://arxiv.org/abs/2409.11321) *SOAP: IMPROVING AND STABILIZING SHAMPOO USING ADAM*
+
+As shown in Soft Muon, the iterates of a polynomial sequence can be used as a linear basis for this approximation, which has the advantage of requiring only as many matmuls as the original Newton-Schulz method. Soft Muon uses a single polynomial $q(X) = 2X - \tfrac{3}{2}X(X^\top X) + \tfrac{1}{2}X(X^\top X)^2$ with iterates $X_{k+1} = q(X_k)$ as a basis for the approximations $U\Sigma^{0.2}V^\top$ and $U\Sigma^{-0.2}V^\top$. 
 
 Unlike in Soft Muon, we define 9 distinct odd quintic polynomials $q_k$ and weights $w_k(p)$ such that
 
@@ -77,7 +85,7 @@ ALPHA = np.array([
 P_MAX = 0.9
 
 def compute_weights(p):
-    tau = np.clip(p / P_MAX, -1.0, 1.0)
+    tau = p / P_MAX
     T = np.array([np.cos(l * np.arccos(tau)) for l in range(ALPHA.shape[1])])
     return ALPHA @ T
 
@@ -92,7 +100,9 @@ def apply(X, coeffs, weights):
     result = sum(w * Xi for w, Xi in zip(weights, iterates))
     return result.mT if transposed else result
 
-def power_express(G, p):
+def matrix_power(G, p):
+	# Computes UΣ^pV^T for G = UΣV^T
+	assert -P_MAX <= p <= P_MAX
     sigma_max = torch.linalg.norm(G, ord=2)  # can use power iter
     X = G / (sigma_max + 1e-6)
     w = torch.tensor(compute_weights(p))
@@ -116,9 +126,13 @@ def power_express(G, p):
 
 **Freon**[^qdwh] uses rational approximations $x R(x^{2b})$ with Remez-optimal coefficients instead of polynomial iterations, avoiding the condition-squaring problem via block-QR. This converges quickly and can handle $p$ equal to any rational power $a/b$. Instead of polynomial matmuls per iterate, this method requires a rational function evaluation and QR factorization per step.
 
+Various **Shampoo/SOAP** implementations compute matrix powers $S^{-1/2}$ or $S^{-1/4}$ on SPD matrices $S$ by maintaining a factorization of $S$ into an eigenbasis and per-component scaling, update either via full `eigen`-decomposition[^anil] or via a cheaper QR-based eigenbasis approximation.[^vyas][^klsoap] 
+
+---
+
 In **future work** I would like to characterize how many polynomial iterates are needed to expand the range beyond $|p| < 0.9$ or below $\sigma = 10^{-3}$; as well as compare the method in this blog to the well-known coupled iterative matrix-root algorithms for $p=\pm 0.5.$ 
 
-[^nilin]: [Abrahamsen 2026](https://nilin.github.io/contra-muon-and-soft-muon/) *Contra-Muon and Soft-Muon*
+[^nilin]: [Nilin 2026](https://nilin.github.io/contra-muon-and-soft-muon/) *Contra-Muon and Soft-Muon*
 [^amsel]: [Amsel et al. 2025](https://arxiv.org/abs/2505.16932) *The Polar Express*
 [^dynmuon]: [Li et al. 2025](https://arxiv.org/abs/2605.17109) *DynMuon*
 [^htmuon]: [Pang et al. 2026](https://arxiv.org/abs/2603.10067) *HTMuon: Improving Muon via Heavy-Tailed Spectral Correction*
@@ -132,7 +146,7 @@ In **future work** I would like to characterize how many polynomial iterates are
 
 The target function ($x^p$) is analytic in $p$. Linear maps preserve analyticity so it turns out that the weights for our basis can be fitted via low-degree polynomials. I found approximation quality plateaus by degree-10 using Chebyshev polynomials. There are 9 iterates in total, giving $(10 + 1) \times 9 = 99$ weight parameters. 
 
-```python
+```python hidden
 import numpy as np
 from scipy.optimize import linprog
 import cma

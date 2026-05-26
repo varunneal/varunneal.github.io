@@ -109,6 +109,10 @@ p > b {
   color: var(--dark);
 }
 
+[saved-theme="dark"] .katex {
+  color: #cec5ba;
+}
+
 .katex-display {
   display: block;
   text-align: center;
@@ -248,6 +252,41 @@ pre.epigraph {
   text-align: left;
   max-width: 70ch;
   line-height: 1.5;
+}
+
+/* Collapsible Code Block */
+details.code-collapse {
+  margin: 1rem 0;
+
+  summary {
+    cursor: pointer;
+    font-family: var(--codeFont);
+    font-size: 0.85rem;
+    color: var(--darkgray);
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--darkgray);
+    border-radius: 5px;
+    width: fit-content;
+
+    &::after {
+      content: "Show code";
+    }
+
+    &:hover {
+      color: var(--secondary);
+      border-color: var(--secondary);
+    }
+  }
+
+  &[open] summary {
+    margin-bottom: 0.5rem;
+    border-color: var(--secondary);
+    color: var(--secondary);
+
+    &::after {
+      content: "Hide code";
+    }
+  }
 }
 
 /* Borderless Block */
@@ -426,6 +465,13 @@ a.footnote-ref {
   gap: 1rem;
 }
 
+/* Tablet: collapse empty left sidebar so content stays centered */
+@media all and ($tablet) {
+  .page > #quartz-body {
+    grid-template-columns: 0px auto;
+  }
+}
+
 #quartz-body > .sidebar.right {
   gap: 0.75rem;
 }
@@ -454,7 +500,16 @@ body[data-article-type="technical"] {
     font-size: 1em;
   }
 
+  hr {
+    height: 1px;
+    background-color: var(--lightgray);
+    margin: 2rem 0;
+    overflow: hidden;
 
+    &:after {
+      display: none;
+    }
+  }
 
   ul.overflow, ol.overflow {
     max-height: 80vh;
@@ -462,6 +517,10 @@ body[data-article-type="technical"] {
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--headerFont);
+  }
+
+  thead {
+    font-family: inherit;
   }
 
   /* Constrain images and code blocks (content area only) */

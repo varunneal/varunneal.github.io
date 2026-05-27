@@ -19,7 +19,7 @@ type: technical
 
 **Figure 1: For any singular value $\sigma \in [0.001, 1]$ we achieve error no worse than $1.65\%$.** 
 
-Let's consider a matrix $M = U \Sigma V^\top$. The [[Muon in Modded NanoGPT|Muon]] optimizer[^muon] uses several polynomial iterations of $M$ in order to approximate $UV^\top.$ This can be seen as a special case ($p=0$) of the family $U\Sigma^pV^\top$ for arbitrary powers $p$. The full family turns out to be useful, with $p=-1/2, -1/4$ being used in Shampoo/SOAP[^klsoap][^anil][^gupta][^vyas] and $p \in [-0.5, 0.5]$ showing promise in Muon-variants[^nilin][^dynmuon][^htmuon][^qdwh]. 
+Let's consider a matrix $M = U \Sigma V^\top$. The [[Muon]] optimizer[^muon] uses several polynomial iterations of $M$ in order to approximate $UV^\top.$ This can be seen as a special case ($p=0$) of the family $U\Sigma^pV^\top$ for arbitrary powers $p$. The full family turns out to be useful, with $p=-1/2, -1/4$ being used in Shampoo/SOAP[^klsoap][^anil][^gupta][^vyas] and $p \in [-0.5, 0.5]$ showing promise in Muon-variants[^nilin][^dynmuon][^htmuon][^qdwh]. 
 
 [^muon]: [Keller Jordan et al 2024](https://kellerjordan.github.io/posts/muon/) *Muon: An optimizer for hidden layers in neural networks*
 [^klsoap]: [Lin et al. 2025](https://arxiv.org/abs/2509.03378) *Understanding and Improving Shampoo and SOAP via Kullback-Leibler Minimization*

@@ -137,7 +137,7 @@ In **future work** I would like to characterize how many polynomial iterates are
 [^dynmuon]: [Li et al. 2025](https://arxiv.org/abs/2605.17109) *DynMuon*
 [^htmuon]: [Pang et al. 2026](https://arxiv.org/abs/2603.10067) *HTMuon: Improving Muon via Heavy-Tailed Spectral Correction*
 [^su]: [Su 2026](https://spaces.ac.cn/archives/11654) *A Muon implementation based on streaming exponential iteration*
-[^qdwh]: [Huang et al. 2025](https://arxiv.org/abs/2605.11181) *Muon is Not That Special: Random or Inverted Spectra Work Just as Well*
+[^qdwh]: [Shumaylov et al. 2025](https://arxiv.org/abs/2605.11181) *Muon is Not That Special: Random or Inverted Spectra Work Just as Well*
 
 
 ## Appendix 

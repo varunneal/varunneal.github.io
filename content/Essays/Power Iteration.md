@@ -122,6 +122,16 @@ def matrix_power(G, p):
 
 **HTMuon**[^htmuon] uses the same decomposition as DynMuon but computes $(G^\top G)^{p/2}$ via coupled Denman-Beavers iteration (cubic convergence). Their approach is scale-free and achieves arbitrary precision, but operates on $G^\top G$ (condition $\kappa^2$), requiring many iterations to converge for ill-conditioned matrices. The available values of $p$ are restricted to dyadic fractions $\pm 1/2^k$; in practice they only use $p = 0.125 = 1/2^3$.
 
+**SMuon**[^massena] proposes a Taylor expansion centered around the polar factor, $U \Sigma^{1/q} V^\top = \alpha^{1/q} \sum_i \binom{1/q}{i} (\frac{1}{\alpha}GP^\top - I)^i P$. This is better-conditioned than DynMuon's expansion (centered at $I$) since the polar factor is already close to the target. The below table summarizes convergence error for various $\kappa$: 
+
+| κ | p=0.1 | p=0.2 | p=0.5 | p=-0.2 | p=-0.5 |
+|---|---|---|---|---|---|
+| 10 | 1.5% | 2.5% | 2.8% | 4.7% | 16% |
+| 100 | 9.2% | 15% | 17% | 24% | 60% |
+| 1000 | 20% | 33% | 33% | 45% | 85% |
+
+[^massena]: [Massena et al. 2026](https://hal.science/hal-05626222v1) *From SGD to Muon: Adaptive Optimization via Schatten-p Norms*
+
 **Streaming exponential iteration**[^su] as articulated by Jianlin Su approximates SVD via a streaming power iteration ($V_t = \text{QR}(M_t^\top M_t V_{t-1})$, $U_t = \text{ColNorm}(M_t V_t)$, $\Sigma_t = \text{diag}(U_t^\top M_t V_t)$), and allows us to manipulate $\Sigma$ directly. This allows arbitrary spectral transformations and is extremely powerful, but requires stateful streaming and a QR solve per step.
 
 **Freon**[^qdwh] uses rational approximations $x R(x^{2b})$ with Remez-optimal coefficients instead of polynomial iterations, avoiding the condition-squaring problem via block-QR. This converges quickly and can handle $p$ equal to any rational power $a/b$. Instead of polynomial matmuls per iterate, this method requires a rational function evaluation and QR factorization per step.
@@ -134,7 +144,7 @@ In **future work** I would like to characterize how many polynomial iterates are
 
 [^nilin]: [Nilin 2026](https://nilin.github.io/contra-muon-and-soft-muon/) *Contra-Muon and Soft-Muon*
 [^amsel]: [Amsel et al. 2025](https://arxiv.org/abs/2505.16932) *The Polar Express*
-[^dynmuon]: [Li et al. 2025](https://arxiv.org/abs/2605.17109) *DynMuon*
+[^dynmuon]: [Wu et al. 2025](https://arxiv.org/abs/2605.17109) *DynMuon*
 [^htmuon]: [Pang et al. 2026](https://arxiv.org/abs/2603.10067) *HTMuon: Improving Muon via Heavy-Tailed Spectral Correction*
 [^su]: [Su 2026](https://spaces.ac.cn/archives/11654) *A Muon implementation based on streaming exponential iteration*
 [^qdwh]: [Shumaylov et al. 2025](https://arxiv.org/abs/2605.11181) *Muon is Not That Special: Random or Inverted Spectra Work Just as Well*

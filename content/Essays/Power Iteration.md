@@ -25,7 +25,7 @@ Let's consider a matrix $M = U \Sigma V^\top$. The [[Muon]] optimizer[^muon] use
 [^klsoap]: [Lin et al. 2025](https://arxiv.org/abs/2509.03378) *Understanding and Improving Shampoo and SOAP via Kullback-Leibler Minimization*
 [^anil]: [Anil et al. 2020](https://arxiv.org/abs/2002.09018) *Scalable Second Order Optimization for Deep Learning*
 [^gupta]: [Gupta et al. 2018](https://arxiv.org/pdf/1802.09568) *Shampoo: Preconditioned Stochastic Tensor Optimization*
-[^vyas]: [Vyas et al. 2024](https://arxiv.org/abs/2409.11321) *SOAP: IMPROVING AND STABILIZING SHAMPOO USING ADAM*
+[^vyas]: [Vyas et al. 2024](https://arxiv.org/abs/2409.11321) *SOAP: Improving and Stabilizing Shampoo using Adam*
 
 As shown in Soft Muon, the iterates of a polynomial sequence can be used as a linear basis for this approximation, which has the advantage of requiring only as many matmuls as the original Newton-Schulz method. Soft Muon uses a single polynomial $q(X) = 2X - \tfrac{3}{2}X(X^\top X) + \tfrac{1}{2}X(X^\top X)^2$ with iterates $X_{k+1} = q(X_k)$ as a basis for the approximations $U\Sigma^{0.2}V^\top$ and $U\Sigma^{-0.2}V^\top$. 
 
@@ -315,6 +315,6 @@ if __name__ == '__main__':
 	author = {Varun Srivastava},
 	title = {Heterogeneous Iteration for Spectral Powers},
 	year = {2026},
-	url = {https://varunneal.github.io/essays/spectral-powers}
+	url = {https://varunneal.github.io/essays/power-iteration}
 }
 ```

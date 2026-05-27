@@ -4,7 +4,6 @@ created: November 24, 2025
 title: Muon in Modded NanoGPT
 aliases:
   - Muon
-  - essays/muon
 image: ../images/Muon/descent.png
 imageAlt: Descent of Everest
 permalink: essays/muon

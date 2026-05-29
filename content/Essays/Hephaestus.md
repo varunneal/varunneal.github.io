@@ -82,22 +82,26 @@ TBPN puts out the "Metis List"——a live leaderboard of the top 100 AI researc
 
 ZEUS the Father says to Hephaestus, "All that thy heart desires shall be thine, if thou wilt free Queen Hera from her bonds",
 
-and Hephaestus says, "Then let it be that I return to high Olympus, to take my place among the immortal ones,"<br>and Zeus says, "So be it",
+and Hephaestus says, "Then let it be that I return to high Olympus, to take my place among the immortal ones,"<br>and Zeus says, "So be it,"
 
-and Hephaestus says, "And then let me have the most beautiful among the goddesses, golden Aphrodite, as my wife",<br>and Zeus says, "So be it",
+and Hephaestus says, "And then let me have the most beautiful among the goddesses, golden Aphrodite, as my wife,"<br>and Zeus says, "So be it,"
 
-and Hephaestus, marveling at what he has been granted, knows not what more to ask. Yet do his discerning eyes fall upon the creations of the Cyclopes—the mighty bolt of Zeus, and the earth-shaker's trident, and the helm of Hades—and in his heart there stirs a great longing. "Grant me this also, Father, that I might forge the arms of the deathless gods of Olympus", <br>And Zeus says, "So be it".
+and Hephaestus, marveling at what he has been granted, knows not what more to ask. Yet do his discerning eyes fall upon the creations of the Cyclopes—the mighty bolt of Zeus, and the earth-shaker's trident, and the helm of Hades—and in his heart there stirs a great longing. "Grant me this also, Father, that I might forge the arms of the deathless gods of Olympus,"<br>And Zeus says, "So be it."
 
 <br>
 <br>
 
-<pre class="borderless" style="margin: 0; overflow-x: auto; display: flex; align-items: flex-start; gap: 20px;">
-  <span style="flex: 1;">October 2025 <br>
-Tulloch leaves Thinking Machine Labs for Meta, with a compensation package reported to be up to $1.5bn.</span>
-  <img src="images/tulloch-traded.jpeg" alt="Tulloch traded" style="width: 15vw; height: auto; flex-shrink: 0;">
-</pre>
+```borderless
+October 2025
+
+Tulloch leaves Thinking Machine Labs and returns to Meta, accepting a compensation package upward of $1.5bn.
+
+TBPN Reports: "Tulloch Poached"
+```
 
 
+%%   <center><img src="images/tulloch-traded.jpeg" alt="Tulloch traded" style="width: 15vw; height: auto; flex-shrink: 0;"></center> %%
+  
 <br>
 <br>
 

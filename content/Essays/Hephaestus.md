@@ -126,18 +126,22 @@ These busily moved to support their lord, and he, limping nigh, sat upon a shini
 
 AND Thetis shedding tears made answer to him,
 
-"Hephaestus, maker of wonders,  <br>
-forge me a second skin for my son, <br>
-who is doomed to a speedy death, <br>
-for the armor that was once his <br>
-was surrendered by his beloved comrade<br>
-to the Trojans, by whom he was slain."<br>
-
+<div style="margin: 0 50px; text-align: left">
+  "Hephaestus, maker of wonders,<br>
+  forge me a second skin for my son,<br>
+  who is doomed to a speedy death,<br>
+  for the armor that was once his<br>
+  was surrendered by his beloved comrade<br>
+  to the Trojans, by whom he was slain."<br>
+</div>
 
 And the famous god of the two strong arms answers,
 
+<div style="margin: 0 50px; text-align: left">
 "Be of good cheer, neither let these things distress thy heart.<br>
-Would that I might so surely avail to hide him afar from dolorous death; <br>
-Yet when dread fate cometh upon him, verily goodly armor shall be his, <br>
-such that many among posterity's multitude shall marvel, <br>
-'Certainly this was wrought for the greatest of men'."  <br>
+Would that I might so surely avail to hide him afar from dolorous death, <br>
+when dread fate cometh upon him, as verily goodly armor shall be his, <br>
+that posterity's multitude know't wrought for the greatest of men." <br>
+</div>
+
+%% Then the famous god of the two strong arms answered her: Be of good cheer, neither let these things distress thy heart. Would that I might so surely avail to hide him afar from dolorous death, when dread fate cometh upon him, as verily goodly armour shall be his, such that in aftertime many a one among the multitude of men shall marvel, whosoever shall behold it. %%

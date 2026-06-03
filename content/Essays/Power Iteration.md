@@ -309,12 +309,14 @@ if __name__ == '__main__':
 
 ```
 
+---
+
 ```
 @misc{
 	srivastava2026,
 	author = {Varun Srivastava},
 	title = {Heterogeneous Iteration for Spectral Powers},
 	year = {2026},
-	url = {https://varunneal.github.io/essays/power-iteration}
+	url = {https://varunneal.github.io/essays/spectral-powers}
 }
 ```

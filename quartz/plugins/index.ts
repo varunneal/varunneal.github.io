@@ -52,5 +52,6 @@ declare module "vfile" {
     slug: FullSlug
     filePath: FilePath
     relativePath: FilePath
+    rawMarkdown: string
   }
 }

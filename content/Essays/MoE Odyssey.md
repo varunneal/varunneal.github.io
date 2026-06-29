@@ -972,7 +972,7 @@ This article continues the exploration of Quantile Balancing (QB) from the previ
 
 ---
 
-## [Addendum: Where Does DeepSeek V4's tid2eid Come From?](https://kexue.fm/archives/11681)
+## [Part 8: Where Does DeepSeek V4's tid2eid Come From?](https://kexue.fm/archives/11681)
 
 By Jianlin Su | 2026-05-15
 
@@ -1044,6 +1044,142 @@ Therefore, the advantage is that there is no need to consider frequencies, nor t
 ### Summary
 
 This article briefly reviews the basic idea of Hash Routing in DeepSeek V4, with a focus on the construction principle of its tid2eid mapping table.
+
+---
+
+## [Part 9: The Gate Normalization Debate](https://kexue.fm/archives/11782)
+
+By Jianlin Su | 2026-06-28
+
+Looking back at MoE history, we find that in the early years the Router almost universally used Softmax activation when serving as a Gate multiplied onto the Expert output, and it remains one of MoE's standard forms to this day. However, to accommodate the [Loss-Free](https://kexue.fm/archives/10757) load balancing scheme, DeepSeek switched the activation function to Sigmoid and demonstrated that this is also a highly competitive approach, sparking deeper exploration and experimentation with the Router's form.
+
+Even within Softmax there are two subtly different practices: apply Softmax first and then select Top-$k$, or select Top-$k$ first and then apply Softmax? The latter can also be understood as re-normalizing after selecting the Top-$k$, i.e., Re-Norm. So: should the Gate's activation function normalize? And if so, should we normalize before Top-$k$ selection or Re-Norm after? This is the topic of the present article.
+
+### Problem Statement
+
+We know that the general form of MoE is
+
+$$\boldsymbol{y} = \sum_{i\in \mathop{\text{argtop}}_k \boldsymbol{\rho}} \rho_i \boldsymbol{e}_i \tag{MoE-1}$$
+
+Here $\boldsymbol{\rho}$ actually plays two roles: when used to select the Top-$k$ Experts, its role is the Router; when multiplied onto the Expert output, its role is the Gate. From the perspective of MoE design, $\boldsymbol{\rho}$'s core role is clearly the Router, while the Gate's purpose is to provide gradients to the Router during training.
+
+The question we discuss can also be understood as: how to more scientifically construct $\boldsymbol{\rho}=(\rho_1, \rho_2, \cdots, \rho_n)$ so that the Router receives better gradients. For a long time, the standard answer has been Softmax:
+
+$$\rho_i = \frac{e^{s_i}}{\sum_{j=1}^n e^{s_j}}$$
+
+where $\boldsymbol{s}=(s_1, s_2, \cdots, s_n)$ are the logits projected directly by a linear layer. However, while this answer is "standard," the author has not found any real explanation for it — everyone seems to simply accept and perpetuate it, which left the author long puzzled about the training mechanism of MoE.
+
+### Other Choices
+
+As mentioned in the introduction, DeepSeek tried Sigmoid activation for Loss-Free load balancing, later using it in [DeepSeek-V3](https://papers.cool/arxiv/2412.19437). Its success demonstrates that non-Softmax activation can also work well, inspiring people to try more general approaches. For example, [ReMoE](https://papers.cool/arxiv/2412.14711) uses ReLU activation, and the geometric perspective from ["MoE Odyssey: Part 1, Starting from Geometric Interpretation"](https://kexue.fm/archives/10699) allows any non-negative activation function.
+
+Additionally, regarding MoE's form, there is the Re-Norm option, which modifies (MoE-1) to:
+
+$$\boldsymbol{y} = \frac{\sum\limits_{i\in \mathop{\text{argtop}}_k \boldsymbol{\rho}} \rho_i \boldsymbol{e}_i}{\sum\limits_{i\in \mathop{\text{argtop}}_k \boldsymbol{\rho}} \rho_i} \tag{MoE-2}$$
+
+That is, re-normalizing the selected Top-$k$ $\rho_i$ values. For Softmax, this is equivalent to selecting Top-$k$ from $\boldsymbol{s}$, setting the unselected entries to $-\infty$, and then applying Softmax. Re-Norm's advantage is making the forward computation numerically more stable, but note that with Re-Norm, $k$ must be greater than 1 — otherwise $\boldsymbol{\rho}$ will have no gradient at all and cannot be trained.
+
+Taking stock of current practice across various groups, these MoE variants all perform roughly similarly, with none clearly dominant. Since practice cannot distinguish a winner, let us explore theoretically which form is more scientifically justified.
+
+### Design Principles
+
+Our goal is to find a first principle that is closer to the essence, and use it to derive the gating mechanism of current MoE.
+
+So the first question is naturally: what is this "principle"? For simplicity, first consider $k=1$. We know that MoE's most important feature is sparsity — first determine which Expert to activate via a Router, then compute only that Expert, thereby increasing parameter count while controlling computation. If this were the sole consideration, the naive model would be:
+
+$$\boldsymbol{f}\left(\boldsymbol{e}_{\mathop{\text{argmax}}\boldsymbol{\rho}}\right)$$
+
+That is, pick the highest-scoring Expert from the Router $\boldsymbol{\rho}$ and activate it. This form works perfectly for inference, but during training the Router receives no gradient and cannot be updated, so we must find a way to design gradients for the Router. How do we design gradients for the Router? To answer this, we must first think clearly about: what kind of Router do we want?
+
+Since we can only activate 1 Expert, we naturally want it to be the best-performing one. If $\ell$ denotes the loss function, our desire can be written as:
+
+$$\mathop{\text{argmax}} \boldsymbol{\rho} = \mathop{\text{argmin}}\, [\ell(\boldsymbol{e}_1),\ell(\boldsymbol{e}_2),\cdots,\ell(\boldsymbol{e}_n)] \tag{Target}$$
+
+This is the design principle we are looking for.
+
+### Objective Transformation
+
+However, the target (Target) is not yet a loss function we can directly use for training — it requires further transformation. To this end, we construct two distributions. The first is a target distribution $\boldsymbol{q}=(q_1,q_2,\cdots,q_n)$ built from the loss function:
+
+$$q_i = \frac{e^{-\ell(\boldsymbol{e}_i)/\tau}}{\sum_{j=1}^n e^{-\ell(\boldsymbol{e}_j)/\tau}}$$
+
+This distribution is independent of the Router; for the Router's learning it serves as the "target distribution." The second distribution is a predicted distribution $\boldsymbol{p}$ built from $\boldsymbol{\rho}$. There are many possibilities here: $\boldsymbol{\rho}$ itself might already be a distribution $\boldsymbol{p}$ (if $\boldsymbol{\rho}$ is already normalized), or $\boldsymbol{p}$ could be the Softmax of $\boldsymbol{\rho}$ (treating $\boldsymbol{\rho}$ as logits), or some other normalization scheme. In short, $\boldsymbol{p}$ is some probabilistic representation of the Router; let its parameters be $\boldsymbol{\theta}$.
+
+We transform the target (Target) into bringing $\boldsymbol{p}$ closer to $\boldsymbol{q}$, thereby providing gradients for $\boldsymbol{\theta}$. For this, we consider minimizing the KL divergence:
+
+$$KL(\boldsymbol{p}\Vert \boldsymbol{q}) = \sum_{i=1}^n p_i \log \frac{p_i}{q_i}$$
+
+With slight rearrangement:
+
+$$KL(\boldsymbol{p}\Vert \boldsymbol{q}) = - \mathcal{H}(\boldsymbol{p}) + \frac{1}{\tau}\sum_{i=1}^n p_i \ell(\boldsymbol{e}_i) - \log \sum_{i=1}^n e^{-\ell(\boldsymbol{e}_i)/\tau}$$
+
+This objective has three terms. The first is negative entropy $-\mathcal{H}(\boldsymbol{p})$; minimizing it means maximizing entropy, which encourages the model to explore sufficiently — we can consider that load balancing already plays a similar role, so we set it aside. The third term is independent of $\boldsymbol{p}$ (and thus of $\boldsymbol{\theta}$). So the effective loss function is:
+
+$$\mathcal{L} = \sum_{i=1}^n p_i \ell(\boldsymbol{e}_i)$$
+
+### Straight-Through Estimation
+
+Taking the gradient of this effective loss:
+
+$$\nabla_{\boldsymbol{\theta}}\mathcal{L} = \sum_{i=1}^n \nabla_{\boldsymbol{\theta}} p_i \cdot \ell(\boldsymbol{e}_i) = \sum_{i=1}^n p_i \nabla_{\boldsymbol{\theta}} \log p_i \cdot \ell(\boldsymbol{e}_i) = \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}}\log p_i \cdot \ell(\boldsymbol{e}_i)]$$
+
+The key step here is using $\nabla_{\boldsymbol{\theta}} p_i = p_i \nabla_{\boldsymbol{\theta}} \log p_i$ to isolate a factor of $p_i$, enabling the sum to be converted into an expectation, which can then be estimated via sampling to achieve MoE's sparse computation goal. Some readers may have already recognized this — it is precisely REINFORCE from policy gradients! (See [*"Optimization Through Sampling: A Unified View of Differentiable and Non-Differentiable Optimization"*](https://kexue.fm/archives/7521), [*"Policy Gradients and Zeroth-Order Optimization: Converging Paths"*](https://kexue.fm/archives/7737))
+
+The problem with REINFORCE is high noise. Intuitively, this is because it places $p_i$ outside the loss function $\ell$; if possible, we would prefer a "reparameterization" form with $p_i$ inside $\ell$. To derive such a form, we use REINFORCE's invariance to baseline subtraction:
+
+$$\begin{aligned}
+\mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}}\log p_i \cdot \ell(\boldsymbol{e}_i)] =&\, \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}}\log p_i \cdot (\ell(\boldsymbol{e}_i) - \ell(\boldsymbol{0}))] \\[4pt]
+\approx&\, \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}}\log p_i \cdot \langle\nabla_{\boldsymbol{e}_i} \ell(\boldsymbol{e}_i), \boldsymbol{e}_i - \boldsymbol{0}\rangle] \\[4pt]
+= &\, \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}} \langle\nabla_{\boldsymbol{e}_i} \ell(\boldsymbol{e}_i), \log p_i \cdot \boldsymbol{e}_i\rangle] \\[4pt]
+= &\, \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}} \ell((\log p_i + [1 - \log p_i]_{\text{sg}}) \cdot\boldsymbol{e}_i)] \\[4pt]
+= &\, \nabla_{\boldsymbol{\theta}} \mathbb{E}_{i\sim \boldsymbol{p}} [\ell((\log p_i + [1 - \log p_i]_{\text{sg}}) \cdot\boldsymbol{e}_i)]
+\end{aligned}$$
+
+Here the $\approx$ applies a first-order Taylor approximation at $\boldsymbol{e}_i$, and $[\cdot]_{\text{sg}}$ denotes stop-gradient. We arrive at a Straight-Through Estimator (STE) that "uses 1 in the forward pass and $\log p_i$ in the backward pass" to provide gradients for the Router.
+
+### The Final Form
+
+While STE provides a workable training scheme, the inconsistency between forward and backward passes typically yields only suboptimal results. Here a remarkably elegant improvement is to change each Expert from $\boldsymbol{e}_i$ to $p_i\boldsymbol{e}_i$! Repeating the above derivation:
+
+$$\begin{aligned}
+\mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}}\log p_i \cdot \ell(p_i\boldsymbol{e}_i)] =&\, \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}}\log p_i \cdot (\ell(p_i\boldsymbol{e}_i) - \ell(\boldsymbol{0}))] \\[4pt]
+\approx&\, \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}}\log p_i \cdot \langle\nabla_{p_i\boldsymbol{e}_i} \ell(p_i\boldsymbol{e}_i), p_i\boldsymbol{e}_i - \boldsymbol{0}\rangle] \\[4pt]
+= &\, \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}} \langle\nabla_{p_i \boldsymbol{e}_i} \ell(p_i \boldsymbol{e}_i),  p_i \boldsymbol{e}_i\rangle] \\[4pt]
+= &\, \mathbb{E}_{i\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}} \ell(p_i \boldsymbol{e}_i)] \\[4pt]
+= &\, \nabla_{\boldsymbol{\theta}} \mathbb{E}_{i\sim \boldsymbol{p}} [\ell(p_i \boldsymbol{e}_i)]
+\end{aligned}$$
+
+This transformation is exquisite and worth savoring carefully. By changing the Expert from $\boldsymbol{e}_i$ to $p_i\boldsymbol{e}_i$, we eliminate the stop-gradient, achieving consistency between forward and backward passes, and theoretically raising the ceiling on model performance.
+
+Now we can answer the question posed at the beginning:
+
+> If we desire a top-down probabilistic derivation, then the Router when serving as Gate should be normalized, but should **not** use Re-Norm.
+
+### To Sample or Not to Sample
+
+A detail worth noting: $\mathbb{E}_{i\sim \boldsymbol{p}}$ implies we should sample from $\boldsymbol{p}$, but in practice we usually just select Top-$k$ directly. How should we understand this discrepancy?
+
+This is fundamentally a tradeoff between diversity and stability. Random sampling encourages the model to explore more fully, but introduces additional gradient variance and instability. Directly selecting Top-$k$ is more stable, but risks the model falling into suboptimal solutions or even collapsing. Fortunately, modern load balancing strategies are mature enough to encourage comprehensive exploration to some degree, so Top-$k$ selection remains mainstream.
+
+If one wants sampling while maintaining stability, one can extend slightly beyond Top-$k$ rather than sampling completely freely. For example: first select Top-$(k+c)$, then randomly pick $k$ from those $k+c$ Experts. Or add mild noise to the logits of $\boldsymbol{p}$ before selecting Top-$k$. This increases randomness without straying too far from the original Top-$k$, balancing both concerns.
+
+### Related Work
+
+To be clear, the derivation in this article is not entirely new — it was distilled and modified by the author from Liu Liyuan's paper [*Sparse Backpropagation for MoE Training*](https://papers.cool/arxiv/2310.00811). That paper also has a prequel [*Bridging Discrete and Backpropagation: Straight-Through and Beyond*](https://papers.cool/arxiv/2304.08612) and a sequel [*GRIN: GRadient-INformed MoE*](https://papers.cool/arxiv/2409.12136).
+
+Although these are papers from 2023–2024, for anyone wanting to deepen their understanding of the MoE Router, this trilogy is highly recommended reading. They provide a unified probabilistic framework for designing gradients for various discretization operations. Of course, the probabilistic framework also has its limitations — it is rather formalistic and can feel somewhat "constraining" in practice.
+
+For example, when $k = 2$, if we straightforwardly extend the previous results, we should have:
+
+$$\mathbb{E}_{i,j\sim \boldsymbol{p}} [\nabla_{\boldsymbol{\theta}}\log p_i p_j \cdot \ell(p_i p_j (\boldsymbol{e}_i + \boldsymbol{e}_j))] \approx \nabla_{\boldsymbol{\theta}} \mathbb{E}_{i,j\sim \boldsymbol{p}} [\ell(p_i p_j (\boldsymbol{e}_i + \boldsymbol{e}_j))]$$
+
+That is, treating the joint distribution $p_i p_j$ and expert-pair sum $\boldsymbol{e}_i + \boldsymbol{e}_j$ as the basic unit, reducing Top-2 to Top-1. However, the MoE form we actually use is $\ell(p_i \boldsymbol{e}_i + p_j\boldsymbol{e}_j)$, which does not lend itself to a clean probabilistic derivation.
+
+In this case, a more "relaxed" interpretation might be to treat it as an analogue of MaxPooling without insisting on a probabilistic explanation — or alternatively, to understand it through the geometric interpretation from ["MoE Odyssey: Part 1, Starting from Geometric Interpretation"](https://kexue.fm/archives/10699). In summary, the probabilistic framework proves the viability of a certain approach, but does not in principle rule out the viability of other approaches.
+
+### Summary
+
+This article attempts to explore the design of MoE's Router and Gate from first principles, providing a probabilistic justification for gate normalization.
 
 ---
 

@@ -167,6 +167,35 @@ One who is endowed with clear discernment let's fall—right here, in this life�
 
 <br>
 
+ #### *On* salvation
+ From Daniel 
+
+```baskerville
+... and there shall be a time of trouble, 
+such as never was since there was a nation 
+even to that same time: and at that time
+thy people shall be delivered,
+and every one that shall be found 
+written in the book.
+
+And many of them that sleep 
+in the dust of the earth shall awake,
+some to everlasting life, 
+and some to shame and everlasting contempt. 
+
+And they that be wise shall shine 
+as the brightness of the firmament;
+and they that turn many to righteousness
+as the stars for ever and ever.
+
+But though, O Daniel, shut up the words,
+and seal the book, even to the time of the end:
+many shall run to and fro, 
+and knowledge shall be increased.
+```
+
+<br>
+
  #### *On* conditioning 
  From the *Vimalakīrtinirdeśa*[^Vimalakīrtinirdeśa]: 
 

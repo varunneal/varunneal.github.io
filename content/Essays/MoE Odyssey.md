@@ -972,7 +972,7 @@ This article continues the exploration of Quantile Balancing (QB) from the previ
 
 ---
 
-## [Part 8: Where Does DeepSeek V4's tid2eid Come From?](https://kexue.fm/archives/11681)
+## [Part 8: Where Does DeepSeek V4's tid2eid Come From?](https://kexue.fm/archives/11750)
 
 By Jianlin Su | 2026-05-15
 

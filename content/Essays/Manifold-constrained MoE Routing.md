@@ -11,7 +11,7 @@ modified: June 30, 2026
 description:
 type: technical
 ---
-**Overview:** I show that Manifold Muon is a desirable optimizer for the MoE Router. A also produce a variant in which the router is only updated by a balance objective, with no loss gradients flowing through it at all.
+**Overview:** I show that Manifold Muon is a desirable optimizer for the MoE Router. I also produce a variant in which the router is only updated by a balance objective, with no loss gradients flowing through it at all.
 ## Part 1: routers
 A standard transformer has one MLP per layer. A mixture-of-experts (MoE) model has many, each called an expert, but routes each token to only a few of them. The routing decision is controlled by an $E \times D$ weight matrix (the router), where each row is a single expert's selection vector.
 

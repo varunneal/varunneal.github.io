@@ -519,6 +519,19 @@ body[data-article-type="technical"] {
     font-family: var(--headerFont);
   }
 
+  h2 {
+    margin-top: 1.25rem;
+    margin-bottom: 0.25rem;
+
+    & + h3, & + h4, & + h5, & + h6 {
+      margin-top: 0.4rem;
+    }
+  }
+
+  h4 {
+    font-size: 1.1rem;
+  }
+
   thead {
     font-family: inherit;
   }

@@ -7,6 +7,9 @@ aliases:
   - muon-moe
   - essays/moe-routing
   - essays/muon-moe
+  - essays/router-muon
+  - essays/router
+  - router
 image:
 imageAlt:
 permalink: essays/loss-free-moe
@@ -14,7 +17,10 @@ modified: June 30, 2026
 description:
 type: technical
 ---
-**Overview:** I constrain the MoE router to the Stiefel manifold in order to increase expert capacity. I then propose a completely loss-free router update that achieves both load balancing and maximum capacity.
+**Overview:** I posit that the the two essential constraints on the MoE router are load balancing and rowwise orthogonality. I propose two new optimizers for the router. The first constrains the router weights to the Stiefel manifold, enforcing exact orthogonality throughout training. The second drops the cross-entropy gradient entirely, achieving both load balancing and orthogonality in a single update rule with no auxiliary balancer.
+
+%% I constrain the MoE router to the Stiefel manifold in order to increase expert capacity. I then propose a completely loss-free router update that achieves both load balancing and maximum capacity. %%
+
 ## Background
 #### (1) Load Balancing
 A standard transformer has one MLP per layer. A mixture-of-experts (MoE) model has many, each called an expert, but routes each token to only a few of them. The routing decision is controlled by an $E \times D$ weight matrix (the router), where each row is a single expert's selection vector.
@@ -28,7 +34,7 @@ Each expert owns a single row in the router matrix, which is just a point in act
 
 A router balancer modifies the effective catchment radius around each expert so that each receives a near-equal number of tokens. 
 
-Without balancing you will end up a vicious feedback loop of dead experts. If an expert receives fewer tokens, its corresponding expert will become undertrained, which will encourage the router to continue diverting tokens from this expert. 
+Without balancing you will end up in a vicious feedback loop of dead experts. If an expert receives fewer tokens, it will become undertrained, which will encourage the router to continue diverting tokens away from this expert. 
 
 The three load balancers I'll use in this post — DeepSeek's aux-loss-free bias[^deepseek], SMEBU[^trinity3], and quantile load balancing[^suquantile][^openathena] — are each different flavors of the "radius adjustment" concept. DeepSeek nudges scalar biases a little each step.  SMEBU does the same but with gated steps and momentum.  Quantile balancing "snaps" to the optimal bias at each step by using iterative fitting  [^sinkhorn]. 
 
@@ -39,7 +45,7 @@ The three load balancers I'll use in this post — DeepSeek's aux-loss-free bias
 [^openathena]: [Open Athena, Dial 2026](https://openathena.ai/blog/quantile-balancing/) *Quantile Balancing* — the Marin team's validation of QB on a 32B-A5B model over 326B tokens.
 
 
-Each of these approaches confer different dynamics over the course of training, though all are effective:
+Each approach confers different dynamics over the course of training, though all are effective:
 
 <img src="../images/moe/dead_by_layer_64-light.png" alt="Dead experts by layer over training — None, Quantile, SMEBU, DeepSeek (2:64 sparsity)" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/dead_by_layer_64-dark.png" alt="Dead experts by layer over training — None, Quantile, SMEBU, DeepSeek (2:64 sparsity)" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
@@ -100,9 +106,9 @@ We find that Muon greatly increases the capacity of the router weights[^orthogon
 <img src="../images/moe/cosine_ribbon_adam_vs_muon-light.png" alt="Pairwise router-row cosine similarity over training, Adam vs Muon — Quantile, SMEBU, DeepSeek" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/cosine_ribbon_adam_vs_muon-dark.png" alt="Pairwise router-row cosine similarity over training, Adam vs Muon — Quantile, SMEBU, DeepSeek" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 4: Mean pairwise cosine similarity between router rows over training. Adam (left) vs Muon (right) across all three balancing methods. Lower means more orthogonal, corresponding to experts that are pointing in more distinct directions.**
+**Figure 4: Variance and mean of pairwise cosine similarity between router rows over training. Adam (left) vs Muon (right) across all three balancing methods. Lower means more orthogonal, corresponding to experts that are pointing in more distinct directions. Muon has strictly higher orthogonality over training for all three load balancers.**
 
-Two recent works[^ernie][^guo] in the literature have defined an aux loss for the MoE router that explicitly encourages rowwise orthogonalization:
+Two recent works[^ernie][^guo] have defined an aux loss for the MoE router that explicitly encourages rowwise orthogonalization:
 
 [^ernie]: [ERNIE Team, Baidu 2025](https://ernie.baidu.com/blog/publication/ERNIE_Technical_Report.pdf) *ERNIE 4.5 Technical Report* — introduces an orthogonalization aux loss on the router.
 [^guo]: [Guo et al 2025](https://arxiv.org/abs/2505.22323) *Advancing Expert Specialization for Better MoE*

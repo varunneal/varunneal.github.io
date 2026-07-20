@@ -528,8 +528,17 @@ body[data-article-type="technical"] {
     }
   }
 
-  h4 {
+  h3 {
     font-size: 1.1rem;
+    border-bottom: 0.5px solid currentColor;
+    padding-bottom: 0.2rem;
+    margin-bottom: -0.8rem;
+  }
+
+  code {
+    font-size: 0.82em;
+    padding: 0.05rem 0.2rem;
+    border-radius: 3px;
   }
 
   thead {

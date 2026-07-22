@@ -17,7 +17,7 @@ modified: July 22, 2026
 description:
 type: technical
 ---
-**Overview:** Identifying load balancing and well-conditioned geometry as crucial properties of training MoE routers, I propose two optimizers that target these two properties directly. The first uses Manifold Muon to constrain router weights to the Stiefel manifold; the second replaces the cross-entropy-loss gradient entirely. Both train stably, stay well balanced and perfectly conditioned, and suggest a broader family of loss-free router optimizers.
+**Overview:** In this post I explore two criteria for MoE routers—load balancing and geometric conditioning—and propose two new methods. The first uses Manifold Muon to keep the router perfectly conditioned throughout training. The second goes further, training the router using only load-balancing updates and geometric constraints, removing the cross-entropy loss gradient entirely. Both train stably, stay well balanced and perfectly conditioned, and suggest a broader family of loss-free router optimizers.
 
 ## What's in a router?
 ### (1) Load Balancing

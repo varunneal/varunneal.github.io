@@ -23,7 +23,7 @@ type: technical
 ### (1) Load Balancing
 A standard transformer has one MLP per layer. A mixture-of-experts (MoE) model has many, each called an expert, but routes each token to only a few of them. The routing decision is controlled by an $E \times D$ weight matrix (the router), where each row is a single expert's selection vector.
 
-Each expert owns a single row in the router matrix, which is just a point in activation space. Tokens arrive with their own activations, and routing scores are decided based on the similarity between expert's vectors and token activations. In a simplified model where all these vectors are unit-normalized, dot-product similarity is monotonic with Euclidean Distance, so each token routes to its nearest expert. 
+Each expert owns a single row in the router matrix, which is just a point in activation space. Tokens arrive with their own activations, and routing scores are decided based on the similarity between experts' vectors and token activations. In a simplified model where all these vectors are unit-normalized, dot-product similarity is monotonic with Euclidean distance, so each token routes to its nearest expert. 
 
 <img src="../images/moe/routing_balance_sketch-light.png" alt="Imbalanced vs balanced routing, hand-drawn" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/routing_balance_sketch-dark.png" alt="Imbalanced vs balanced routing, hand-drawn" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
@@ -45,7 +45,7 @@ The above quote is from DeepSeek[^deepseek], who chose to drop the auxiliary los
 [^sinkhorn]: [Sinkhorn and Knopp 1967](https://en.wikipedia.org/wiki/Sinkhorn%27s_theorem#Sinkhorn%E2%80%93Knopp_algorithm) *Sinkhorn–Knopp algorithm* — the iterative matrix-scaling procedure quantile balancing uses to solve for optimal biases.
 [^deepseek]: [DeepSeek, Wang et al 2024](https://arxiv.org/abs/2408.15664) *Auxiliary-Loss-Free Load Balancing Strategy for Mixture-of-Experts*
 [^trinity3]: [Arcee, Singh et al 2026](https://arxiv.org/abs/2602.17004) *Trinity 3 Training Report*. Introduces and uses SMEBU.
-[^suquantile]: [Jianlin Su 2026](https://kexue.fm/archives/11619) *Quantile Load Balancing* — part 6 of Su's MoE series; the full series appears in translation on my blog: [[moe]].
+[^suquantile]: [Jianlin Su 2026](https://kexue.fm/archives/11619) *Quantile Load Balancing* — Part 6 of Su's MoE series; the full series appears in translation on my blog: [[essays/MoE|MoE Odyssey]].
 [^openathena]: [Open Athena, Dial 2026](https://openathena.ai/blog/quantile-balancing/) *Quantile Balancing* — the Marin team's validation of QB on a 32B-A5B model over 326B tokens.
 
 
@@ -92,7 +92,7 @@ Empirically, Muon is not much worse than Adam on the router:
 
 **Figure 4:** Validation loss of Adam vs Muon used on the MoE router. Muon is nearly identical throughout training. 
 
-If validation loss is no better, why both with Muon? The Moonshot AI team used Muon on the MoE router in the training of Kimi K2[^kimi][^xidulu] (and perhaps later models). They motivate this decision by showing that Muon produces a router with consistently lower *SVD Entropy* than Adam. Agreeing with prior literature[^orthogonality], I found Muon greatly improves the conditioning of the router weights:
+If validation loss is no better, why bother with Muon? The Moonshot AI team used Muon on the MoE router in the training of Kimi K2[^kimi][^xidulu] (and perhaps later models). They motivate this decision by showing that Muon produces a router with consistently lower *SVD Entropy* than Adam. Agreeing with prior literature[^orthogonality], I found Muon greatly improves the conditioning of the router weights:
 
 
 [^xidulu]: [Xidulu 2026](https://x.com/xidulu/status/2065543207950152016) helpfully pointed this fact out to me.
@@ -109,10 +109,6 @@ So Muon is roughly net even on loss but improves conditioning.
 
 For small-scale experiments, especially for extremely sparse models, conditioning may be a more useful measure than val loss. In the above experiments, the model above has roughly 3.7B total parameters trained on 2.7B tokens — about 0.73 tokens per parameter. At this budget, expert specialization is probably not truly meaningful since the underlying data may not be diverse enough to reflect genuinely useful distinctions.
 
-%% For small scale experiments, conditioning may be a more useful measure than val loss. In all of my experiments so far, the number of parameters dwarfs the number of tokens {check}. This is a persistent issue with MoE ablations. Without sufficient data, optimizing for expert diversity etc is ill-posed.  %%
-
-
-
 ## Two new methods
 ### (3) Manifold Optimization 
 
@@ -120,7 +116,7 @@ In the previous section, we found that Muon achieves better geometric conditioni
 
 Condition number is especially useful for probing the quality of the router because it is discontinuous under top-$k$: small drifts in the weight matrix cause discrete jumps in token assignment. 
 
-For any wide matrix (rows < columns, as in our router), the conditioning is perfect if and only if all rows are orthogonal with equal norm. This property, *rowwise orthogonality*, has a useful interpretation for the router specifically.  When two routing vectors have high cosine similarity, there exists a subspace where tokens are indistinguishable to those experts, and any token in that subspace gets assigned between them essentially at random. Rowwise orthogonality ensures no two routers are redundant, and that small pertubations to the router weight do not severely change routing dynamics. Better orthogonality, which corresponds to better conditioning, may end up producing a much healthier model on a variety of downstream metrics when fully trained.
+For any wide matrix (rows < columns, as in our router), the conditioning is perfect if and only if all rows are orthogonal with equal norm. This property, *rowwise orthogonality*, has a useful interpretation for the router specifically.  When two routing vectors have high cosine similarity, there exists a subspace where tokens are indistinguishable to those experts, and any token in that subspace gets assigned between them essentially at random. Rowwise orthogonality ensures no two routing vectors are redundant, and that small perturbations to the router weight do not severely change routing dynamics. Better orthogonality, which corresponds to better conditioning, may end up producing a much healthier model on a variety of downstream metrics when fully trained.
 
 
 <img src="../images/moe/cosine_ribbon_adam_vs_muon-light.png" alt="Pairwise router-row cosine similarity over training, Adam vs Muon — Quantile, SMEBU, DeepSeek" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
@@ -177,18 +173,16 @@ As desired, the routers are perfectly orthogonal throughout training:
 
 **Figure 9:** Validation loss of Muon vs Manifold Muon on the router. Perfect orthogonality costs a bit of val loss.
 
-%% Pairwise similarity is a special case of capacity: a routing vector adds nothing whenever it lies in the convex combination of the others.  %%
-
 Orthogonality can be understood as a data-agnostic approximation to *capacity* — how well the routing vectors cover the incoming token distribution.  Recalling the nearest-neighbors formulation from part 1, we'd like for the majority of incoming tokens to be contained within the linear combination of the routing vectors.  In order for a given routing vector to have discriminative power, we want to ensure it is not in the convex combination of any other router.   
 
-If token activations were uniformly distributed on the sphere, orthogonal routing vectors would maximize capacity exactly. They aren't uniform (if they were, load balancing would also be trivial), so orthogonality is a naive but principled starting point: the best geometry when you don't model the distribution explicitly. Load balancing and orthogonality can be thought of as complimentary aspects toward capacity maximization. 
+If token activations were uniformly distributed on the sphere, orthogonal routing vectors would maximize capacity exactly. They aren't uniform (if they were, load balancing would also be trivial), so orthogonality is a naive but principled starting point: the best geometry when you don't model the distribution explicitly. Load balancing and orthogonality can be thought of as complementary aspects toward capacity maximization. 
 
 ### (4) Loss-Free Routing
 One of the surprising results from the previous two sections is that Muon's gradient row-mixing doesn't hurt val loss too much. This suggests that respecting the cross-entropy gradient isn't crucial toward training our router. 
 
 The implicit assumption so far has been that each routing row learns to select tokens whose features its expert is good at processing. I'd like to reverse this assumption by training a router that knows nothing about its downstream experts, and instead allowing the experts to learn to process whatever tokens they receive.
 
-We can design an optimizer where structural orthogonality and load-balancing are the only tools we have to maximize capacity. First, we calculate the exact updated needed to balance the experts based on the incoming token stream. Then, we feed this update into manifold muon before applying it to the router. 
+We can design an optimizer where structural orthogonality and load-balancing are the only tools we have to maximize capacity. First, we calculate the exact update needed to balance the experts based on the incoming token stream. Then, we feed this update into manifold muon before applying it to the router. 
 
 ```python
 def loss_free_router_step(W, x, logits, eta):
@@ -241,11 +235,14 @@ Note that the validation loss lags noticably behind the previous approaches in t
 
 The loss-free router is composed of two distinct elements: structural orthogonality, and a balancing update rule. I'm complaining that combined, these form a rough approximation to *capacity*. %%
 
-I'd like to propose that this loss-free router is just the simplest possible instantiation of a family of loss-free learnable routers[^frozen]. The proposed framework is having just one geometric constraint and one update rule, both decouple from the cross-entropy gradient. The balancing update could be replaced by any objective we can write a gradient for: capacity-maximization, expert specialization, dead-expert-minimization, sequence-level balance. etc. The geometric constraint can also be relaxed from strict orthogonality to any manifold constrained optimizer.[^tilde]
+I'd like to propose that this loss-free router is just the simplest possible instantiation of a family of loss-free learnable routers[^frozen]. The proposed framework has just one geometric constraint and one update rule, both decoupled from the cross-entropy gradient. The balancing update could be replaced by any objective we can write a gradient for: capacity-maximization, expert specialization, dead-expert-minimization, sequence-level balance. etc. The geometric constraint can also be relaxed from strict orthogonality to any manifold constrained optimizer.[^tilde]
 
 [^tilde]: [Keigwin, Pai, Chen (Tilde Research) 2025](https://blog.tilderesearch.com/vignettes/gram-space) *Gram-Space Manifold Muon*
 
-[^frozen]: The truly simplest routers are the ones that are entirely frozen. In the recent DeepSeek V4 model, a fixed lookup table was used to map token IDs directly to experts. An offline lookup table is very useful in early layers where incoming token distribution follows natural language statistics, but is impossible to write for middle/later layers whose dynamics will change throughout training. The loss-free router proposed here is learnable and will adapt to balance as distributions change throughout training. {cite deepseek v4 + include koanlin su moe series part 8 -- which  i have translation for as well!)
+[^frozen]: The truly simplest loss-free routers are entirely frozen. In DeepSeek V4[^dsv4], a fixed lookup table maps token IDs directly to experts. A static table works well in early layers where incoming activations follow natural language statistics, but cannot adapt in middle/later layers whose distributions shift throughout training. The loss-free router proposed here is learnable and adapts as distributions change. See also Su's discussion in Part 8 of his MoE series.[^su8]
+
+[^dsv4]: [DeepSeek, Guo et al 2026](https://arxiv.org/abs/2606.19348) *DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence*
+[^su8]: [Jianlin Su 2026](https://kexue.fm/archives/11750) *MoE Odyssey Part 8: Where Does DeepSeek V4's tid2eid Come From?* — translated on my blog: [[essays/MoE|MoE Odyssey]].
 
 
 %%   *Capacity* is a measure of how much we cover the incoming token distribution. Recalling the nearest-neighbors visual from Part 1, our goal is for the set of token activations to be fully contained within the convex combination of routing vectors. Pairwise similarity is a special case of capacity: a routing vector adds nothing whenever it lies in the convex combination of the others.  Recalling the nearest-neighbors formulation from part 1, we'd like for the majority of incoming tokens to be contained within the linear combination of the routing vectors.  By Hadamard's Inequality, the simplex formed by the routing vectors is maximized exactly when they're mutually orthogonal. The underlying data, however, is not equally distributed about the origin, so maximizing just the routing simplex won't be the same as maximizing capacity.    %%

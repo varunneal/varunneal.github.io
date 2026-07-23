@@ -103,6 +103,7 @@ If validation loss is no better, why bother with Muon? The Moonshot AI team used
 
 <img src="../images/moe/router_kappa_adam_vs_muon-light.png" alt="Router condition number over training: Adam vs Muon" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/router_kappa_adam_vs_muon-dark.png" alt="Router condition number over training: Adam vs Muon" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
+
  **Figure 5:** Router condition number ($\sigma_{\max}/\sigma_{\min}$) over training. Muon produces a better-conditioned router than Adam throughout.
 
 So Muon is roughly net even on loss but improves conditioning. 

@@ -32,14 +32,14 @@ Each expert owns a single row in the router matrix, which is just a point in act
 
 A router balancer modifies the effective catchment radius around each expert so that each receives a near-equal number of tokens. 
 
-Without balancing you will end up in a vicious feedback loop of dead experts. If an expert receives fewer tokens, it will become undertrained, which will encourage the router to continue diverting tokens away from this expert. 
+Without balancing you will end up in a vicious feedback loop of dead experts.[^fedus] If an expert receives fewer tokens, it will become undertrained, which will encourage the router to continue diverting tokens away from this expert. 
 
 To promote balance, GShard[^gshard] added an auxiliary loss that measures how imbalanced the experts are. This is simple to implement, since the autograd framework handles the complexities of how each expert should become balanced. The problem is that your model now has two objectives that can conflict with each other:
 
 > Existing methods commonly employ an auxiliary loss to encourage load balance, but a large auxiliary loss will introduce non-negligible interference gradients into training and thus impair the model performance. 
 > Although the auxiliary loss can alleviate load imbalance during training, it also introduces undesired gradients that conflict with the language modeling objective.
 
-The above quote is from DeepSeek[^deepseek], who chose to drop the auxiliary loss entirely. Instead of optimizing a second objective, they adjust the radius around each expert using a learnable scalar bias. Subsequent work like SMEBU[^trinity3] and Quantile Balancing[^suquantile] modify the dynamics by which these biases are learned.
+The above quote is from DeepSeek[^deepseek], who chose to drop the auxiliary loss entirely. Instead of optimizing a second objective, they adjust the radius around each expert using a learnable scalar bias. Subsequent work like SMEBU[^trinity3] and Quantile Balancing[^suquantile][^sinkhorn] modify the dynamics by which these biases are learned.
 
 
 [^sinkhorn]: [Sinkhorn and Knopp 1967](https://en.wikipedia.org/wiki/Sinkhorn%27s_theorem#Sinkhorn%E2%80%93Knopp_algorithm) *Sinkhorn–Knopp algorithm* — the iterative matrix-scaling procedure quantile balancing uses to solve for optimal biases.
@@ -49,7 +49,7 @@ The above quote is from DeepSeek[^deepseek], who chose to drop the auxiliary los
 [^openathena]: [Open Athena, Dial 2026](https://openathena.ai/blog/quantile-balancing/) *Quantile Balancing* — the Marin team's validation of QB on a 32B-A5B model over 326B tokens.
 
 
-Each approach confers different dynamics over the course of training, though all are effective:
+Each approach confers different dynamics over the course of training, though all are effective[^openathena]:
 
 <img src="../images/moe/maxvio_by_layer-light.png" alt="MaxVio by layer over training — None, Quantile, SMEBU, DeepSeek (2:64 sparsity)" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/maxvio_by_layer-dark.png" alt="MaxVio by layer over training — None, Quantile, SMEBU, DeepSeek (2:64 sparsity)" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
@@ -70,7 +70,7 @@ Each approach confers different dynamics over the course of training, though all
 ### (2) Stability and Conditioning
 For the results in Part 1, I used Adam on the routers. At first glance, Muon seems like a poor fit for the MoE Router.
 
-Unlike a regular linear layer, the MoE router's rows are structurally independent: when a token is routed into $k$ experts, the gradient can only flow backward into those $k$ rows. Optimizers like Shampoo and Muon violate this by mixing gradients from distinct rows, blending learning signals that belong to totally different experts. This is apparent when considering the Shampoo update rule:
+Unlike a regular linear layer, the MoE router's rows are structurally independent: each row's gradient comes only from the tokens routed to that expert. But the gradient produced by backprop is not directly applied to the router; it is transformed first by the optimizer. While Adam respects this rowwise independence, Muon doesn't. This is apparent when considering the Shampoo update rule:
 
 ```python
 def shampoo_update(G, L, R, W, lr):
@@ -85,14 +85,22 @@ def shampoo_update(G, L, R, W, lr):
 [^oldnorm]: [Bernstein and Newhouse 2024](https://arxiv.org/abs/2409.20325) *Old Optimizer, New Norm*
 
 
-Empirically, Muon is not much worse than Adam on the router:
+I found this rowwise violation deeply distressing! However, while testing, I found Muon is not much worse than Adam on the router:
 
 <img src="../images/moe/val_loss_adam_vs_muon_curves-light.png" alt="Validation loss: Adam vs Muon on the router" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/val_loss_adam_vs_muon_curves-dark.png" alt="Validation loss: Adam vs Muon on the router" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 4:** Validation loss of Adam vs Muon used on the MoE router. Muon is nearly identical throughout training. 
 
-If validation loss is no better, why bother with Muon? The Moonshot AI team used Muon on the MoE router in the training of Kimi K2[^kimi][^xidulu] (and perhaps later models). They motivate this decision by showing that Muon produces a router with consistently lower *SVD Entropy* than Adam. Agreeing with prior literature[^orthogonality], I found Muon greatly improves the conditioning of the router weights:
+If validation loss is no better, why bother with Muon? The Moonshot AI team used Muon on the MoE router in the training of Kimi K2[^kimi][^xidulu] (and perhaps later models). They motivate this decision by showing that Muon produces a router with consistently higher *SVD Entropy* than Adam. 
+
+SVD Entropy is a metric that quantifies roughly what percent of expert routing vectors point in genuinely distinct directions. A router with high SVD Entropy is said to be *well-conditioned*. A poorly-conditioned router will have many rows that are in the span of other rows, which means that these rows have no discriminative power, since they do not point to unique directions in feature space. In the extreme case, two experts with identical routing vectors receive statistically indistinguishable sets of tokens, train on the same inputs, and likely converge toward the same function. 
+
+For small-scale experiments, especially for extremely sparse models, conditioning may be a more useful measure than val loss. In the above experiments, the model has roughly 1.5B total parameters trained on 2.7B tokens — about 1.8 tokens per parameter. At this budget, expert specialization is probably not truly meaningful since the underlying data may not be diverse enough to reflect genuinely useful distinctions.
+
+Condition number is especially useful for measuring the quality of the router since this weight is discontinuous under top-$k$: small drifts in the weight matrix cause discrete jumps in token assignment. 
+
+I found Muon greatly improves the conditioning of the router weights:
 
 
 [^xidulu]: [Xidulu 2026](https://x.com/xidulu/status/2065543207950152016) helpfully pointed this fact out to me.
@@ -104,20 +112,16 @@ If validation loss is no better, why bother with Muon? The Moonshot AI team used
 <img src="../images/moe/router_kappa_adam_vs_muon-light.png" alt="Router condition number over training: Adam vs Muon" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/router_kappa_adam_vs_muon-dark.png" alt="Router condition number over training: Adam vs Muon" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
- **Figure 5:** Router condition number ($\sigma_{\max}/\sigma_{\min}$) over training. Muon produces a better-conditioned router than Adam throughout.
+ **Figure 5:** Router condition number $\kappa = \sigma_{\max}/\sigma_{\min}$ is an extremal measure of conditioning, where a perfectly conditioned matrix has condition number $1$. Unlike SVD Entropy, which is a measure of average conditioning, a low $\kappa$ bounds the worst-case amount of redundancy in the router. Muon produces a better-conditioned router than Adam throughout the duration of training.
 
-So Muon is roughly net even on loss but improves conditioning. 
-
-For small-scale experiments, especially for extremely sparse models, conditioning may be a more useful measure than val loss. In the above experiments, the model above has roughly 1.5B total parameters trained on 2.7B tokens — about 1.8 tokens per parameter. At this budget, expert specialization is probably not truly meaningful since the underlying data may not be diverse enough to reflect genuinely useful distinctions.
+So Muon is roughly net even on loss but improves conditioning. The simple intuition is that Muon's individual updates have perfect conditioning (orthogonalization), and therefore the accumulation of all of these updates also has very good conditioning, though further exposition of this phenomenon is given in additional work.[^orthogonality]
 
 ## Two new methods
 ### (3) Manifold Optimization 
 
 In the previous section, we found that Muon achieves better geometric conditioning of the routers than Adam. Here, I want to explore what happens when we target perfect conditioning. 
 
-Condition number is especially useful for probing the quality of the router because it is discontinuous under top-$k$: small drifts in the weight matrix cause discrete jumps in token assignment. 
-
-For any wide matrix (rows < columns, as in our router), the conditioning is perfect if and only if all rows are orthogonal with equal norm. This property, *rowwise orthogonality*, has a useful interpretation for the router specifically.  When two routing vectors have high cosine similarity, there exists a subspace where tokens are indistinguishable to those experts, and any token in that subspace gets assigned between them essentially at random. Rowwise orthogonality ensures no two routing vectors are redundant, and that small perturbations to the router weight do not severely change routing dynamics. Better orthogonality, which corresponds to better conditioning, may end up producing a much healthier model on a variety of downstream metrics when fully trained.
+For the router matrix, the conditioning is perfect if and only if all rows are orthogonal with equal norm. This property, *rowwise orthogonality*, has a useful interpretation for the router specifically.  When two routing vectors have high cosine similarity, there exists a subspace where tokens are indistinguishable to those experts, and any token in that subspace gets assigned between them essentially at random. Rowwise orthogonality ensures no two routing vectors are redundant, and that small perturbations to the router weight do not severely change routing dynamics. Better orthogonality, which corresponds to better conditioning, may end up producing a much healthier model on a variety of downstream metrics when fully trained.
 
 
 <img src="../images/moe/cosine_ribbon_adam_vs_muon-light.png" alt="Pairwise router-row cosine similarity over training, Adam vs Muon — Quantile, SMEBU, DeepSeek" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
@@ -141,7 +145,7 @@ Rather than *encouraging* orthogonality, we can enforce it directly. In 2025, Je
 [^manifold-muon]: [Jeremy Bernstein 2025](https://thinkingmachines.ai/blog/modular-manifolds/) *Modular Manifolds*
 
 ```python
- def sym(X: Tensor) -> Tensor:
+def sym(X: Tensor) -> Tensor:
     return 0.5 * (X + X.mT)
     
 def manifold_muon_update(
@@ -174,20 +178,18 @@ As desired, the routers are perfectly orthogonal throughout training:
 
 **Figure 9:** Validation loss of Muon vs Manifold Muon on the router. Perfect orthogonality costs a bit of val loss.
 
-Orthogonality can be understood as a data-agnostic approximation to *capacity*: a measure of how much of the incoming token distribution we cover. Recalling the nearest-neighbors formulation from Part 1, we'd like for the majority of incoming tokens to be contained within the span of the routing vectors. Pairwise similarity is a special case of capacity: a routing vector adds nothing whenever it lies in the span of the others. Consider two experts with identical routing vectors — they receive statistically indistinguishable sets of tokens, train on the same inputs, and likely converge toward the same function. On the other hand, a router that is *not* in the span of any other routers adds a novel axis of discrimination, which points toward a potential feature on which an expert can specialize. 
-
-%% Load balancing ensures experts receive roughly equal tokens, but we also care that these distributions tokens. A uniformly random router is balanced but useless. By Hadamard's Inequality, the simplex formed by the routing vectors is maximized exactly when they're mutually orthogonal. %%
-
-If token activations were uniformly distributed on the sphere (in $\mathbb{R}^d$), orthogonal routing vectors would maximize capacity exactly. They aren't uniform (if they were, load balancing would also be trivial), so maximizing the routing simplex isn't the same as maximizing capacity. Orthogonality is a naive but principled starting point, as the max-volume geometry when you ignore incoming token distribution. Load balancing and orthogonality can be thought of as complementary aspects toward capacity maximization. 
-
 ### (4) Loss-Free Routing
 One of the surprising results from the previous two sections is that Muon's gradient row-mixing doesn't hurt val loss too much. This suggests that respecting the cross-entropy gradient isn't crucial toward training our router. 
 
 The implicit assumption so far has been that each routing row learns to select tokens whose features its expert is good at processing. I'd like to reverse this assumption by training a router that knows nothing about its downstream experts, and instead allowing the experts to learn to process whatever tokens they receive.
 
-Recall that the primary motivation of aux-loss-free load balancing was the conflict between two objectives' distinct gradients. DeepSeek's loss-free balancing dropped the auxiliary loss and kept the LM gradient; this is the opposite move.
+Orthogonality can be understood as a data-agnostic approximation to *capacity*: a measure of how much of the incoming token distribution we cover. Recalling the nearest-neighbors formulation from Part 1, we'd like for the majority of incoming tokens to be contained within the span of the routing vectors. An orthogonal router is also a perfectly conditioned one: following the logic from Part 2, each routing vector points in a unique direction, giving the router the most discriminative power possible. 
 
-We can design an optimizer where structural orthogonality and load-balancing are the only tools we have to maximize capacity. First, we calculate the exact update needed to balance the experts based on the incoming token stream. Then, we feed this update into manifold muon before applying it to the router. 
+%% Load balancing ensures experts receive roughly equal tokens, but we also care that these distributions tokens. A uniformly random router is balanced but useless. By Hadamard's Inequality, the simplex formed by the routing vectors is maximized exactly when they're mutually orthogonal. %%
+
+If token activations were uniformly distributed on the sphere (in $\mathbb{R}^d$), orthogonal routing vectors would maximize capacity exactly. They aren't uniform (if they were, load balancing would also be trivial), so maximizing the routing simplex isn't the same as maximizing capacity. Orthogonality is a naive but principled starting point, as the max-volume geometry when you ignore incoming token distribution. Load balancing and orthogonality can be thought of as complementary aspects toward capacity maximization. 
+
+Recall that the primary motivation of aux-loss-free load balancing was the conflict between two objectives' distinct gradients. DeepSeek's loss-free balancing dropped the auxiliary loss and kept the LM gradient; this is the opposite move. We can design an optimizer where structural orthogonality and load-balancing are the only tools we have to maximize capacity. First, we calculate the exact update needed to balance the experts based on the incoming token stream. Then, we feed this update into Manifold Muon before applying it to the router. 
 
 ```python
 def loss_free_router_step(W, x, logits, lr):
@@ -233,14 +235,11 @@ The router achieves perfect orthogonality and balance with no gradient from the 
 
 The manifold muon udpate is a bit expensive, requiring ... calls to the `msign` operation. We can get away with doing it every $n$ steps. 
 
-{im not sure where to put below paragraph but i feel its informative}
-Recall that the primary motivation of aux-loss-free load balancing was due to "conflict" between the two loss functions' distinct gradients. While DeepSeek and later work solved this by getting rid of the load balancing loss term, I'm proposing doing the opposite: getting rid of the gradient from cross-entropy loss.
-
 Note that the validation loss lags noticably behind the previous approaches in this blog. It's worth asking why bother with this idea at all? 
 
 The loss-free router is composed of two distinct elements: structural orthogonality, and a balancing update rule. I'm complaining that combined, these form a rough approximation to *capacity*. %%
 
-I'd like to propose that this loss-free router is just the simplest possible instantiation of a family of loss-free learnable routers[^frozen]. The proposed framework has just one geometric constraint and one update rule, both decoupled from the cross-entropy gradient. The balancing update could be replaced by any objective we can write a gradient for: capacity-maximization, expert specialization, dead-expert-minimization, sequence-level balance. etc. The geometric constraint can also be relaxed from strict orthogonality to any manifold constrained optimizer.[^tilde]
+I'd like to propose that this loss-free router is just the simplest possible instantiation of a family of loss-free learnable routers[^frozen]. The proposed framework has just one geometric constraint and one update rule, both decoupled from the cross-entropy gradient. The balancing update could be replaced by any objective we can write a gradient for: capacity-maximization, expert specialization, dead-expert-minimization, sequence-level balance, etc. The geometric constraint can also be relaxed from strict orthogonality to any manifold constrained optimizer.[^tilde]
 
 [^tilde]: [Keigwin, Pai, Chen (Tilde Research) 2025](https://blog.tilderesearch.com/vignettes/gram-space) *Gram-Space Manifold Muon*
 
@@ -268,7 +267,7 @@ In general, a routing vector avoids
 
 
 
---
+---
 
 
 ## Appendix 
@@ -311,7 +310,7 @@ def manifold_muon_update(
     # retract to Stiefel manifold
     return streaming_msign(W + vel)
 ```
-**Algorithm 3: Manifold Muon update with a few tricks**
+**Algorithm 3:** The full Manifold Muon update used in my experiments, with an ADMM inner solver, momentum on the tangent velocity, and an optional magnitude gate. Each trick is detailed below.
 
 Useful details:
 - The inner loop uses ADMM to solve the constrained optimization over the Stiefel manifold.[^admm] This reformulation by Buchanan drops the required inner-loop iterations by an order of magnitude compared to Bernstein's original dual-ascent solver.
@@ -319,7 +318,7 @@ Useful details:
 - `msign` uses Polar Express in `fp16` (more numerically stable than `bf16`)
 - `streaming_msign` uses Jianlin Su's Streaming SVD[^su] algorithm. The reason for this is to encourage the final `msign` to have the same order of singular vectors from step-to-step. Newton-Schulz (and similar algorithms) may noisily shuffle rows in early training, which is dangerous for routing weights. 
 - I've included logic that allows for momentumization to the retraction vector to the Stiefel Manifold (`vel -> vel_ema`). As far as I know, this addition is novel to the Manifold Muon literature. In my testing, this far outperforms momentumization of the incoming gradient signal.
-- The router is initialized on the Stiefel manifold via `torch.nn.init.orthogonal_.`
+- The router is initialized on the Stiefel manifold via `torch.nn.init.orthogonal_`.
 - Routers of the same shape are batched into a single ADMM/msign call.
 
 [^su]: [Su 2026](https://spaces.ac.cn/archives/11654) *A Muon implementation based on streaming exponential iteration*
@@ -331,7 +330,7 @@ Let $W \in \mathbb{R}^{E \times D}$ be the router weight, with rows $W_j$ corres
 [^sigmoid]: The routing score could just be the raw dot product $x_i \cdot W_j$, but sigmoid keeps scores in $(0, 1)$ and gives a clean derivative $\sigma'(z) = \sigma(z)(1-\sigma(z))$. Any monotonic function of dot-product similarity works here though the resulting gradient will differ slightly.
 
 %% If we want to ask how balanced the routing scores are, we can ask for the cosine similarity between %%
-Since $F$ is just a vector, we can understand its properties by comparing it against a target vector. If we we want to ask how balanced $F$ is, we should compare it to $U = [\bar{F}, \bar{F}, \dots \bar{F}]$ where $\bar{F}$ is the mean value of $F$. This motivates a simple loss function like $\mathcal{L}(F) = ||F - U||^2$. 
+Since $F$ is just a vector, we can understand its properties by comparing it against a target vector. If we want to ask how balanced $F$ is, we should compare it to $U = [\bar{F}, \bar{F}, \dots \bar{F}]$ where $\bar{F}$ is the mean value of $F$. This motivates a simple loss function like $\mathcal{L}(F) = ||F - U||^2$. 
 
 We want $\frac{\partial \mathcal{L}}{\partial W_j}$. By the chain rule:
 
@@ -376,7 +375,7 @@ def loss_free_router_step(W, x, logits, lr):
     return manifold_muon_update(W, G, lr, preserve_mag=True)
 ```
 
-This update rule converges rapidly as load balancing is achieved. As such, only updating every $k$ steps is probably sufficient. 
+This update rule converges rapidly as load balancing is achieved. As such, only updating every $n$ steps is probably sufficient. 
 
 
 %% The implementaiton of `msign` is somewhat numerically sensitive. I havent done rigorous ablation testing to the number of inner lop interations needed in manifold nor `msign` steps needed. I choose to use `polar_express` over newton-schulz as well as `fp16` instead of `bf16` in the msign code.  %%

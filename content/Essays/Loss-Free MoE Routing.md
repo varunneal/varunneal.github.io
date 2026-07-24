@@ -17,7 +17,7 @@ modified: July 22, 2026
 description:
 type: technical
 ---
-**Overview:** In this post I explore two criteria for MoE routers—load balancing and geometric conditioning—and propose two new methods. The first uses Manifold Muon to keep the router perfectly conditioned throughout training. The second goes further, training the router using only load-balancing updates and geometric constraints, removing the cross-entropy loss gradient entirely. Both train stably, stay well balanced and perfectly conditioned, and suggest a broader family of loss-free router optimizers.
+**Overview:** In this post I explore two criteria for MoE routers—load balancing and geometric conditioning—and propose two new methods. The first uses Manifold Muon to keep the router perfectly conditioned throughout training. From there, I propose a single update rule that achieves load balancing and orthogonality with no auxiliary balancer, by detaching the router from the training loss entirely. Both train stably, stay well balanced and perfectly conditioned, and suggest a broader family of loss-free router optimizers.
 
 ## What's in a router?
 ### (1) Load Balancing
@@ -28,7 +28,7 @@ Each expert owns a single row in the router matrix, which is just a point in act
 <img src="../images/moe/routing_balance_sketch-light.png" alt="Imbalanced vs balanced routing, hand-drawn" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/routing_balance_sketch-dark.png" alt="Imbalanced vs balanced routing, hand-drawn" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 1:** A simplified setup with 3 experts. (Left) unbalanced routing. (Right) we expand the radius of the green expert and achieve balance.
+**Figure 1:** A simplified setup with 3 experts. The large circles represent three routing vectors and the small dots are colored by assignment. (Left) unbalanced routing, where the green expert receives only a few tokens. (Right) we expand the effective radius of the green expert, and now each expert receives a near-equal share of tokens. 
 
 A router balancer modifies the effective catchment radius around each expert so that each receives a near-equal number of tokens. 
 
@@ -173,10 +173,10 @@ As desired, the routers are perfectly orthogonal throughout training:
  **Figure 8:** Mean pairwise cosine similarity under Manifold Muon. Rows remain exactly orthogonal throughout training.
 
 
-<img src="../images/moe/val_loss_muon_vs_manifold-light.png" alt="Validation loss: Muon vs Manifold Muon on the router" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
-<img src="../images/moe/val_loss_muon_vs_manifold-dark.png" alt="Validation loss: Muon vs Manifold Muon on the router" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
+<img src="../images/moe/router_progression_no_lossfree-light.png" alt="Pairwise router cosine similarity and validation loss over training for Adam, Muon, and Manifold Muon" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
+<img src="../images/moe/router_progression_no_lossfree-dark.png" alt="Pairwise router cosine similarity and validation loss over training for Adam, Muon, and Manifold Muon" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 9:** Validation loss of Muon vs Manifold Muon on the router. Perfect orthogonality costs a bit of val loss.
+**Figure 9:** Pairwise cosine similarity (top) and validation loss (bottom) over training for Adam, Muon, and Manifold Muon. Perfect orthogonality costs a bit of val loss.
 
 ### (4) Loss-Free Routing
 One of the surprising results from the previous two sections is that Muon's gradient row-mixing doesn't hurt val loss too much. This suggests that respecting the cross-entropy gradient isn't crucial toward training our router. 
@@ -189,7 +189,7 @@ Orthogonality can be understood as a data-agnostic approximation to *capacity*: 
 
 If token activations were uniformly distributed on the sphere (in $\mathbb{R}^d$), orthogonal routing vectors would maximize capacity exactly. They aren't uniform (if they were, load balancing would also be trivial), so maximizing the routing simplex isn't the same as maximizing capacity. Orthogonality is a naive but principled starting point, as the max-volume geometry when you ignore incoming token distribution. Load balancing and orthogonality can be thought of as complementary aspects toward capacity maximization. 
 
-Recall that the primary motivation of aux-loss-free load balancing was the conflict between two objectives' distinct gradients. DeepSeek's loss-free balancing dropped the auxiliary loss and kept the LM gradient; this is the opposite move. We can design an optimizer where structural orthogonality and load-balancing are the only tools we have to maximize capacity. First, we calculate the exact update needed to balance the experts based on the incoming token stream. Then, we feed this update into Manifold Muon before applying it to the router. 
+Recall that the primary motivation of aux-loss-free load balancing was the conflict between two objectives' distinct gradients. DeepSeek's loss-free balancing dropped the auxiliary loss and kept the LM gradient. What if we try the opposite approach? We can design an optimizer where structural orthogonality and load-balancing are the only tools we have to maximize capacity. First, we calculate the exact update needed to balance the experts based on the incoming token stream. Then, we feed this update into Manifold Muon before applying it to the router. 
 
 ```python
 def loss_free_router_step(W, x, logits, lr):
@@ -211,42 +211,40 @@ If both are satisfied, each expert receives a distinct, equally-sized slice of t
 
 %% In Section 2 we found that it's okay if the gradients that update a given row blend don't actually correspond to just the loss coming from the row. In this section, I want to explore the thought that the router is totally agnostic to the gradient flow. %%
 
-The routers receive *no* other updates, neither from the typical backprop update nor from any additional load balancer. Full details + code are in the Appendix, but here are the results:
+The routers receive *no* other updates, neither from the typical backprop update nor from any additional load balancer. Full details + code are in the Appendix, but here are the results. First, orthogonality, guaranteed by construction, gives us perfect conditioning.
 
 <img src="../images/moe/router_cosine_by_layer-light.png" alt="Mean pairwise cosine similarity by layer: Adam, Muon, Manifold Muon, Loss-free" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/router_cosine_by_layer-dark.png" alt="Mean pairwise cosine similarity by layer: Adam, Muon, Manifold Muon, Loss-free" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 10:** Mean pairwise cosine similarity by layer over training for all four router optimizers. Adam and Muon accumulate similarity in later layers; Manifold Muon and the loss-free router maintain near-zero similarity throughout.
 
+The loss-free update rule also guarantees balance, and it is achieved with the same efficacy as methods with auxiliary balancers.
 
 <img src="../images/moe/maxvio_by_layer_lossfree-light.png" alt="MaxVio by layer over training under loss-free routing" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/maxvio_by_layer_lossfree-dark.png" alt="MaxVio by layer over training under loss-free routing" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 11:** MaxVio by layer over training for the Loss-free router (rightmost) versus previous methods (Adam, Muon, Manifold Muon with Quantile Load Balancer). Even with no external balancer, MaxVio is low throughout training. 
 
-
+Finally, we find that validation loss for loss-free routing lags behind, though it is not disastrous.
 
 <img src="../images/moe/val_loss_lossfree-light.png" alt="Validation loss under loss-free routing" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/val_loss_lossfree-dark.png" alt="Validation loss under loss-free routing" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 12:** Validation loss under loss-free routing compared to previous methods. Training is stable and monotonic, though val loss lags behind.
 
-The router achieves perfect orthogonality and balance with no gradient from the LM head. The validation loss lags behind the previous implementations, but training still appears to be monotonic and stable. %% 
+The router achieves perfect orthogonality and balance with no gradient from the LM head. The validation loss lags behind the previous implementations, but training still appears to be monotonic and stable. 
 
-The manifold muon udpate is a bit expensive, requiring ... calls to the `msign` operation. We can get away with doing it every $n$ steps. 
+#### Why bother?
+Since this section's approach lags behind in validation loss, it's clear that the training loss is useful for *something*. On the other hand, it doesn't appear to be strictly necessary for training mixture-of-experts models. Initial research on MoEs encouraged balance with auxiliary loss functions; later work swapped these for learnable biases, then for bespoke bias-update rules, each a progressively lighter intervention. 
 
-Note that the validation loss lags noticably behind the previous approaches in this blog. It's worth asking why bother with this idea at all? 
+I believe the most principled version of MoE training is not composed of several distinct update functions; rather, a single criterion combined with a single optimizer, which matches how every single other parameter in the transformer is trained. The proposed method in this section is one instance of this: gradient descent on the load-balancing criterion combined with a geometrically-structured optimizer (Manifold Muon).
 
-The loss-free router is composed of two distinct elements: structural orthogonality, and a balancing update rule. I'm complaining that combined, these form a rough approximation to *capacity*. %%
+Typically, gradient descent is very powerful. To some extent, over-engineering the router is in violation of our natural trust in its power. As Karpathy wrote in 2017, *gradient descent can write code better than you*.[^karpathy] Routing is discontinuous under top-$k$, which makes the router the one component of the transformer for which cross-entropy is an awkward criterion. I don't think the problem is descent; rather, *what* we choose to descend.
 
-I'd like to propose that this loss-free router is just the simplest possible instantiation of a family of loss-free learnable routers[^frozen]. The proposed framework has just one geometric constraint and one update rule, both decoupled from the cross-entropy gradient. The balancing update could be replaced by any objective we can write a gradient for: capacity-maximization, expert specialization, dead-expert-minimization, sequence-level balance, etc. The geometric constraint can also be relaxed from strict orthogonality to any manifold constrained optimizer.[^tilde]
+[^karpathy]: [Andrej Karpathy 2017](https://x.com/karpathy/status/893576281375219712) "Gradient descent can write code better than you. I'm sorry."
 
-[^tilde]: [Keigwin, Pai, Chen (Tilde Research) 2025](https://blog.tilderesearch.com/vignettes/gram-space) *Gram-Space Manifold Muon*
+My suspicion is that the final criterion will end up remarkably simple, though it may not look exactly like load balancing. As indicated earlier, this method seems to be a data-agnostic approximation to *capacity*. It may be possible to simply write down a single criterion that maximizes capacity, and to optimize for this directly. 
 
-[^frozen]: The truly simplest loss-free routers are entirely frozen. In DeepSeek V4[^dsv4], a fixed lookup table maps token IDs directly to experts. A static table works well in early layers where incoming activations follow natural language statistics, but cannot adapt in middle/later layers whose distributions shift throughout training. The loss-free router proposed here is learnable and adapts as distributions change. See also Su's discussion in Part 8 of his MoE series.[^su8]
-
-[^dsv4]: [DeepSeek, Guo et al 2026](https://arxiv.org/abs/2606.19348) *DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence*
-[^su8]: [Jianlin Su 2026](https://kexue.fm/archives/11750) *MoE Odyssey Part 8: Where Does DeepSeek V4's tid2eid Come From?* — translated on my blog: [[essays/MoE|MoE Odyssey]].
 
 
 %%   *Capacity* is a measure of how much we cover the incoming token distribution. Recalling the nearest-neighbors visual from Part 1, our goal is for the set of token activations to be fully contained within the convex combination of routing vectors. Pairwise similarity is a special case of capacity: a routing vector adds nothing whenever it lies in the convex combination of the others.  Recalling the nearest-neighbors formulation from part 1, we'd like for the majority of incoming tokens to be contained within the linear combination of the routing vectors.  By Hadamard's Inequality, the simplex formed by the routing vectors is maximized exactly when they're mutually orthogonal. The underlying data, however, is not equally distributed about the origin, so maximizing just the routing simplex won't be the same as maximizing capacity.    %%
@@ -283,7 +281,7 @@ def sym(X: Tensor) -> Tensor:
 def manifold_muon_update(
     W: Tensor, G: Tensor, lr: float,
     vel_ema: Tensor | None = None, beta: float = 0.9,
-    mu: float = 1.0, admm_steps: int = 20, preserve_mag: bool = False,
+    mu: float = 1.0, admm_steps: int = 20, preserve_mag: bool = True,
 ) -> Tensor:
     # step-size gate: preserves balance signal
     mag = torch.tanh(G.norm()) if preserve_mag else 1.0
@@ -323,7 +321,7 @@ Useful details:
 
 [^su]: [Su 2026](https://spaces.ac.cn/archives/11654) *A Muon implementation based on streaming exponential iteration*
 
-For the Loss Free optimizer, we use a classic balancing loss criteria, but compute its gradient explicitly rather than through autograd.
+For the Loss Free optimizer, we use a classic balancing loss criterion, but compute its gradient explicitly rather than through autograd.
 
 Let $W \in \mathbb{R}^{E \times D}$ be the router weight, with rows $W_j$ corresponding to each expert's routing vector. Given token activations $x_1, \dots, x_T \in \mathbb{R}^D$, the routing score for token $i$ to expert $j$ is $\rho_{i,j} := \sigma(x_i \cdot W_j)$, where $\sigma$ is the sigmoid.[^sigmoid] The mean routing score per expert is $F_j := \frac{1}{T} \sum_{i=1}^T \rho_{i,j}$, and $F = [F_1, \dots, F_E] \in \mathbb{R}^E$ is the vector of all expert loads.
 
@@ -372,7 +370,7 @@ def loss_free_router_step(W, x, logits, lr):
     scale = (2.0 / x.shape[0]) * (F - F.mean())
     G = scale.unsqueeze(1) * (s.T @ x)
     # 2. manifold muon update
-    return manifold_muon_update(W, G, lr, preserve_mag=True)
+    return manifold_muon_update(W, G, lr)
 ```
 
 This update rule converges rapidly as load balancing is achieved. As such, only updating every $n$ steps is probably sufficient. 
@@ -390,22 +388,24 @@ This update rule converges rapidly as load balancing is achieved. As such, only 
 
 [^admm]: [Sam D. Buchanan 2025](https://sdbuchanan.com/blog/manifold-muon/) *A Faster Manifold Muon with ADMM*
 ### Extensions
-The loss-free method here used just one update rule (balance) and one geometric constraint (Stiefel). Both can be swapped:
+The loss-free method here used just one update rule (balance) and one geometric constraint (Stiefel).[^frozen] Both can be swapped. The balancing gradient can be replaced or augmented with any objective we can differentiate through the router, such as capacity-maximization (see the note on capacity in Section 4), sequence-level load balancing, or a domain specialization loss.
 
-Alternative update rules. The balancing gradient can be replaced or augmented with any objective we can differentiate through the router:
-1. Capacity-maximization (see the note on capacity in Section 3)
-2. Sequence-level load balancing
-3. Domain specialization loss
-
-Relaxed geometry: Strict orthogonality may be too aggressive when the number of experts is large. A natural relaxation is to target low coherence — a measure of how orthogonal a set of unit vectors is.[^coherence] Progressive relaxations of the Stiefel constraint are explored in Gram-Space Manifold Muon.[^tilde]
+On the geometry side, strict orthogonality may be too aggressive when the number of experts is large. A natural relaxation is to target low coherence, a measure of how orthogonal a set of unit vectors is.[^coherence] Progressive relaxations of the Stiefel constraint are explored in Gram-Space Manifold Muon.[^tilde]
 
 [^coherence]: See e.g. Mixon et al 2018 Low coherence tight frames
 
-PSGD connection: The manifold retraction constraint resembles a PSGD preconditioner criterion. It may be possible to reframe both the row-independence constraint and the balancing update as a single PSGD criterion — giving load balancing + orthogonality in one optimizer whose objective is unrelated to the CE gradient.
+[^tilde]: [Keigwin, Pai, Chen (Tilde Research) 2025](https://blog.tilderesearch.com/vignettes/gram-space) *Gram-Space Manifold Muon*
 
-Practical notes: The manifold update doesn't need to run every step — skipping every $n$ steps is sufficient (see results above). Additional optimizations: batching manifold Muon across layers, computing the balancing gradient during routing (no extra forward pass), and using the normal gradient accumulation + all-reduce pipeline by writing the result to .grad.
+[^frozen]: The truly simplest loss-free routers are entirely frozen. In DeepSeek V4[^dsv4], a fixed lookup table maps token IDs directly to experts. A static table works well in early layers where incoming activations follow natural language statistics, but cannot adapt in middle/later layers whose distributions shift throughout training. The loss-free router proposed here is learnable and adapts as distributions change. See also Su's discussion in Part 8 of his MoE series.[^su8]
 
-Scaling: The experiments here are at small scale (12-layer, 64 experts). Open questions: behavior at different sparsities, with fixed/shared experts, and whether the framework holds at frontier scale.
+[^dsv4]: [DeepSeek, Guo et al 2026](https://arxiv.org/abs/2606.19348) *DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence*
+[^su8]: [Jianlin Su 2026](https://kexue.fm/archives/11750) *MoE Odyssey Part 8: Where Does DeepSeek V4's tid2eid Come From?* — translated on my blog: [[essays/MoE|MoE Odyssey]].
+
+This whole philosophy of optimizing only a single criterion is inspired by my research into PSGD. The manifold retraction constraint resembles a PSGD preconditioner criterion. I believe both the design of the optimal criterion (e.g. capacity) and of the optimizer (e.g. geometric constraints) might be best understood through the framework of PSGD.
+
+As a practical matter, the manifold update doesn't need to run every step; skipping every $n$ steps is sufficient (see results above). Further optimizations include batching manifold Muon across layers, computing the balancing gradient during routing (no extra forward pass), and writing the result to `.grad` in order to reuse the normal gradient accumulation and all-reduce pipeline.
+
+The experiments here are at small scale (12-layer, 64 experts). Open questions include behavior at different sparsities, the interaction with fixed or shared experts, and whether the framework holds at frontier scale.
 
 ### Experiment details
 

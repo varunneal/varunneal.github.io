@@ -1,6 +1,6 @@
 ---
 draft: "false"
-created: June 30, 2026
+created: July 24, 2026
 title: Loss-Free MoE Routing
 aliases:
   - moe-routing
@@ -13,7 +13,7 @@ aliases:
 image:
 imageAlt:
 permalink: essays/loss-free-moe
-modified: July 22, 2026
+modified: July 24, 2026
 description:
 type: technical
 ---

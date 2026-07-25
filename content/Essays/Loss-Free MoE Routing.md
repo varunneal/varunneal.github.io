@@ -17,24 +17,25 @@ modified: July 24, 2026
 description:
 type: technical
 ---
-**Overview:** In this post I explore two criteria for MoE routers—load balancing and geometric conditioning—and propose two new methods. The first uses Manifold Muon to keep the router perfectly conditioned throughout training. From there, I propose a single update rule that achieves load balancing and orthogonality with no auxiliary balancer, by detaching the router from the training loss entirely. Both train stably, stay well balanced and perfectly conditioned, and suggest a broader family of loss-free router optimizers.
+**Overview:** In this post I explore two criteria for MoE routers—load balancing and geometric conditioning—and propose two new methods. The first uses Manifold Muon to keep the router perfectly conditioned throughout training. The second is a single update rule that achieves load balancing and orthogonality with no auxiliary balancer and is detached from the training loss entirely. Both train stably, stay well balanced and perfectly conditioned, and suggest a broader family of loss-free router optimizers.
 
 ## What's in a router?
 ### (1) Load Balancing
 A standard transformer has one MLP per layer. A mixture-of-experts (MoE) model has many, each called an expert, but routes each token to only a few of them. The routing decision is controlled by an $E \times D$ weight matrix (the router), where each row is a single expert's selection vector.
 
-Each expert owns a single row in the router matrix, which is just a point in activation space. Tokens arrive with their own activations, and routing scores are decided based on the similarity between experts' vectors and token activations. In a simplified model where all these vectors are unit-normalized, dot-product similarity is monotonic with Euclidean distance, so each token routes to its nearest expert. 
+Each expert owns a single row in the router matrix, which is just a point in activation space. Tokens arrive with their own activations, and routing scores are decided based on the similarity between experts' vectors and token activations. In a simplified model where all these vectors are unit-normalized, %% dot-product similarity is monotonic with Euclidean distance, so  %%each token routes to its nearest expert. 
+
+A router balancer modifies the effective catchment radius around each expert so that each receives a near-equal number of tokens. 
+
 
 <img src="../images/moe/routing_balance_sketch-light.png" alt="Imbalanced vs balanced routing, hand-drawn" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/routing_balance_sketch-dark.png" alt="Imbalanced vs balanced routing, hand-drawn" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
 **Figure 1:** A simplified setup with 3 experts. The large circles represent three routing vectors and the small dots are colored by assignment. (Left) unbalanced routing, where the green expert receives only a few tokens. (Right) we expand the effective radius of the green expert, and now each expert receives a near-equal share of tokens. 
 
-A router balancer modifies the effective catchment radius around each expert so that each receives a near-equal number of tokens. 
-
 Without balancing you will end up in a vicious feedback loop of dead experts.[^fedus] If an expert receives fewer tokens, it will become undertrained, which will encourage the router to continue diverting tokens away from this expert. 
 
-To promote balance, GShard[^gshard] added an auxiliary loss that measures how imbalanced the experts are. This is simple to implement, since the autograd framework handles the complexities of how each expert should become balanced. The problem is that your model now has two objectives that can conflict with each other:
+To promote balance, GShard[^gshard] (2020) added an auxiliary loss function that measures how imbalanced the experts are. This is simple to implement, since the autograd framework handles the complexities of how each expert should become balanced. The problem is that your model now has two objectives that can conflict with each other:
 
 > Existing methods commonly employ an auxiliary loss to encourage load balance, but a large auxiliary loss will introduce non-negligible interference gradients into training and thus impair the model performance. 
 > Although the auxiliary loss can alleviate load imbalance during training, it also introduces undesired gradients that conflict with the language modeling objective.
@@ -127,7 +128,7 @@ For the router matrix, the conditioning is perfect if and only if all rows are o
 <img src="../images/moe/cosine_ribbon_adam_vs_muon-light.png" alt="Pairwise router-row cosine similarity over training, Adam vs Muon — Quantile, SMEBU, DeepSeek" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/cosine_ribbon_adam_vs_muon-dark.png" alt="Pairwise router-row cosine similarity over training, Adam vs Muon — Quantile, SMEBU, DeepSeek" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 6:** Mean pairwise cosine similarity between router rows over training. Adam (left) vs Muon (right) across all three balancing methods. Muon produces strictly more orthogonal routers.
+**Figure 6:** Mean pairwise cosine similarity between router rows over training. Adam (left) vs Muon (right) across the three balancing methods mentioned previously (Quantile, SMEBU, Deepseek). Muon produces more pairwise-orthogonal router than Adam. 
 
 Two recent works[^ernie][^guo] have defined an aux loss for the MoE router that explicitly encourages rowwise orthogonalization:
 
@@ -166,13 +167,12 @@ def manifold_muon_update(
 
 **Algorithm 2:** Manifold Muon. `msign` is the matrix sign function (Newton-Schulz / Polar Express). This code assumes W is wide (`W.shape[0] <= W.shape[1]`). For full implementation details see the Appendix.
 
-
-As desired, the routers are perfectly orthogonal throughout training:
+Simply swapping out Muon for Manifold Muon on the router gives us a router with perfectly orthogonal rows throughout training:
 <img src="../images/moe/cosine_ribbon_manifold_tangent-light.png" alt="Router-row pairwise cosine similarity under manifold Muon (tangent momentum) — ~0 across all layers" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/cosine_ribbon_manifold_tangent-dark.png" alt="Router-row pairwise cosine similarity under manifold Muon (tangent momentum) — ~0 across all layers" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
  **Figure 8:** Mean pairwise cosine similarity under Manifold Muon. Rows remain exactly orthogonal throughout training.
 
-
+Moreover, I found the validation loss to be comparable, though slightly worse, than Adam and Muon. 
 <img src="../images/moe/router_progression_no_lossfree-light.png" alt="Pairwise router cosine similarity and validation loss over training for Adam, Muon, and Manifold Muon" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/router_progression_no_lossfree-dark.png" alt="Pairwise router cosine similarity and validation loss over training for Adam, Muon, and Manifold Muon" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 

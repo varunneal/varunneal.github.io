@@ -4,14 +4,22 @@ ul.section-ul {
   list-style: none;
   margin-top: 2em;
   padding-left: 0;
+
+  // the column tracks live here so every row shares the same date column width
+  display: grid;
+  grid-template-columns: fit-content(8em) 3fr 1fr;
 }
 
 li.section-li {
   margin-bottom: 1em;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
 
   & > .section {
     display: grid;
-    grid-template-columns: fit-content(8em) 3fr 1fr;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
 
     @media all and ($mobile) {
       & > .tags {
@@ -24,17 +32,18 @@ li.section-li {
     }
 
     & .meta {
-      margin: 0 1em 0 0;
+      margin: 0 1.5em 0 0;
       opacity: 0.6;
     }
   }
 }
 
 // modifications in popover context
-.popover .section {
-  grid-template-columns: fit-content(8em) 1fr !important;
+// drop the tags column from the parent grid; the rows follow via subgrid
+.popover ul.section-ul {
+  grid-template-columns: fit-content(8em) 1fr;
+}
 
-  & > .tags {
-    display: none;
-  }
+.popover .section > .tags {
+  display: none;
 }

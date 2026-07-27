@@ -13,7 +13,7 @@ aliases:
 image:
 imageAlt:
 permalink: essays/loss-free-moe
-modified: July 24, 2026
+modified: July 27, 2026
 description:
 type: technical
 ---
@@ -104,7 +104,7 @@ Condition number is especially useful for measuring the quality of the router si
 I found Muon greatly improves the conditioning of the router weights:
 
 
-[^xidulu]: [Xidulu 2026](https://x.com/xidulu/status/2065543207950152016) helpfully pointed this fact out to me.
+[^xidulu]: [Xidulu 2026](https://x.com/xidulu/status/2065543207950152016) helpfully pointed this fact out to me. See also their paper, [Wang, Hayou, Nalisnick 2026](https://openreview.net/pdf?id=2PAe0L8PME) *Depth scaling and Muon enable balanced expert usage in MoE Training*, which also explores Muon on the MoE router, actually finding it improves learning rate stability and training loss over Adam.
 [^kimi]: [Moonshot AI, Liu et al 2025](https://arxiv.org/abs/2502.16982) *Muon is Scalable for LLM Training*
 
 [^orthogonality]: Muon's tendency to produce well-conditioned weights is documented empirically in [Davis and Drusvyatskiy 2025](https://github.com/damek/specgd/blob/main/stable_rank.pdf) and [Boreiko et al 2025](https://openreview.net/challenge?redirect=%2Fforum%3Fid%3DppmyFtr9EW). I discuss this property in the context of standard linear layers in my [[essays/muon|earlier post on Muon]].
@@ -130,15 +130,16 @@ For the router matrix, the conditioning is perfect if and only if all rows are o
 
 **Figure 6:** Mean pairwise cosine similarity between router rows over training. Adam (left) vs Muon (right) across the three balancing methods mentioned previously (Quantile, SMEBU, Deepseek). Muon produces more pairwise-orthogonal router than Adam. 
 
-Two recent works[^ernie][^guo] have defined an aux loss for the MoE router that explicitly encourages rowwise orthogonalization:
+Several recent works[^ernie][^guo][^orthworks] have defined an aux loss for the MoE router that explicitly encourages rowwise orthogonalization:
 
 [^ernie]: [ERNIE Team, Baidu 2025](https://ernie.baidu.com/blog/publication/ERNIE_Technical_Report.pdf) *ERNIE 4.5 Technical Report* — introduces an orthogonalization aux loss on the router.
 [^guo]: [Guo et al 2025](https://arxiv.org/abs/2505.22323) *Advancing Expert Specialization for Better MoE*
+[^orthworks]: As well as many other works that I haven't reviewed in careful detail, including [Omi, Sen, Farhadi 2025](https://arxiv.org/abs/2506.14038) *Load Balancing Mixture of Experts with Similarity Preserving Routers*, [ByteDance, Lv et al 2025](https://arxiv.org/abs/2512.23447) *Coupling Experts and Routers in Mixture-of-Experts via an Auxiliary Loss*, [Liu et al 2023](https://arxiv.org/abs/2310.09762) *Diversifying the Mixture-of-Experts Representation for Language Models with Orthogonal Optimizer*, [Nucleus AI, Akiti et al 2026](https://arxiv.org/abs/2604.12163) *Nucleus-Image: Sparse MoE for Image Generation*, and [Kim 2026](https://arxiv.org/abs/2601.00457) *Geometric Regularization in Mixture-of-Experts: The Disconnect Between Weights and Activations*.
 
 <img src="../images/moe/cosine_ribbon_muon-light.png" alt="Pairwise router-row cosine similarity under Muon, without orth loss vs with orth loss — Quantile, SMEBU, DeepSeek" class="theme-image-light plot" style="width: 100%; height: auto; flex-shrink: 0;">
 <img src="../images/moe/cosine_ribbon_muon-dark.png" alt="Pairwise router-row cosine similarity under Muon, without orth loss vs with orth loss — Quantile, SMEBU, DeepSeek" class="theme-image-dark plot" style="width: 100%; height: auto; flex-shrink: 0;">
 
-**Figure 7:** Mean pairwise cosine similarity under Muon without (left) and with (right) an orthogonalization auxiliary loss. The orth loss drives similarities lower, though they remain nonzero and growing.
+**Figure 7:** Mean pairwise cosine similarity under Muon without (left) and with (right) the orthogonalization auxiliary loss (in this case, as proposed by Baidu's ERNIE team). The orth loss drives similarities lower, though they remain nonzero and growing.
 
 
 Rather than *encouraging* orthogonality, we can enforce it directly. In 2025, Jeremy Bernstein[^manifold-muon] proposed Manifold Muon, in which weights are constrained to the Stiefel Manifold. For router weights, where the number of experts is less than the hidden dimension, this gives us exact rowwise orthogonality. 

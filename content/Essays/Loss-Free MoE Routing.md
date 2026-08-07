@@ -410,12 +410,11 @@ The experiments here are at small scale (12-layer, 64 experts). Open questions i
 
 ### Experiment details
 
-All experiments use a 12-layer, 768-dimensional NanoGPT-style transformer. Every layer's MLP is replaced by a 64-expert SwiGLU MoE with expert intermediate width 768 (1,771,776 parameters per expert) and top-2 routing. The model has 1,465,228,800 total parameters, 92.9% of which sit in the experts; top-2 routing activates 147,027,456 per token (71,480,832 excluding the embedding table and LM head) — a ~10× total-to-active ratio. Routing uses sigmoid gating renormalized to sum to one.
+All experiments use a 12-layer, 768-dimensional NanoGPT-style transformer. Every layer's MLP is replaced by a 64-expert SwiGLU MoE with expert intermediate width 768 (1,771,776 parameters per expert) and top-2 routing. The model has 1,465,228,800 total parameters, 92.9% of which sit in the experts. Top-2 routing activates 147,027,456 per token (71,480,832 excluding the embedding table and LM head), giving an approximately ~10× total-to-active ratio. Routing uses sigmoid gating renormalized to sum to one.
 
-Training data is a three-domain blend drawn from Dolma v1.7 — code (StarCoder), math (proof-pile-2), and literature (books + Wikipedia) — tokenized with SmolLM2 (49,152 vocab). Each optimizer step sees all three domains in equal proportion. Runs are 5,000 steps at ~540K tokens/step (≈2.7B tokens total). The LR Schedule follows WSD, with a linear decay over the final 30% of training. 
+Training data is a three-domain blend drawn from Dolma v1.7: code (StarCoder), math (proof-pile-2), and literature (books + Wikipedia). The tokenizer is with SmolLM2 (49,152 vocab). Each optimizer step sees all three domains in equal proportion. Runs are 5,000 steps at ~540K tokens/step ($\approx$ 2.7B tokens total). The LR Schedule follows WSD, with a linear decay over the final 30% of training. 
 
-AdamW (lr 3e-3) is used on embeddings, the LM head, norms, and biases. Muon (lr 1.5e-2) is used on all attention and expert matrices. The router is the only component that varies between arms: Muon-family routers (plain Muon, Manifold Muon, loss-free) all use lr 0.02; the Adam-router baseline uses 3e-3.
-
+AdamW (lr 0.003) is used on embeddings, the LM head, norms, and biases. Muon (lr 0.015) is used on all attention and expert matrices. When using Adam or a Muon-family router (plain Muon, Manifold Muon, or loss-free), they use learning rates 0.003 and 0.02, respectively.
 
 ---
 

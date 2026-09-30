@@ -68,11 +68,11 @@ MoE pushes in the same direction. Each token activates only a few experts, so co
 
 Speculative decoding pairs a small draft model with a large target model. The drafter proposes a block of tokens, and the target verifies all of them in a single forward pass. DFlash[^dflash] and its successors have been adopted by literally everyone.[^adoption] Interestingly, DFlash's drafter has a diffusion spine: it fills a block of `[MASK]` tokens in a single bidirectional pass. This validates that a *small* model can generate a long series of tokens with fairly high confidence in a single pass.
 
-The main limitation is that verification is constrained to prefixes. The target is still a next-token predictor, so once it rejects a token, it must reject every token after it. DSpark[^dspark] and DFlash2[^dflash2] are largely a series of hacks around this constraint. DSpark adds a lightweight autoregressive head to keep later draft positions coherent. It also adds a confidence head that predicts whether each prefix will survive verification, and it cuts low-confidence suffixes before they reach the target.
+The main limitation is that verification is constrained to prefixes. The target is still a next-token predictor, so once it rejects a token, it must reject every token after it. DSpark[^dspark] and DFlash2[^dflash2] are largely a series of hacks around this constraint. 
 
 [^dflash]: [Chen, Liang, Liu 2026](https://arxiv.org/abs/2602.06036) *DFlash: Block Diffusion for Flash Speculative Decoding*
-[^dspark]: [DeepSeek, Cheng et al 2026](https://arxiv.org/abs/2607.05147) *DSpark: Confidence-Scheduled Speculative Decoding with Semi-Autoregressive Generation*
-[^dflash2]: [Inco AI 2026](https://inco.ai/blog/dflash2/) *DFlash 2*
+[^dspark]: [DeepSeek, Cheng et al 2026](https://arxiv.org/abs/2607.05147) *DSpark: Confidence-Scheduled Speculative Decoding with Semi-Autoregressive Generation*. Adds a lightweight autoregressive pass that takes into account the transition between tokens, alongside many other effective tricks.
+[^dflash2]: [Inco AI 2026](https://inco.ai/blog/dflash2/) *DFlash 2.*
 [^adoption]: DFlash runs in SGLang, vLLM, TensorRT-LLM, and llama.cpp. Meta, Poolside, Xiaomi, and NVIDIA ship official DFlash drafters with their own models, and Modal "use[s] it with every compatible model." The evidence is so overwhelming that no one even talks about it anymore. See the [DFlash 2 announcement](https://inco.ai/blog/dflash2/) for a fuller list.
 
 Concretely, with a draft of length $\gamma$, the expected number of accepted tokens is a sum of prefix products:
@@ -85,11 +85,9 @@ $$\large \sum_{k=1}^{\gamma}\prod_{i=1}^{k}\big(1-\mathrm{TV}_i\big) \;\le\; \su
 
 Each prefix product is largest when it holds the $k$ smallest disagreements, and sorting achieves this for every $k$ at once.
 
-Step back and consider what a DFlash-style drafter actually is: a small diffusion model that denoises a block in a single step. All the machinery around it (position-weighted losses, confidence heads, suffix pruning) exists to squeeze that block through an autoregressive verifier one prefix at a time. A diffusion model does this natively. It commits many tokens per forward pass, in whatever order it is most confident about, with no prefix constraint. In this sense, DFlash-style speculative decoding is approximating what a diffusion model naturally does, and there are quite a few gains left on the table.
+%%The benefits of a diffusion-based drafter fight against the target being an autoregressive verifier. A diffusion model does this natively. It commits many tokens per forward pass, in whatever order it is most confident about, with no prefix constraint. %%In this sense, DFlash-style speculative decoding is approximating what a diffusion model naturally does without needing to go through the bottleneck of an autoregressive verifier.
 
-%% ===== PARKED DRAFT — FUTURE WORK (Sep 29): diffusion-target spec decoding. Not going in this post; kept for a follow-up =====
-
--- cut from post (Sep 30) --
+%%
 Things change when the target is itself a diffusion model. We can completely reinterpret speculative decoding: the draft model fills in a large fraction of the canvas, and the target diffusion model fills in the gaps. For an autoregressive target, we factor the generation based on each successive token. For a diffusion target, we can factor it by each successive denoising step. Rather than deciding which positions to accept, we decide how many of the drafter's denoising steps to accept.
 
 -- prose draft (goes after "Things change when the target..." paragraph) --
@@ -142,7 +140,7 @@ Questions to pin down: "fine steps" = lower threshold / smaller commits? $\hat x
 
 ### Rethinking drafting
 
-Diffusion also opens up alternatives to drafting. In *pyramid sampling*, smaller models distilled from the target handle the first few denoising steps, and the full model takes over for the rest. The early denoising steps commit the positions the model is most confident about, so they are the cheapest to hand off. Unlike in the autoregressive case, the confident positions don't have to be biased toward the prefix, and can instead be spread throughout the canvas. Each model in the pyramid can even use its own decoding threshold.
+The technique of *pyramid sampling* uses smaller models, perhaps distilled from the target, in order to handle the first few denoising steps. Unlike in the autoregressive case, the confident positions don't have to be biased toward the prefix, and can instead be spread throughout the canvas. Each model in the pyramid can even use its own decoding threshold.
 
 Pyramid sampling is not lossless, since the output no longer matches the target's distribution exactly. The same trade is well established in image diffusion, where a small model handles the noisy early part of the trajectory.[^tstitch] It is also closely related to step distillation, where a student compresses several teacher denoising steps into a single transition.[^salimans][^lu][^dopsd]
 
@@ -212,9 +210,11 @@ Diffusion also scales with parallel compute. Sequential Monte Carlo (SMC) runs m
 Diffusion's test-time compute has a natural advantage over CoT, in that the KV cache doesn't grow with additional computational steps. With diffusion, once the thinking is paid for and the tokens are committed, you do not need to continue paying for (or attending to) that effort in future blocks. That said, the two methods are totally orthogonal, and diffusion pairs with reasoning as a separate axis for scaling test-time compute.
 
 ## RL for diffusion
-Early attempts at RL on diffusion models had a lot of problems to work out. Depending on how you parameterize the diffusion model, it's not immediately clear that you can even estimate the logprobs of a trajectory, or whether conditioning on the noise biases the estimate. Some prior literature estimates sequence likelihoods with the ELBO,[^elbo] which gives noisy importance ratios, and then works to reduce that noise or keep training from collapsing.[^vrpo][^gdpo][^espo][^zhong] Other work uses a one-step mean-field proxy, which is cheap but biased.[^d1][^wd1] As I'll argue here, these problems have been largely worked out. The difference from autoregressive is that you have to factor the sampling probabilities in terms of trajectory states. If we fix a tape of noise $\varepsilon$, then at each denoising step $s$ the model sees the canvas $z_s$, where committed positions hold their tokens and the rest are renoised from the tape, and commits some set of positions $A_s$, and the probability of the output is just the product over each committed token at the step it was committed:
+Early attempts at RL on diffusion models had a lot of problems to work out. Depending on how you parameterize the diffusion model, it's not immediately clear that you can even estimate the logprobs of a trajectory, or whether conditioning on the noise biases the estimate. Some prior literature estimates sequence likelihoods with the ELBO,[^elbo] which gives noisy importance ratios, and then works to reduce that noise or keep training from collapsing.[^vrpo][^gdpo][^espo][^zhong] Other work uses a one-step mean-field proxy, which is cheap but biased.[^d1][^wd1] As I'll argue here, these problems have been largely worked out. The difference from autoregressive is that you have to factor the sampling probabilities in terms of trajectory states.
 
-[^elbo]: The ELBO (evidence lower bound) is a lower bound on the marginal likelihood $\log p(y \mid x)$, the probability of $y$ summed over every noise pattern and denoising order that could have produced it. That marginal is intractable, which is why these methods have to estimate it. As I'll argue below, RL never needs it, since the likelihood of the trajectory the sampler actually took is enough.
+Consider estimating the probability of a generation conditioned on a set of initial noise $\varepsilon$. (If you renoise between every step, you can imagine $\varepsilon$ is a frozen tape that you read off after each round). 
+
+[^elbo]: The ELBO (evidence lower bound) is a lower bound on the marginal likelihood $\log p(y \mid x)$, the probability of $y$ summed over every initial noise pattern and denoising trajectory. That marginal is intractable, which is why these methods have to estimate it. As I'll argue below, RL never needs it, since the likelihood of the trajectory the sampler actually took is enough.
 [^vrpo]: [Zhu et al 2025](https://arxiv.org/abs/2505.19223) *LLaDA 1.5: Variance-Reduced Preference Optimization for Large Language Diffusion Models*
 [^gdpo]: [Rojas et al 2025](https://arxiv.org/abs/2510.08554) *Improving Reasoning for Diffusion Language Models via Group Diffusion Policy Optimization*
 [^espo]: [Ou et al 2025](https://arxiv.org/abs/2512.03759) *Principled RL for Diffusion LLMs Emerges from a Sequence-Level Perspective*
@@ -224,7 +224,7 @@ Early attempts at RL on diffusion models had a lot of problems to work out. Depe
 
 $$\large \pi_\theta(y \mid x, \varepsilon) = \prod_s \prod_{i \in A_s} \pi_\theta(y_i \mid x, z_s) \tag{3}$$
 
-This means you can estimate $\nabla J$ in an unbiased way as an expectation over both $y$ and $\varepsilon$:
+You can estimate $\nabla J$ in an unbiased way as an expectation over both $y$ and $\varepsilon$:
 
 $$\large \nabla J = \mathbb{E}_{y \sim \pi_\theta(x, \varepsilon),\, \varepsilon} \Big[ R(y) \sum_s \sum_{i \in A_s} \nabla \log \pi_\theta(y_i \mid x, z_s) \Big] \tag{4}$$
 
@@ -234,15 +234,15 @@ $$\large \nabla J \sim \frac{S}{m}\, R(y) \sum_{s \in M} \sum_{i \in A_s} \nabla
 
 The analogue for autoregressive policy optimization would be only sampling some of the token gradients. While this is also unbiased, it's not an efficient tradeoff, since we still have to do basically the same number of calculations.
 
-There are a few cases where this breaks. The first is *repair*. If committed tokens can be overwritten, the committed set is no longer monotonic, and the factorization breaks, since many different trajectories can end at the same $y$. The easiest solution is just to ignore the factorization and score the whole trajectory instead. The reward only depends on $y$, which is a function of the trajectory, so REINFORCE over the trajectory is still unbiased, just noisier.
+There are a couple cases where this breaks. In diffusion-with-repair, committed tokens can be overwritten, the committed set is no longer monotonic, and the factorization breaks, since many different trajectories can end at the same $y$. The easiest solution is just to ignore the factorization and score the whole trajectory instead. The reward only depends on $y$, which is a function of the trajectory, so REINFORCE over the trajectory is still unbiased, just noisier.
 
-The second is self-conditioning. Each prediction $\pi_\theta(y_i \mid x, z_s)$ now depends on the model's own guess from step $s-1$, which depends on the guess from step $s-2$, and so on back to the start of the block. Each term no longer depends only on its own $z_s$, and you can't efficiently backprop through the whole chain. The fix is to freeze the recurrent depth at 1 or 2, saving each guess alongside its canvas during the rollout, and when you backprop through a sampled step, only recompute the guesses from the previous one or two steps. This is still fairly efficient, especially with subsampling, since each sampled step only costs one or two extra passes. The gradient is now slightly biased, though this error decreases exponentially with depth.
+The other case is self-conditioning. Each prediction $\pi_\theta(y_i \mid x, z_s)$ now depends on the model's own guess from step $s-1$, which depends on the guess from step $s-2$, and so on back to the start of the block. To account for this correctly you'd need to  backprop through the whole chain, which is not efficiently batchable. One fix is to freeze the recurrent depth at 1 or 2, saving each guess alongside its canvas during the rollout, and backprop only through one or two steps. This is still fairly efficient, especially with subsampling, but the gradient is now slightly biased. 
 
-Depending on your exact diffusion recipe, you may end up with slightly different forms of REINFORCE or GRPO. But in every case the policy is the sampler itself, and the likelihood of what the sampler actually did is exact. So the importance ratios are exact too, computed per token at the step it was committed, just like in the autoregressive case.
+Outside of these cases, the importance ratios can be calculated exactly, computed per token at the step it was committed, just like in the autoregressive case.
 
-DiffusionGemma proved that at scale you can RL a diffusion model to get better better quality than an equivaenlty sized ar model (at some metrics).
+%%DiffusionGemma proved that at scale you can RL a diffusion model to get better better quality than an equivaenlty sized ar model (at some metrics).%%
 
-%% raw notes, now covered by the prose above:
+%%
 **subsampled backprop** 
 
 
@@ -273,15 +273,14 @@ but the estimation and efficient backprop thru sample probabilities (exact traje
 
 Diffusion should also make rollouts faster. If we want more on-policy steps, we have to pay for this with lower batch sizes, since every rollout has to come from the current policy. This is exactly the regime where we should expect diffusion to be faster than AR. Rollouts also tend to be long: reasoning traces run to thousands of tokens, which pushes decoding even further into the memory-bound regime.
 
-%% raw notes, now covered above:
+%%
 **faster rollouts** 
 as stated in infereence section earlier we might be able to do very fast rollouts
 - esp bc rollouts tend to be low batch size regime 
 - -> fewer off policy steps 
 %%
 
-**& beyond**
-AR per-token rewards are pretty bad. A reward model can only score a prefix, and a half-finished answer usually says very little about whether the final answer will be right. Diffusion gives us something much nicer. At every denoising step, the model's prediction is a guess for the *entire* output, so every intermediate state comes with a full draft we can score. The change in reward between consecutive drafts is concretely interpretable as *when* the answer was generated, and therefore how to more correctly allocate credit.[^shaping] Early drafts may be reward-sparse, especially when there is an ultimate verifiable reward, like with checked final answers or unit tests. On-policy self-distillation (OPSD) is one way to densify this signal, and it's much more natural with diffusion: in AR it's hard to avoid having the teacher leak causality, while a diffusion teacher already sees the entire draft at once.
+**Guidance & beyond** Denoising is likely better to decompose rewards along trajectory than in AR. In AR we're constrained to consecutive token prefixes for reward assignment,  but diffusion allows us to score entire ntermediate states. The change in reward between consecutive drafts is concretely interpretable as *when* the answer was generated, and therefore how to more correctly allocate credit.[^shaping] Early drafts may be reward-sparse, especially when there is an ultimate verifiable reward, like with checked final answers or unit tests. On-policy self-distillation (OPSD) is one way to densify this signal, and it's much more natural with diffusion—in AR it's hard to avoid having the teacher leak causality, while a diffusion teacher already sees the entire draft at once.
 
 [^shaping]: Writing $\hat{y}_s$ for the model's full guess at step $s$, rewarding the difference $R(\hat{y}_s) - R(\hat{y}_{s-1})$ is potential-based reward shaping. The per-step rewards telescope to the final reward, so the optimal policy is unchanged. [Ng, Harada, Russell 1999](https://people.eecs.berkeley.edu/~pabbeel/cs287-fa09/readings/NgHaradaRussell-shaping-ICML1999.pdf) *Policy Invariance Under Reward Transformations*
 
@@ -328,19 +327,13 @@ Self-conditioning lets the model see its own previous guess.[^analogbits] Chen e
 [^cdcd]: [Dieleman et al 2022](https://arxiv.org/abs/2211.15089) *Continuous diffusion for categorical data*
 [^sed]: [Strudel et al 2022](https://arxiv.org/abs/2211.04236) *Self-conditioned Embedding Diffusion for Text Generation*
 
-### Feeding back the latent
 
-Instead of the distribution, I feed back the final hidden state. Let $h = \mathrm{RMSNorm}(x_L)$ be the last layer's output at a noised position. The model already computes its logits from $h$ as $W_{\text{head}}\, h$. On the next pass, a learned projection of $h$ is added to the token embedding at the same position:
+Instead of the distribution, I feed back the final hidden state. Let $h = \mathrm{RMSNorm}(x_L)$ be the last layer's output at a noised position. On the next pass, add a learned projection of $h$ to the token embedding at the same position:
 
 $$\mathrm{input}_i = \mathrm{RMSNorm}\big(W_{\text{emb}}[z_i] + W_{\text{sc}}\, \mathrm{RMSNorm}(h^{\text{prev}}_i)\big)$$
 
-$W_{\text{sc}}$ is a $d \times d$ matrix (1.05M parameters at $d = 1024$) initialized to zero, so at initialization the model is exactly the model without self-conditioning.
+Te latent, the logits, and the probabilities carry the same information about the prediction (barring some details about temperature), but the latent is the simplest and cheapest form. The temperature can be added as an extra input if needed.
 
-Feeding back the latent loses nothing. The logits are a deterministic function of $h$, so the softmax at any temperature, the argmax, the entropy, and the expected embedding are all functions of $h$ too. Conversely, if the head has full column rank, $h$ can be recovered from the logits. So the latent, the logits, and the probabilities carry the same information, and the latent is the most direct form. The only thing missing is information that was never part of the prediction, mainly the sampling temperature at the previous step. (The tokens the sampler actually drew already appear in the next canvas.) The temperature can be added as an extra input if needed.
-
-It's also cheaper. The projection is a single $d \times d$ matmul, while feeding back the distribution needs a $V \times d$ product ($V = 50{,}304$) at every position on every pass.
-
-### Reveal training
 
 The recipe from Chen et al. runs both passes on the same noisy canvas. At sampling time, though, the self-conditioning input always comes from the previous denoising step, which saw a noisier canvas. In between, the sampler committed some tokens. So training and sampling use self-conditioning in different situations.
 
@@ -360,6 +353,50 @@ $$\large \begin{array}{cc} & \qquad \text{pass 1} \\[0.3em] \raisebox{-0.6em}{pa
 - *Un-committed* ($0$): only happens with repair.
 
 The recipe from Chen et al. only trains the diagonal, producing cases at generation time that were never seen during training. Revealing and renoising between the two passes covers the off-diagonal case, which is exactly the prediction–canvas mismatch that shows up during generation.
+
+```python hidden
+def forward(prefix, canvas, h_prev=None):
+    x = embed(canvas)
+    if h_prev is not None:
+        x = x + W_sc(rmsnorm(h_prev))         # latent self-conditioning, W_sc is zero-initialized
+    h = rmsnorm(transformer(rmsnorm(x), context=prefix))   # canvas attends to the clean prefix and itself
+    return lm_head(h), h
+
+def train_step(prefix, x0, q=0.75):           # x0: the clean block, K tokens
+    t2 = uniform(0, 1)
+    t1 = uniform(t2, 1)                       # t1 >= t2
+    u = uniform(0, 1, size=K)                 # one draw per position
+    z1 = where(u < t1, random_tokens(K), x0)  # pass 1 canvas (noisier)
+    z2 = where(u < t2, random_tokens(K), x0)  # pass 2 canvas, noise is a subset of z1's, fresh tokens
+    with no_grad():
+        _, h_prev = forward(prefix, z1)
+    if uniform(0, 1) > q:
+        h_prev = zeros_like(h_prev)           # some blocks train without self-conditioning
+    logits, _ = forward(prefix, z2, h_prev)
+    return cross_entropy(logits, x0)
+
+def entropy_bound(H, available, tau):
+    # lowest entropy first; keep taking positions while the sum of the earlier ones stays <= tau,
+    # so every step commits at least one token
+    order = argsort(where(available, H, inf))
+    H_sorted = H[order]
+    take = (cumsum(H_sorted) - H_sorted <= tau) & available[order]
+    return scatter(order, take)
+
+def sample_block(prefix, tau):
+    canvas = random_tokens(K)
+    committed = zeros(K, dtype=bool)
+    h_prev = None
+    while not committed.all():
+        logits, h_prev = forward(prefix, canvas, h_prev)
+        accept = entropy_bound(entropy(logits), available=~committed, tau=tau)
+        canvas = where(accept, sample(logits), canvas)
+        committed |= accept
+        canvas = where(committed, canvas, random_tokens(K))   # renoise everything uncommitted
+    return canvas
+```
+
+**Algorithm 1: Latent self-conditioning with reveal training, and the matching entropy-bounded sampler (one block, no repair).**
 
 %% remaining appendix notes, parked:
 explain some of the theory; or quite a lot of it

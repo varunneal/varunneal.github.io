@@ -38,6 +38,14 @@ li.section-li {
   }
 }
 
+body[data-slug="essays/index"] .page-listing ul.section-ul {
+  margin-top: 1.5em;
+}
+
+body[data-slug="essays/index"] li.section-li:not([data-article-type="technical"]) > .section > .desc > h3 > a {
+  --link-color: var(--dark);
+}
+
 // modifications in popover context
 // drop the tags column from the parent grid; the rows follow via subgrid
 .popover ul.section-ul {

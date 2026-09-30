@@ -1,272 +1,329 @@
-type IterFn = (
-    x: number,
-    y: number,
-    x0: number,
-    y0: number,
-    iterations: number
-) => [number, number];
+import {
+  createFractalKernel,
+  type DoubleDouble,
+  type FractalShape,
+  type RenderRequest,
+} from "./fractal"
+import { startFractalWorker } from "./fractal.worker"
+;(() => {
+  const kernel = createFractalKernel()
+  let cleanup: (() => void) | undefined
 
-type StopCondition = (
-    x: number,
-    y: number,
-    x0: number,
-    y0: number,
-    iterations: number
-) => boolean;
+  function mount() {
+    cleanup?.()
+    cleanup = undefined
+    const canvas = document.getElementById("fractal-canvas") as HTMLCanvasElement | null
+    const ctx = canvas?.getContext("2d")
+    if (!canvas || !ctx) return
+    const cvs = canvas
+    const context = ctx
+    const width = cvs.width,
+      height = cvs.height
+    const supersampling = 2
+    const initialScale = Number(cvs.dataset.initScale) || 5
+    const shapeName = cvs.dataset.fractalShape?.toUpperCase()
+    const shape: FractalShape =
+      shapeName === "JULIA" || shapeName === "SHIP" ? shapeName : "MANDELBROT"
+    // Mandelbrot uses ~106-bit coordinates. Other formulas retain the ordinary
+    // double renderer, so stop before adjacent pixels collapse to one number.
+    const minScale = Math.max(
+      Number(cvs.dataset.minScale) || 1e-27,
+      shape === "MANDELBROT" ? 1e-27 : 1e-12,
+    )
+    const maxScale = Math.max(minScale, Number(cvs.dataset.maxScale) || 1e3)
+    const baseIter = Math.max(1, Number(cvs.dataset.maxIter) || 100)
+    const iterLimit = Math.max(baseIter, Number(cvs.dataset.maxIterLimit) || 8192)
+    const zoomFactor = Math.max(0.5, Math.min(1, Number(cvs.dataset.zoomFactor) || 0.98))
+    let centerX: DoubleDouble = [0, 0],
+      centerY: DoubleDouble = [0, 0]
+    let scale = Math.max(minScale, Math.min(maxScale, initialScale))
+    let hoverX = width / 2,
+      hoverY = height / 2
+    let zoomActive = false,
+      dragging = false,
+      dirty = true,
+      busy = false
+    let disposed = false,
+      inViewport = true
+    let raf = 0,
+      requestId = 0,
+      lastZoom = 0,
+      lastRender = 0
+    let hoverTimer: number | undefined
+    let dragX = 0,
+      dragY = 0
+    let mask: ImageData | undefined
+    let worker: Worker | undefined
+    let workerURL: string | undefined
+    let pending: RenderRequest | undefined
+    const abort = new AbortController()
+    const signal = abort.signal
+    const buffer = document.createElement("canvas")
+    const bufferContext = buffer.getContext("2d")!
 
-interface FractalDef {
-    iterFn: IterFn;
-    stopCondition: StopCondition;
-}
-
-
-export const FRACTALS: Record<string, FractalDef> = {
-    MANDELBROT: {
-        iterFn: (x, y, x0, y0 /* iterations */) => [
-            x * x - y * y + x0,
-            2 * x * y + y0,
-        ],
-        stopCondition: (x, y /* x0, y0, iterations */) => x * x + y * y > 4,
-    },
-
-    // Example extras — comment out or tweak as needed
-    JULIA: {
-        iterFn: (x, y, _x0, _y0, _iter) => {
-            const cx = -0.7;
-            const cy = 0.27015;
-            return [x * x - y * y + cx, 2 * x * y + cy];
-        },
-        stopCondition: (x, y) => x * x + y * y > 4,
-    },
-
-    SHIP: {
-        iterFn: (x, y, x0, y0) => [
-            x * x - y * y + x0,
-            Math.abs(2 * x * y) + y0,
-        ],
-        stopCondition: (x, y) => x * x + y * y > 3,
-    },
-};
-
-(() => {
-    let cleanup: (() => void) | null = null
-    function mount() {
-        const cvs = document.getElementById("fractal-canvas") as HTMLCanvasElement
-        if (!cvs) return //console.error("[Fractal] canvas not found")
-
-        const ctx = cvs.getContext("2d")!
-        const W = cvs.width
-        const H = cvs.height
-        const maxIter = Number(cvs.dataset.maxIter) || 100
-
-        const iters = new Uint16Array(W * H)
-        const img = ctx.createImageData(W, H)
-        const rgba = new Uint8ClampedArray(img.data.buffer)
-
-        /* view ------------------------------------------------------- */
-        let centerX = 0
-        let centerY = 0
-        let scale = Number(cvs.dataset.initScale) || 5
-
-        const minScale = Number(cvs.dataset.minScale) || 1e-6
-        const maxScale = Number(cvs.dataset.maxScale) || 1e3
-        const zoomFactor = Number(cvs.dataset.zoomFactor) || 0.98
-
-        const fractalShape = String(cvs.dataset.fractalShape) || "Mandelbrot"
-
-        let dirty = true
-
-        /* hover-zoom state ------------------------------------------ */
-        let hoverX = 0, hoverY = 0
-        let zoomActive = false
-        let hoverTimer: number | null = null
-        const HOVER_DELAY = 150      // ms before zoom kicks in
-        const MOVE_TOL = 4        // px wiggle room
-
-        /* math ------------------------------------------------------- */
-
-        const {iterFn, stopCondition} = FRACTALS[fractalShape.toUpperCase()]
-
-        function compute() {
-            const s = scale / H
-            for (let py = 0; py < H; ++py) {
-                const y0 = centerY + (py - H / 2) * s
-                for (let px = 0; px < W; ++px) {
-                    const x0 = centerX + (px - W / 2) * s
-                    let x = x0, y = y0, i = 0
-
-                    // maxIter is enforced, not necessary in stopCondition
-                    while (!stopCondition(x, y, x0, y0, i) && i < maxIter) {
-                        [x, y] = iterFn(x, y, x0, y0, i)
-                        ++i
-                    }
-                    iters[py * W + px] = i
-                }
-            }
-
-            let hex = getComputedStyle(cvs)
-                .getPropertyValue("--edge-color")
-                .trim()
-                .replace("#", "")
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
-
-
-            for (let py = 0; py < H - 1; ++py) {
-                for (let px = 0; px < W - 1; ++px) {
-                    const idx = py * W + px
-                    const edge =
-                        iters[idx] !== iters[idx + 1] ||
-                        iters[idx] !== iters[idx + W]
-                    const off = idx << 2
-                    if (edge) {
-                        rgba[off] = r
-                        rgba[off + 1] = g
-                        rgba[off + 2] = b
-                        rgba[off + 3] = 255
-                        if (((px - W / 2) * H) ** 2 + ((py - H / 2) * W) ** 2 > (W * H / 2) ** 2) {
-                            rgba[off + 3] = 0;
-                        }
-                    } else {
-                        rgba[off + 3] = 0
-                    }
-                }
-            }
-        }
-
-        /* RAF control ------------------------------------------------ */
-        /* (render loop + "request animation frame" control ) */
-        let raf = 0
-        const run = () => {
-            if (zoomActive && scale > minScale && scale < maxScale) {
-                // move center toward hover point, then shrink scale
-                const fx = (hoverX - W / 2) / H
-                const fy = (hoverY - H / 2) / H
-                centerX += fx * scale * (1 - zoomFactor)  // 1/x ≈ 1-x for x ≈ 1
-                centerY += fy * scale * (1 - zoomFactor)
-                scale *= zoomFactor
-                dirty = true
-            } else {
-                zoomActive = false
-            }
-
-            if (dirty) {
-                compute()
-                ctx.putImageData(img, 0, 0)
-                dirty = false
-            }
-            // keep the loop only if there’s work to do
-            if (zoomActive || dirty) raf = requestAnimationFrame(run)
-            else raf = 0                         // loop goes to sleep
-        }
-
-        const wake = () => {
-            if (!raf) raf = requestAnimationFrame(run)
-        }
-        const sleep = () => {
-            if (raf) cancelAnimationFrame(raf);
-            raf = 0
-        }
-
-        /* helpers ---------------------------------------------------- */
-        const startHoverTimer = (x: number, y: number) => {
-            clearTimeout(hoverTimer!)
-            hoverTimer = window.setTimeout(() => {
-                hoverX = x;
-                hoverY = y
-                zoomActive = true
-            }, HOVER_DELAY)
-        }
-
-        const cancelHover = () => {
-            clearTimeout(hoverTimer!)
-            zoomActive = false
-        }
-
-        /* events ----------------------------------------------------- */
-        cvs.addEventListener("mouseenter", e => {
-            const {left, top} = cvs.getBoundingClientRect()
-            startHoverTimer(e.clientX - left, e.clientY - top)
-            wake()
-        })
-
-        cvs.addEventListener("mousemove", e => {
-            const {left, top} = cvs.getBoundingClientRect()
-            const x = e.clientX - left
-            const y = e.clientY - top
-
-            // if we're already zooming, update hover target smoothly
-            if (zoomActive) {
-                hoverX = x
-                hoverY = y
-            } else {
-                const dx = x - hoverX
-                const dy = y - hoverY
-                if (dx * dx + dy * dy > MOVE_TOL * MOVE_TOL) {
-                    hoverX = x;
-                    hoverY = y
-                    cancelHover()
-                    startHoverTimer(x, y)
-                }
-            }
-            wake()
-        })
-
-        cvs.addEventListener("mouseleave", () => {
-            cancelHover()
-            sleep()
-        })
-
-        // manual scroll zoom / pan still work
-        cvs.addEventListener("wheel", e => {
-            e.preventDefault()
-            if (scale > minScale && e.deltaY < 0) {
-                scale *= 0.9
-            } else if (scale < maxScale && e.deltaY > 0) {
-                scale *= 1.1
-            }
-            dirty = true
-
-            cancelHover()
-            wake()
-        }, {passive: false})
-
-        cvs.addEventListener("mousedown", () => {
-            cancelHover()
-            wake()
-        })
-        cvs.addEventListener("mousemove", e => {
-            if (e.buttons === 1) {
-                centerX -= (e.movementX / W) * scale
-                centerY -= (e.movementY / H) * scale
-                dirty = true
-            }
-            wake()
-        })
-
-
-
-        compute()
-        ctx.putImageData(img, 0, 0)
-
-        cleanup = () => {
-            cancelAnimationFrame(raf)
-            cvs.replaceWith(cvs.cloneNode(true))  // drops listeners
-            cleanup = null
-        }
+    const visible = () => inViewport && !document.hidden && cvs.getClientRects().length > 0
+    const wake = () => {
+      if (!disposed && !raf && visible()) raf = requestAnimationFrame(run)
     }
-    /* go --------------------------------------------------------- */
+    const cancelHover = () => {
+      clearTimeout(hoverTimer)
+      hoverTimer = undefined
+      zoomActive = false
+      lastZoom = 0
+    }
+    const position = (e: MouseEvent) => {
+      const rect = cvs.getBoundingClientRect()
+      return [
+        ((e.clientX - rect.left) * width) / rect.width,
+        ((e.clientY - rect.top) * height) / rect.height,
+      ]
+    }
+    const zoom = (factor: number, x: number, y: number) => {
+      const next = Math.max(minScale, Math.min(maxScale, scale * factor))
+      const delta = scale - next
+      centerX = kernel.add(centerX, [((x - width / 2) / height) * delta, 0])
+      centerY = kernel.add(centerY, [((y - height / 2) / height) * delta, 0])
+      scale = next
+      dirty = true
+    }
+    const startHover = (x: number, y: number) => {
+      cancelHover()
+      hoverX = x
+      hoverY = y
+      if (zoomFactor === 1) return
+      hoverTimer = window.setTimeout(() => {
+        hoverTimer = undefined
+        zoomActive = true
+        lastZoom = performance.now()
+        wake()
+      }, 150)
+    }
 
-    document.addEventListener("nav", () => {
-        cleanup?.()
-        mount()
+    function paint() {
+      if (!mask) return
+      buffer.width = mask.width
+      buffer.height = mask.height
+      bufferContext.putImageData(mask, 0, 0)
+      bufferContext.globalCompositeOperation = "source-in"
+      bufferContext.fillStyle =
+        getComputedStyle(cvs).getPropertyValue("--edge-color").trim() || "#56473a"
+      bufferContext.fillRect(0, 0, buffer.width, buffer.height)
+      bufferContext.globalCompositeOperation = "source-over"
+      context.clearRect(0, 0, width, height)
+      context.imageSmoothingEnabled = true
+      context.imageSmoothingQuality = "high"
+      context.drawImage(buffer, 0, 0, width, height)
+    }
+
+    function receive(data: {
+      id: number
+      width: number
+      height: number
+      pixels: Uint8ClampedArray<ArrayBuffer>
+    }) {
+      if (disposed || data.id !== requestId) return
+      busy = false
+      pending = undefined
+      mask = new ImageData(data.pixels, data.width, data.height)
+      paint()
+      if (zoomActive || dirty) wake()
+    }
+
+    function fallback(view: RenderRequest) {
+      const frame = kernel.createFrame(view)
+      let row = 0
+      const chunk = () => {
+        if (disposed || view.id !== requestId || !visible()) return
+        const deadline = performance.now() + 6
+        do {
+          frame.renderRow(row++)
+        } while (row < view.height && performance.now() < deadline)
+        if (row < view.height) window.setTimeout(chunk, 0)
+        else receive({ ...view, pixels: frame.finish() })
+      }
+      window.setTimeout(chunk, 0)
+    }
+
+    function stopWorker() {
+      worker?.terminate()
+      worker = undefined
+      if (workerURL) URL.revokeObjectURL(workerURL)
+      workerURL = undefined
+    }
+
+    try {
+      workerURL = URL.createObjectURL(
+        new Blob([`(${startFractalWorker.toString()})((${createFractalKernel.toString()})())`], {
+          type: "text/javascript",
+        }),
+      )
+      worker = new Worker(workerURL)
+      worker.onmessage = ({ data }) => receive(data)
+      worker.onerror = (event) => {
+        event.preventDefault()
+        stopWorker()
+        if (pending) fallback(pending)
+      }
+    } catch {
+      stopWorker()
+    }
+
+    function run(now: number) {
+      raf = 0
+      if (!visible()) return
+      if (zoomActive && !busy) {
+        if (scale > minScale) {
+          const elapsed = Math.min(50, now - (lastZoom || now - 1000 / 60))
+          zoom(zoomFactor ** (elapsed / (1000 / 60)), hoverX, hoverY)
+          lastZoom = now
+        } else {
+          cancelHover()
+        }
+      }
+      if (dirty) {
+        // Cap rendering at 30 fps; worker completion paces sustained hover zoom.
+        if (now - lastRender < 1000 / 30) {
+          wake()
+          return
+        }
+        lastRender = now
+        pending = {
+          id: ++requestId,
+          width: width * supersampling,
+          height: height * supersampling,
+          edgeWidth: supersampling,
+          centerX,
+          centerY,
+          scale,
+          shape,
+          maxIter: Math.min(
+            iterLimit,
+            baseIter + Math.ceil(Math.max(0, Math.log2(initialScale / scale))) * 32,
+          ),
+        }
+        dirty = false
+        busy = true
+        if (worker) worker.postMessage(pending)
+        else fallback(pending)
+      }
+    }
+
+    cvs.addEventListener(
+      "pointerenter",
+      (e) => {
+        if (e.pointerType === "mouse" && !dragging) {
+          const [x, y] = position(e)
+          startHover(x, y)
+        }
+      },
+      { signal },
+    )
+    cvs.addEventListener(
+      "pointermove",
+      (e) => {
+        const [x, y] = position(e)
+        if (dragging) {
+          centerX = kernel.add(centerX, [(-(x - dragX) / height) * scale, 0])
+          centerY = kernel.add(centerY, [(-(y - dragY) / height) * scale, 0])
+          dragX = x
+          dragY = y
+          dirty = true
+          wake()
+        } else if (e.pointerType === "mouse") {
+          if (zoomActive) {
+            hoverX = x
+            hoverY = y
+          } else if ((x - hoverX) ** 2 + (y - hoverY) ** 2 > 16) startHover(x, y)
+        }
+      },
+      { signal },
+    )
+    cvs.addEventListener("pointerleave", cancelHover, { signal })
+    cvs.addEventListener(
+      "pointerdown",
+      (e) => {
+        if (e.button !== 0) return
+        cancelHover()
+        dragging = true
+        ;[dragX, dragY] = position(e)
+        cvs.setPointerCapture(e.pointerId)
+      },
+      { signal },
+    )
+    const endDrag = () => {
+      dragging = false
+    }
+    cvs.addEventListener("pointerup", endDrag, { signal })
+    cvs.addEventListener("pointercancel", endDrag, { signal })
+    cvs.addEventListener("lostpointercapture", endDrag, { signal })
+    cvs.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault()
+        cancelHover()
+        const [x, y] = position(e)
+        const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? height : 1)
+        zoom(Math.exp(Math.max(-1, Math.min(1, delta * 0.002))), x, y)
+        wake()
+      },
+      { passive: false, signal },
+    )
+    const reset = () => {
+      cancelHover()
+      centerX = [0, 0]
+      centerY = [0, 0]
+      scale = Math.max(minScale, Math.min(maxScale, initialScale))
+      dirty = true
+      wake()
+    }
+    cvs.addEventListener("dblclick", reset, { signal })
+    cvs.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.key === "Home" || e.key === "Escape") {
+          e.preventDefault()
+          reset()
+        } else if (["+", "=", "-"].includes(e.key)) {
+          e.preventDefault()
+          cancelHover()
+          zoom(e.key === "-" ? 1.25 : 0.8, width / 2, height / 2)
+          wake()
+        }
+      },
+      { signal },
+    )
+    document.addEventListener("themechange", paint, { signal })
+    const visibilityChanged = () => {
+      if (!visible()) {
+        cancelHover()
+        cancelAnimationFrame(raf)
+        raf = 0
+        requestId++
+        worker?.postMessage(null)
+        pending = undefined
+        busy = false
+      } else {
+        dirty = true
+        wake()
+      }
+    }
+    document.addEventListener("visibilitychange", visibilityChanged, { signal })
+    const observer = new IntersectionObserver(([entry]) => {
+      inViewport = entry.isIntersecting
+      visibilityChanged()
     })
+    observer.observe(cvs)
+    wake()
+    cleanup = () => {
+      disposed = true
+      cancelHover()
+      cancelAnimationFrame(raf)
+      abort.abort()
+      observer.disconnect()
+      stopWorker()
+    }
+  }
 
-    document.addEventListener("themechange", () => {
-        mount()
-    })
-    mount()
-
-
+  document.addEventListener("nav", mount)
+  mount()
 })()

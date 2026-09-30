@@ -20,12 +20,12 @@ body {
 }
 
 .text-highlight {
-  background-color: var(--textHighlight);
+  background-color: color-mix(in srgb, var(--highlight) 35%, transparent);
   padding: 0 0.1rem;
   border-radius: 5px;
 }
 ::selection {
-  background: color-mix(in srgb, var(--tertiary) 60%, rgba(255, 255, 255, 0));
+  background: color-mix(in srgb, var(--highlight) 35%, transparent);
   color: var(--darkgray);
 }
 
@@ -62,18 +62,24 @@ ul,
 
 
 a {
+  // Component styles can override the base color without changing hover behavior.
+  --link-color: var(--secondary);
   font-weight: $semiBoldWeight;
   text-decoration: none;
   transition: color 0.2s ease;
-  color: var(--secondary);
+  color: var(--link-color);
 
   &:hover {
-    color: var(--tertiary) !important;
+    color: color-mix(in srgb, var(--link-color) 80%, white);
+  }
+
+  :root[saved-theme="dark"] &:hover {
+    color: color-mix(in srgb, var(--link-color) 80%, black);
   }
 
   &.internal {
     text-decoration: none;
-    background-color: var(--highlight);
+    background-color: color-mix(in srgb, var(--highlight) 15%, transparent);
     padding: 0 0.1rem;
     border-radius: 5px;
     line-height: 1.4rem;
@@ -416,7 +422,7 @@ pre {
     overflow-x: auto;
 
     & [data-highlighted-chars] {
-      background-color: var(--highlight);
+      background-color: color-mix(in srgb, var(--highlight) 15%, transparent);
       border-radius: 5px;
     }
 
@@ -426,7 +432,7 @@ pre {
       border-left: 3px solid transparent;
 
       &[data-highlighted-line] {
-        background-color: var(--highlight);
+        background-color: color-mix(in srgb, var(--highlight) 15%, transparent);
         border-left: 3px solid var(--secondary);
       }
 

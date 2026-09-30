@@ -1,57 +1,30 @@
-/// <reference lib="webworker" />
+import type { FractalKernel, RenderRequest } from "./fractal"
 
-/** message coming from main thread */
-interface Payload {
-    width: number
-    height: number
-    center: { x: number; y: number }
-    scale: number
-    maxIter: number
-}
-
-self.onmessage = ({ data }: MessageEvent<Payload>) => {
-    const { width, height, center, scale, maxIter } = data
-    const buf = new Uint32Array(width * height)
-
-    for (let py = 0; py < height; py++) {
-        for (let px = 0; px < width; px++) {
-            // map pixel → complex plane
-            let x0 =
-                center.x + ((px - width / 2) * scale) / height
-            let y0 =
-                center.y + ((py - height / 2) * scale) / height
-            let x = x0,
-                y = y0,
-                iter = 0
-
-            while (x * x + y * y <= 4 && iter < maxIter) {
-                const xt = x * x - y * y + x0
-                y = 2 * x * y + y0
-                x = xt
-                iter++
-            }
-
-            // edge mask: look for pixels that *didn’t* escape
-            buf[py * width + px] = iter === maxIter ? 0 : 0xff_00_00_00
-        }
+// Keep this function self-contained: Quartz embeds it in a Blob worker, so no
+// separate asset URL (or changes to the static site's build pipeline) is needed.
+export function startFractalWorker(kernel: FractalKernel) {
+  const scope = self as unknown as {
+    onmessage: (event: MessageEvent<RenderRequest | null>) => void
+    postMessage: (message: unknown, transfer: Transferable[]) => void
+  }
+  let generation = 0
+  scope.onmessage = async ({ data }) => {
+    const current = ++generation
+    if (!data) return
+    const frame = kernel.createFrame(data)
+    let row = 0
+    while (row < data.height) {
+      const deadline = performance.now() + 8
+      do {
+        frame.renderRow(row++)
+      } while (row < data.height && performance.now() < deadline)
+      // Yield so a newer view can cancel this one, even during a deep zoom.
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      if (current !== generation) return
     }
-
-    /* second pass for edge detection (neighbour compare) */
-    for (let py = 0; py < height - 1; py++) {
-        for (let px = 0; px < width - 1; px++) {
-            const idx = py * width + px
-            if (
-                buf[idx] !== buf[idx + 1] ||
-                buf[idx] !== buf[idx + width]
-            ) {
-                buf[idx] = 0xff_00_00_00 // opaque black
-            } else {
-                buf[idx] = 0 // transparent
-            }
-        }
-    }
-
-    /* ship the raw RGBA back */
-    // NB: buf is already in ABGR byte order for ImageData
-    self.postMessage(buf.buffer, [buf.buffer])
+    const pixels = frame.finish()
+    scope.postMessage({ id: data.id, width: data.width, height: data.height, pixels }, [
+      pixels.buffer,
+    ])
+  }
 }

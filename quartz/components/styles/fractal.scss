@@ -1,15 +1,16 @@
 #fractal-canvas {
-  image-rendering: pixelated;
-  //border: 1px solid #0a3069;
-  --edge-color: 0, 0, 0;        /* default black */
-  /* any other styles you want */
+  image-rendering: auto;
+  --edge-color: #56473a;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: crosshair;
 }
 
-
 :root[saved-theme="light"] #fractal-canvas {
-  --edge-color: #56473A
+  --edge-color: #56473a;
 }
 
 :root[saved-theme="dark"] #fractal-canvas {
-  --edge-color: #E5D4D1
+  --edge-color: #e5d4d1;
 }

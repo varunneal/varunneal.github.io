@@ -177,7 +177,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   // precompute style prop strings as pixi doesn't support css variables
   const cssVars = [
     "--secondary",
-    "--tertiary",
+    "--textHighlight",
     "--gray",
     "--light",
     "--lightgray",
@@ -199,7 +199,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     if (isCurrent) {
       return computedStyleMap["--secondary"]
     } else if (visited.has(d.id) || d.id.startsWith("tags/")) {
-      return computedStyleMap["--tertiary"]
+      return computedStyleMap["--textHighlight"]
     } else {
       return computedStyleMap["--gray"]
     }
@@ -416,7 +416,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       })
 
     if (isTagNode) {
-      gfx.stroke({ width: 2, color: computedStyleMap["--tertiary"] })
+      gfx.stroke({ width: 2, color: computedStyleMap["--textHighlight"] })
     }
 
     nodesContainer.addChild(gfx)

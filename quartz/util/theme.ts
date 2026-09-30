@@ -5,8 +5,11 @@ export interface ColorScheme {
   darkgray: string
   dark: string
   secondary: string
+  /** Alternate accent for technical essay titles. */
   tertiary: string
+  /** Opaque highlight base; apply opacity at the point of use. */
   highlight: string
+  /** Foreground accent for hover and active states. */
   textHighlight: string
 }
 

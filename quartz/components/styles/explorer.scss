@@ -122,13 +122,13 @@ button.desktop-explorer {
 
     & li > a {
       margin-bottom: 5rem;
-      color: var(--dark);
+      --link-color: var(--dark);
       opacity: 0.75;
       pointer-events: all;
 
       &.active {
         opacity: 1;
-        color: var(--tertiary);
+        --link-color: var(--textHighlight);
       }
     }
   }
@@ -165,10 +165,6 @@ button.desktop-explorer {
   //  line-height: 1.5rem;
   //  display: inline-block;
   //}
-
-  & div > a:hover {
-    color: var(--tertiary);
-  }
 
   & div > button {
     color: var(--dark);
@@ -207,7 +203,7 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
 }
 
 .folder-icon:hover {
-  color: var(--tertiary);
+  color: var(--textHighlight);
 }
 
 .explorer {

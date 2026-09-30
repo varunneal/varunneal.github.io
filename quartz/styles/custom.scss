@@ -27,6 +27,16 @@ body[data-slug="index"] .page {
   max-width: calc(#{map.get($breakpoints, desktop)} + 50px);
 }
 
+/* Center tables within their scrollable containers */
+.table-container > table {
+  margin-inline: auto;
+
+  th:first-child,
+  td:first-child {
+    border-right: 2px solid var(--gray);
+  }
+}
+
 /* ========================================================================
    Images & Media
    ======================================================================== */

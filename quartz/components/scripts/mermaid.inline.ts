@@ -1,4 +1,5 @@
 import { registerEscapeHandler, removeAllChildren } from "./util"
+import { interpolateRgb } from "d3"
 
 interface Position {
   x: number
@@ -132,7 +133,7 @@ class DiagramPanZoom {
 
 const cssVars = [
   "--secondary",
-  "--tertiary",
+  "--textHighlight",
   "--gray",
   "--light",
   "--lightgray",
@@ -178,6 +179,11 @@ document.addEventListener("nav", async () => {
     )
 
     const darkMode = document.documentElement.getAttribute("saved-theme") === "dark"
+    // Resolve the subtle highlight to a concrete color for Mermaid's color parser.
+    const highlightBackground = interpolateRgb(
+      computedStyleMap["--light"].trim(),
+      computedStyleMap["--highlight"].trim(),
+    )(0.15)
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
@@ -186,12 +192,12 @@ document.addEventListener("nav", async () => {
         fontFamily: computedStyleMap["--codeFont"],
         primaryColor: computedStyleMap["--light"],
         primaryTextColor: computedStyleMap["--darkgray"],
-        primaryBorderColor: computedStyleMap["--tertiary"],
+        primaryBorderColor: computedStyleMap["--textHighlight"],
         lineColor: computedStyleMap["--darkgray"],
         secondaryColor: computedStyleMap["--secondary"],
-        tertiaryColor: computedStyleMap["--tertiary"],
+        tertiaryColor: highlightBackground,
         clusterBkg: computedStyleMap["--light"],
-        edgeLabelBackground: computedStyleMap["--highlight"],
+        edgeLabelBackground: highlightBackground,
       },
     })
 

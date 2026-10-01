@@ -47,7 +47,7 @@ There are several variants of this basic form:
 
 ## The case from inference
 
-### When is diffusion faster?
+%%### When is diffusion faster?%%
 
 Diffusion trades extra compute for fewer memory reads. Whether that trade pays off depends on where decoding sits on the roofline:
 
@@ -64,26 +64,26 @@ Low batch size and long context are valuable regimes in and of themselves. At 4,
 
 MoE pushes in the same direction. Each token activates only a few experts, so compute per token shrinks while the weights loaded per batch stay large. Basically, the more memory bound we are, the more likely diffusion is a straightforward win over autoregressive decoding, even without speculative drafting.
 
-### Speculative decoding
+%%### Speculative decoding%%
 
-Speculative decoding pairs a small draft model with a large target model. The drafter proposes a block of tokens, and the target verifies all of them in a single forward pass. DFlash[^dflash] and its successors have been adopted by literally everyone.[^adoption] Interestingly, DFlash's drafter has a diffusion spine: it fills a block of `[MASK]` tokens in a single bidirectional pass. This validates that a *small* model can generate a long series of tokens with fairly high confidence in a single pass.
+**Speculative decoding:** One reason to suppose that diffusion will end up everywhere is because diffusion already *is* everywhere in the form of speculative decoding. DFlash and its successors[^dflash], which have been adopted by pretty much everyone [^adoption], use diffusion draft model to predict an entire block of tokens in a single bidirectional pass. The diffusion draft model is *small* distillation of the target model that has fairly similar output probabilities. 
 
-The main limitation is that verification is constrained to prefixes. The target is still a next-token predictor, so once it rejects a token, it must reject every token after it. DSpark[^dspark] and DFlash2[^dflash2] are largely a series of hacks around this constraint. 
+The main limitation is that verification is constrained to prefixes. The target is still a next-token predictor, so once it rejects a token, it must reject every token after it. DSpark[^dspark] and DFlash2[^dflash2] are largely a series of hacks to boost acceptance despite this constraint. 
 
 [^dflash]: [Chen, Liang, Liu 2026](https://arxiv.org/abs/2602.06036) *DFlash: Block Diffusion for Flash Speculative Decoding*
 [^dspark]: [DeepSeek, Cheng et al 2026](https://arxiv.org/abs/2607.05147) *DSpark: Confidence-Scheduled Speculative Decoding with Semi-Autoregressive Generation*. Adds a lightweight autoregressive pass that takes into account the transition between tokens, alongside many other effective tricks.
 [^dflash2]: [Inco AI 2026](https://inco.ai/blog/dflash2/) *DFlash 2.*
 [^adoption]: DFlash runs in SGLang, vLLM, TensorRT-LLM, and llama.cpp. Meta, Poolside, Xiaomi, and NVIDIA ship official DFlash drafters with their own models, and Modal "use[s] it with every compatible model." The evidence is so overwhelming that no one even talks about it anymore. See the [DFlash 2 announcement](https://inco.ai/blog/dflash2/) for a fuller list.
 
-Concretely, with a draft of length $\gamma$, the expected number of accepted tokens is a sum of prefix products:
+%%Concretely, with a draft of length $\gamma$, the expected number of accepted tokens is a sum of prefix products:%%
 
-$$\large \mathbb{E}[\text{accepted}] = \sum_{k=1}^{\gamma} \prod_{i=1}^{k} \Big(1 - \mathrm{TV}\big(p^{\text{draft}}_i,\, p^{\text{target}}_i\big)\Big) \tag{1}$$
+%%$$\large \mathbb{E}[\text{accepted}] = \sum_{k=1}^{\gamma} \prod_{i=1}^{k} \Big(1 - \mathrm{TV}\big(p^{\text{draft}}_i,\, p^{\text{target}}_i\big)\Big) \tag{1}$$%%
 
-A single early disagreement zeroes out every later term, which is why so much of DSpark's machinery is spent protecting the prefix. If we could instead choose the order, sorting the per-position disagreements in ascending order, $\mathrm{TV}_{(1)} \le \mathrm{TV}_{(2)} \le \dots$, can only increase this sum:
+%%A single early disagreement zeroes out every later term, which is why so much of DSpark's machinery is spent protecting the prefix. If we could instead choose the order, sorting the per-position disagreements in ascending order, $\mathrm{TV}_{(1)} \le \mathrm{TV}_{(2)} \le \dots$, can only increase this sum:%%
 
 $$\large \sum_{k=1}^{\gamma}\prod_{i=1}^{k}\big(1-\mathrm{TV}_i\big) \;\le\; \sum_{k=1}^{\gamma}\prod_{i=1}^{k}\big(1-\mathrm{TV}_{(i)}\big) \tag{2}$$
 
-Each prefix product is largest when it holds the $k$ smallest disagreements, and sorting achieves this for every $k$ at once.
+%%Each prefix product is largest when it holds the $k$ smallest disagreements, and sorting achieves this for every $k$ at once.%%
 
 %%The benefits of a diffusion-based drafter fight against the target being an autoregressive verifier. A diffusion model does this natively. It commits many tokens per forward pass, in whatever order it is most confident about, with no prefix constraint. %%In this sense, DFlash-style speculative decoding is approximating what a diffusion model naturally does without needing to go through the bottleneck of an autoregressive verifier.
 
@@ -138,11 +138,10 @@ Keep $K_J$, renoise $R\setminus K_J$, and redraft from the new state.
 Questions to pin down: "fine steps" = lower threshold / smaller commits? $\hat x$ = final draft canvas, path = target's intermediate states ending at $\hat x$? what is "extended" in extended target? $K_J$ = kept positions after prefix $J$, $R$ = remaining positions?
 ===== END PARKED DRAFT ===== %%
 
-### Rethinking drafting
 
-The technique of *pyramid sampling* uses smaller models, perhaps distilled from the target, in order to handle the first few denoising steps. Unlike in the autoregressive case, the confident positions don't have to be biased toward the prefix, and can instead be spread throughout the canvas. Each model in the pyramid can even use its own decoding threshold.
+**Beyond drafting:** Diffusion models allow for number of techniques besides drafting to decrease the number of forward passes required for generation. The technique of *pyramid sampling* uses smaller models, often distilled from the target, in order to handle the first few denoising steps. Unlike in the autoregressive case, the confident positions don't have to be biased toward the prefix, and can instead be spread throughout the canvas. Each model in the pyramid can even use its own decoding threshold.
 
-Pyramid sampling is not lossless, since the output no longer matches the target's distribution exactly. The same trade is well established in image diffusion, where a small model handles the noisy early part of the trajectory.[^tstitch] It is also closely related to step distillation, where a student compresses several teacher denoising steps into a single transition.[^salimans][^lu][^dopsd]
+Pyramid sampling is not lossless, since the output won't match the target exactly. The same trade is well established in image diffusion, where a small model handles the noisy early part of the trajectory.[^tstitch] It is also closely related to step distillation, where a student compresses several teacher denoising steps into a single transition.[^salimans][^lu][^dopsd] Such a distillation is essentially the same process as training a drafter eg via DFlash. 
 
 Lossless speculative decoding with a diffusion target is possible too, but drafting strategies built for autoregressive models need rethinking. One recent work uses samples of the next denoising step as speculations for several future steps, organizing these drafts as a calibrated graph.[^spiffy] This is self-speculative (no separate draft model is needed) and cuts forward passes by up to 8.6× while preserving the output distribution. Related work extends speculative sampling to continuous diffusion[^debortoli] and to whole denoising trajectories.[^pan]
 
@@ -160,15 +159,15 @@ Lossless speculative decoding with a diffusion target is possible too, but draft
 %%
 
 ## Test-time scaling 
-Adaptive computation is natural with diffusion models. At a fixed acceptance threshold $\tau$, tokens get committed at the rate that the model becomes sufficiently confident about them. Lowering $\tau$ means fewer tokens are committed per denoising step, so the same block takes more denoising steps. Turning this knob arbitrarily low gives us arbitrarily many computations over a given canvas.[^knob]
+Adaptive computation is natural with diffusion models. At inference time, an entropy threshold $\tau$ can be chosen based on the task. Lowering $\tau$ corresponds to committing fewer tokens per step, leading to more total steps for the whole canvas. By lowering $\tau$ we can spend arbitrarily amounts of computation per canvas.[^knob]
 
-Superficially, this may seem similar to *looped* or *universal transformers*. Recent work[^qlabs][^parcae] shows that looping is a straightforward way to increase the computational depth of a transformer at train time, even to the effect of boosting training scaling laws. This technique is useful, and it's orthogonal to diffusion, but it provides absolutely no test-time scaling.
+We can compare diffusion to the increasingly popular architecture of *looped* or *universal transformers*. These loops seem to help with train time scaling[^qlabs][^parcae] , but are unable to provide distribution test-time scaling.[^ut] [^geiping] [^saunshi][^trm] Parcae, for example, sweeps the mean training loop count from 2 to 12 and finds that test-time gains saturate near that mean every time.[^parcae] Looping buys a compute knob over the range you trained on, not beyond it.
+
 
 [^knob]: E.g. via repair, or with samplers that don't require committing any tokens per denoising step.
 [^qlabs]: [Chen, Vegesna, Dahal, Wilson 2026](https://arxiv.org/abs/2609.19107) *How Model Growth, Recursion, and Boundary Operators Influence Scaling Exponents*
 [^parcae]: [Prairie et al 2026](https://arxiv.org/abs/2604.12946) *Parcae: Scaling Laws For Stable Looped Language Models*
 
-Basically all the literature—from universal transformers,[^ut] to recurrent-depth models,[^geiping] to looped transformers,[^saunshi] to TRMs[^trm]—can't find a way to make looping scale at test time. None of these convincingly establishes substantial benefits from running a fixed model beyond the maximum loop count used during training. Some show benefits within the trained range, or above its average. Parcae, for example, sweeps the mean training loop count from 2 to 12 and finds that test-time gains saturate near that mean every time.[^parcae] Looping buys a compute knob over the range you trained on, not beyond it.
 
 [^ut]: [Dehghani et al 2018](https://arxiv.org/abs/1807.03819) *Universal Transformers*
 [^geiping]: [Geiping et al 2025](https://arxiv.org/abs/2502.05171) *Scaling up Test-Time Compute with Latent Reasoning: A Recurrent Depth Approach*
@@ -181,7 +180,7 @@ Secondly, you can consider the convergence of the residual stream. Iterations in
 
 %% parked: "Concretely, the residual stream at each position has two jobs. It has to predict the current token, and it has to supply context, through keys and values, to every future token. Extra loops may refine the prediction, but they also shift the keys and values that later positions attend to into a distribution no attention head was trained on." — maybe reuse in the CoT contrast %%
 
-Chain of Thought, on the other hand, *is* a way to get arbitrary test-time scaling. For difficult problems, the model may learn to *think* for longer—that is, to emit more tokens—in a way that makes generating the correct answer more likely. CoT is an extremely elegant test-time mechanism. It appends to the prefix of the model such that the desired output is more likely conditioned on this prefix than on the original prompt. Progress lives in a separate state: every new token is an append to the KV cache. Each attention head is already very good at digesting a prefix of any length, so CoT can be trained exactly, with no mismatch between the KV caches seen in training and at inference.
+Chain of Thought, on the other hand, *is* a way to get arbitrary test-time scaling. For difficult problems, the model may learn (or can be prompted) to think for longer—that is, to emit more tokens—in a way that makes generating the correct answer more likely. CoT is an extremely elegant test-time mechanism. It appends to the prefix of the model such that the desired output is more likely when conditioned on this prefix than on the original prompt. Progress lives in a separate state and is attended to in the KV cache. Each attention head is already very good at digesting a prefix of any length, so CoT can be trained without mismatch between training and at inference.
 
 The situation is even more elegant with text diffusion. The KV cache is *identical* during training and generation: a clean prefix and a noisy canvas. During training, the noise level of the canvas is sampled across its whole range, so every state the model reaches at inference is one it could have seen in training. Finer sampling gives denser coverage, but even coarse sampling spans a massive range of states. Looping has no such guarantee, since extra loops produce states that training never covers. No attention head's job changes from train time to test time. And unlike looping, what contracts across denoising steps is the canvas itself, so we can keep adding denoising steps and expect the canvas to cohere.
 
@@ -196,7 +195,7 @@ In practice, diffusion shows test-time scaling out of the box. As DiffusionGemma
 
 This is true test-time scaling. During training, the model never sees more than one or two denoising iterations at a time, so every additional step at inference is, to some extent, "new." Yet the model makes use of it immediately.
 
-One of the major reasons Chain of Thought works is self-correction. The model can propose an answer, notice that it's wrong, and correct it.[^weng][^score] *Repair* plays a similar role in diffusion. When committed tokens can be overwritten, a later denoising step can reject an earlier proposal.[^remdm] Self-conditioning helps in the same way, since each denoising step sees the model's previous guess for every position. In the appendix I describe a self-conditioning recipe efficient enough to make this extremely useful.
+**Correction:** One of the major reasons Chain of Thought works is self-correction. The model can propose an answer, notice that it's wrong, and correct it.[^weng][^score] *Repair* plays a similar role in diffusion. When committed tokens can be overwritten, a later denoising step can reject an earlier proposal.[^remdm] Self-conditioning helps in the same way, since each denoising step sees the model's previous guess for every position. In the appendix I describe a self-conditioning recipe efficient enough to make this extremely useful.
 
 [^weng]: [Lilian Weng 2025](https://lilianweng.github.io/posts/2025-05-01-thinking/) *Why We Think*
 [^score]: [Kumar et al 2024](https://arxiv.org/abs/2409.12917) *Training Language Models to Self-Correct via Reinforcement Learning*
@@ -210,7 +209,7 @@ Diffusion also scales with parallel compute. Sequential Monte Carlo (SMC) runs m
 Diffusion's test-time compute has a natural advantage over CoT, in that the KV cache doesn't grow with additional computational steps. With diffusion, once the thinking is paid for and the tokens are committed, you do not need to continue paying for (or attending to) that effort in future blocks. That said, the two methods are totally orthogonal, and diffusion pairs with reasoning as a separate axis for scaling test-time compute.
 
 ## RL for diffusion
-Early attempts at RL on diffusion models had a lot of problems to work out. Depending on how you parameterize the diffusion model, it's not immediately clear that you can even estimate the logprobs of a trajectory, or whether conditioning on the noise biases the estimate. Some prior literature estimates sequence likelihoods with the ELBO,[^elbo] which gives noisy importance ratios, and then works to reduce that noise or keep training from collapsing.[^vrpo][^gdpo][^espo][^zhong] Other work uses a one-step mean-field proxy, which is cheap but biased.[^d1][^wd1] As I'll argue here, these problems have been largely worked out. The difference from autoregressive is that you have to factor the sampling probabilities in terms of trajectory states.
+**Thinking with trajectories:** Early attempts at RL on diffusion models had a lot of problems to work out. Depending on how you parameterize the diffusion model, it's not immediately clear that you can even estimate the logprobs of a trajectory, or whether conditioning on the noise biases the estimate. Some prior literature estimates sequence likelihoods with the ELBO,[^elbo] which gives noisy importance ratios, and then works to reduce that noise or keep training from collapsing.[^vrpo][^gdpo][^espo][^zhong] Other work uses a one-step mean-field proxy, which is cheap but biased.[^d1][^wd1] As I'll summarize here, these problems have been largely worked out. The difference from autoregressive is that you have to factor the sampling probabilities in terms of trajectory states.
 
 Consider estimating the probability of a generation conditioned on a set of initial noise $\varepsilon$. (If you renoise between every step, you can imagine $\varepsilon$ is a frozen tape that you read off after each round). 
 
@@ -228,7 +227,9 @@ You can estimate $\nabla J$ in an unbiased way as an expectation over both $y$ a
 
 $$\large \nabla J = \mathbb{E}_{y \sim \pi_\theta(x, \varepsilon),\, \varepsilon} \Big[ R(y) \sum_s \sum_{i \in A_s} \nabla \log \pi_\theta(y_i \mid x, z_s) \Big] \tag{4}$$
 
-To compute this, we need the model's prediction at every committed position, at the step where it was committed. So per block we generate, we have to save all the intermediate canvases $z_s$ from the rollout. Each $z_s$ is a separate forward pass over the canvas, so a block with $S$ denoising steps costs $S$ forward and backward passes. The innovation that makes this efficient is **subsampling**. Instead of computing a backprop for each denoising state, we can pick a random subset $M$ of $m$ steps and rescale by $S/m$, and the estimate stays unbiased:
+To compute this, we need the model's prediction at every committed position, at the step where it was committed. So per block we generate, we have to save all the intermediate canvases $z_s$ from the rollout. Each $z_s$ is a separate forward pass over the canvas, so a block with $S$ denoising steps costs $S$ forward and backward passes. 
+
+**Subsampling:** The innovation that makes this efficient is subsampling. Instead of computing a backprop for each denoising state, we can pick a random subset $M$ of $m$ steps and rescale by $S/m$, and the estimate stays unbiased:
 
 $$\large \nabla J \sim \frac{S}{m}\, R(y) \sum_{s \in M} \sum_{i \in A_s} \nabla \log \pi_\theta(y_i \mid x, z_s) \tag{5}$$
 
@@ -243,8 +244,6 @@ Outside of these cases, the importance ratios can be calculated exactly, compute
 %%DiffusionGemma proved that at scale you can RL a diffusion model to get better better quality than an equivaenlty sized ar model (at some metrics).%%
 
 %%
-**subsampled backprop** 
-
 
 - better sub
 Early attempts at RL on diffusion models had a lot of problems to work out. It's not immediately clear, for example, depending on how you paraemrerize the diffusion model, that you can estimate the logprobs of a trajectory. There are a series of concerns you might immediately have
@@ -271,16 +270,16 @@ Depending on your exact diffusion recipe, you may end up with slightly different
 but the estimation and efficient backprop thru sample probabilities (exact trajectory likelihoods ) can be solved 
 %%
 
-Diffusion should also make rollouts faster. If we want more on-policy steps, we have to pay for this with lower batch sizes, since every rollout has to come from the current policy. This is exactly the regime where we should expect diffusion to be faster than AR. Rollouts also tend to be long: reasoning traces run to thousands of tokens, which pushes decoding even further into the memory-bound regime.
+**On-policy:** Diffusion should also make rollouts faster. If we want more on-policy steps, we have to pay for this with lower batch sizes, since every rollout has to come from the current policy. This is exactly the regime where we should expect diffusion to be faster than AR. Rollouts also tend to be long, where reasoning traces run to thousands of tokens, which pushes decoding even further into the memory-bound regime. 
 
 %%
-**faster rollouts** 
+
 as stated in infereence section earlier we might be able to do very fast rollouts
 - esp bc rollouts tend to be low batch size regime 
 - -> fewer off policy steps 
 %%
 
-**Guidance & beyond** Denoising is likely better to decompose rewards along trajectory than in AR. In AR we're constrained to consecutive token prefixes for reward assignment,  but diffusion allows us to score entire ntermediate states. The change in reward between consecutive drafts is concretely interpretable as *when* the answer was generated, and therefore how to more correctly allocate credit.[^shaping] Early drafts may be reward-sparse, especially when there is an ultimate verifiable reward, like with checked final answers or unit tests. On-policy self-distillation (OPSD) is one way to densify this signal, and it's much more natural with diffusion—in AR it's hard to avoid having the teacher leak causality, while a diffusion teacher already sees the entire draft at once.
+**Guidance & beyond:** Denoising is likely better to decompose rewards along trajectory than in AR. In AR we're constrained to consecutive token prefixes for reward assignment,  but diffusion allows us to score entire ntermediate states. The change in reward between consecutive drafts is concretely interpretable as *when* the answer was generated, and therefore how to more correctly allocate credit.[^shaping] Early drafts may be reward-sparse, especially when there is an ultimate verifiable reward, like with checked final answers or unit tests. On-policy self-distillation (OPSD) is one way to densify this signal, and it's much more natural with diffusion—in AR it's hard to avoid having the teacher leak causality, while a diffusion teacher already sees the entire draft at once.
 
 [^shaping]: Writing $\hat{y}_s$ for the model's full guess at step $s$, rewarding the difference $R(\hat{y}_s) - R(\hat{y}_{s-1})$ is potential-based reward shaping. The per-step rewards telescope to the final reward, so the optimal policy is unchanged. [Ng, Harada, Russell 1999](https://people.eecs.berkeley.edu/~pabbeel/cs287-fa09/readings/NgHaradaRussell-shaping-ICML1999.pdf) *Policy Invariance Under Reward Transformations*
 
@@ -301,16 +300,18 @@ New and alien forms of RL
 
 ## Why now?
 
-**Conversion is nearly solved.** Converting an autoregressive model into a diffusion model goes back nearly to the start of text diffusion.[^diffullama][^dream][^sdar][^rnd1][^llada2] Even the DFlash line of work is, in a sense, turning an AR model into a lightweight diffusion drafter. What's impressive about DiffusionGemma is how cheap the conversion has become. It skips pretraining entirely and warm-starts from the final post-trained Gemma 4 checkpoint. After a short SFT stage on comparatively little data, the RL stage runs for only about 1,400 steps.[^rlsteps] The whole recipe uses under 10% of the AR model's training tokens.[^gemma] The result pays a moderate quality cost relative to its AR initialization in exchange for a 5–7× speedup. It also ships with the full stack of modern diffusion tricks, including block-wise canvases, self-conditioning, and entropy-bounded sampling. It's a pure validation of the recipe.
+In this post I've summarized some advantages of diffusion over auto-regressive models, but many of these points are not fundamentally new. Why should we expect diffusion to suddenly become popular? As mentioned earlier in the post, distilled diffusion models already are everywhere, in the form of draft models. This technique saw widespread adoption this year because well-written papers contained simple recipes. I believe the release and report of DiffusionGemma will plays a similar role but for the technique of converting entire fully-trained models into diffusion variants. 
 
-[^rlsteps]: My estimate, read off the x-axis of the SD·RL training curves, which are plotted in buckets of 200 steps.
+**DiffusionGemma is a blueprint:** Converting an autoregressive model into a diffusion model goes back nearly to the start of text diffusion.[^diffullama][^dream][^sdar][^rnd1][^llada2] What's impressive about DiffusionGemma is how cheap the conversion has become. It skips pretraining entirely and warm-starts from the final post-trained Gemma 4 checkpoint. After a short SFT stage on comparatively little data, the RL stage runs for only about 1,400 steps.[^rlsteps] The whole recipe uses under 10% of the AR model's training tokens.[^gemma] The result pays a moderate quality cost relative to its AR initialization in exchange for a 5–7× speedup. It also vets a series of modern diffusion tricks, including block-wise canvases, self-conditioning, and entropy-bounded sampling.
+
+[^rlsteps]: Estimated,  based on the x-axis of the SD·RL training curves, which are plotted in buckets of 200 steps.
 [^diffullama]: [Gong et al 2024](https://arxiv.org/abs/2410.17891) *Scaling Diffusion Language Models via Adaptation from Autoregressive Models*
 [^dream]: [Ye et al 2025](https://arxiv.org/abs/2508.15487) *Dream 7B: Diffusion Large Language Models*
 [^sdar]: [Cheng et al 2025](https://arxiv.org/abs/2510.06303) *SDAR: A Synergistic Diffusion-AutoRegression Paradigm for Scalable Sequence Generation*
 [^rnd1]: [Radical Numerics 2025](https://www.radicalnumerics.ai/assets/rnd1_report.pdf) *RND1: Simple, Scalable AR-to-Diffusion Conversion*
 [^llada2]: [Bie et al 2025](https://arxiv.org/abs/2512.15745) *LLaDA2.0: Scaling Up Diffusion Language Models to 100B*
 
-**Live research threads.** Diffusion also sits at the intersection of many of the most interesting research threads right now. We've already seen three of them in non-causal speculative decoding, looped transformers, and test-time compute. Structured generation, as seen in Jev[^jev] and OpenAI's recent Decisions API,[^decisions] is another major thread. An autoregressive model has to write left to right, so anything that depends on the end of the output has to be guessed at the beginning. A diffusion model has order freedom. It can infill a gap in the middle of a document, or let a fixed ending constrain the beginning. It can also fill a fixed template, placing each answer at a predetermined position on the canvas. A recent vLLM patch uses this to turn DiffusionGemma into a structured decision engine, answering up to 85 questions in a single denoising pass and reading a confidence score for each answer straight from its logprobs.[^vllm] Diffusion also helps with data efficiency, since seeing every example under many noise patterns acts as a strong form of data augmentation.[^prabhudesai]
+**Live research threads.** Diffusion also sits at the intersection of many of the most interesting research threads right now. In this post I've tried to motivate diffusion's advantages for inference optimization, test-time compute, and value-based RL. Structured generation, as seen in Jev[^jev] and OpenAI's recent Decisions API,[^decisions] is another major thread. A recent vLLM PR makes minor changes to instantly turn DiffusionGemma into a structured decision engine.[^vllm] Data-sparse regimes, another popular thread, seems to benefit from diffusion-based pretraining, since seeing every example under many noise patterns acts as a strong form of data augmentation.[^prabhudesai]
 
 [^jev]: TypeSafe AI's Jev returns typed decisions, such as a choice from a fixed answer set, with calibrated confidence. See this [writeup](https://explainx.ai/blog/diffusiongemma-jev-vllm-open-source-2026).
 [^decisions]: [OpenAI 2026](https://openai.com/index/devday-2026-recap/) *DevDay 2026 recap*. See also this [practical guide](https://huggingface.co/blog/sora-2/what-is-openai-decisions-api-a-practical-guide).
@@ -318,39 +319,38 @@ New and alien forms of RL
 
 [^prabhudesai]: [Prabhudesai et al 2025](https://arxiv.org/abs/2507.15857) *Diffusion Beats Autoregressive in Data-Constrained Settings*
 
-**The future frontier.** What does the frontier look like? Much faster self-hosted models, real-time compute, arbitrary-length canvases, and easy structured generation. The shift I find most exciting is what I'd call *anti-modality*. The current approach to multimodality bolts audio, image, and video generation onto a text model, each with its own machinery. Diffusion points toward a non-modal regime instead, where generating a pixel is as natural as generating a token. That would close the gap between image and text diffusion. It may even let us get rid of tokenizers. Maybe not soon, but why not byte-level diffusion? Many of the greedy choices baked into today's tokenizers were made for autoregressive models, and they may carry different tradeoffs for text diffusion.
+**The future frontier.** What does the future of discrete diffusion look like? Much faster self-hosted models, real-time compute, arbitrary-length canvases, and easy structured generation seem to be in the near future. I predict that diffusion models will become *anti-modal*, neither constrained to text nor audio, image, or video. As inference becomes cheaper, byte-level diffusion may even become attractive. Many of the greedy choices baked into today's tokenizers were made for autoregressive models, and they may carry different tradeoffs for a world of diffusion.
 
 ## Appendix: self-conditioning
 
-Self-conditioning lets the model see its own previous guess.[^analogbits] Chen et al. feed back the model's estimate of the clean data; for Analog Bits, that's the predicted bits. Text diffusion models commonly feed back the predicted token distribution instead, often as the probability-weighted average of the token embeddings, $\sum_a p(a)\, e_a$.[^cdcd][^sed] My recipe differs in two ways: what gets fed back, and how it's trained.
+Self-conditioning lets the model see its own previous guess.[^analogbits] Text diffusion models commonly feed back the predicted token distribution instead, often as the probability-weighted average of the token embeddings, $\sum_a p(a)\, e_a$.[^cdcd][^sed] 
 
 [^cdcd]: [Dieleman et al 2022](https://arxiv.org/abs/2211.15089) *Continuous diffusion for categorical data*
 [^sed]: [Strudel et al 2022](https://arxiv.org/abs/2211.04236) *Self-conditioned Embedding Diffusion for Text Generation*
 
 
-Instead of the distribution, I feed back the final hidden state. Let $h = \mathrm{RMSNorm}(x_L)$ be the last layer's output at a noised position. On the next pass, add a learned projection of $h$ to the token embedding at the same position:
+Instead of the distribution, I propose feedin back the final hidden state. Let $h = \mathrm{RMSNorm}(x_L)$ be the last layer's output at a noised position. On the next pass, add a learned projection of $h$ to the token embedding at the same position:
 
 $$\mathrm{input}_i = \mathrm{RMSNorm}\big(W_{\text{emb}}[z_i] + W_{\text{sc}}\, \mathrm{RMSNorm}(h^{\text{prev}}_i)\big)$$
 
 Te latent, the logits, and the probabilities carry the same information about the prediction (barring some details about temperature), but the latent is the simplest and cheapest form. The temperature can be added as an extra input if needed.
 
-
-The recipe from Chen et al. runs both passes on the same noisy canvas. At sampling time, though, the self-conditioning input always comes from the previous denoising step, which saw a noisier canvas. In between, the sampler committed some tokens. So training and sampling use self-conditioning in different situations.
+The recipe in *Analog Bits*[^analogbits] runs both passes on the same noisy canvas. At sampling time, though, the self-conditioning input always comes from the previous denoising step, which saw a noisier canvas. In between, the sampler committed some tokens. So training and sampling use self-conditioning in different situations.
 
 *Reveal training* matches the sampler. For each block:
 1. Draw $t_2 \sim U(0,1)$, then $t_1 \sim U(t_2, 1)$, so $t_1 \ge t_2$.
 2. Draw one uniform $u_i$ per position. Pass 1 (no gradient) sees $z_1$, where position $i$ is noised if $u_i < t_1$.
 3. Pass 2 (trained) sees $z_2$, where position $i$ is noised if $u_i < t_2$, with fresh noise tokens. Since $t_2 \le t_1$, the noised positions of $z_2$ are a subset of those of $z_1$; the rest are *revealed*, set back to the truth. Marginally, each position of $z_2$ is noised with probability $t_2$, the same as in single-pass training.
-4. A fraction $q = 0.75$ of blocks receive pass 1's latent as self-conditioning; the rest get zeros.
+4. A fraction $q = 0.75$ of blocks receive pass 1's latent as self-conditioning. The original Analog Bits paper proposes $q=0.5$; I find $q=0.75$ to be more optimal though this hyperparameter is fairly insensitive.
 
 Each position goes through one of four transitions between the two passes. Pass 1 stands in for the previous denoising step, and pass 2 for the current one:
 
 $$\large \begin{array}{cc} & \qquad \text{pass 1} \\[0.3em] \raisebox{-0.6em}{pass 2} \!\! & \begin{array}{r|cc} & \text{clean} & \text{noise} \\ \hline \text{clean} & 1 - t_1 & t_1 - t_2 \\ \text{noise} & 0 & t_2 \end{array} \end{array}$$
 
-- *Already committed* ($1 - t_1$): the token stays, and the feedback was computed with the token present.
-- *Newly committed* ($t_1 - t_2$): a token now sits in the slot, and the feedback is from when it was noise.
-- *Still uncommitted* ($t_2$): the slot gets fresh noise, and the feedback is from a different noise token.
-- *Un-committed* ($0$): only happens with repair.
+* *Already committed* ($1 - t_1$): the token stays, and the feedback was computed with the token present.
+* *Newly committed* ($t_1 - t_2$): a token now sits in the slot, and the feedback is from when it was noise.
+* *Still uncommitted* ($t_2$): the slot gets fresh noise, and the feedback is from a different noise token.
+* *Un-committed* ($0$): only happens with repair.
 
 The recipe from Chen et al. only trains the diagonal, producing cases at generation time that were never seen during training. Revealing and renoising between the two passes covers the off-diagonal case, which is exactly the prediction–canvas mismatch that shows up during generation.
 
@@ -407,3 +407,17 @@ then include training code + loss curves
 Need to explain ELBO plots
 Basically argue that ELBO is sort of the bound on best case decoding, so its like if we took the max number of steps to some extent
 %%
+
+---
+
+If this post was useful to you, you may cite
+
+```
+@misc{
+      srivastava2026,
+      author = {Varun Srivastava},
+      title = {Diffusion will be everywhere},
+      year = {2026},
+      url = {https://varunneal.github.io/essays/diffusion}
+}
+```

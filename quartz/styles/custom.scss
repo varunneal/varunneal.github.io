@@ -416,9 +416,9 @@ a.footnote-ref {
    UI Components
    ======================================================================== */
 
-/* Dark mode toggle - sun/moon in top right */
+/* Dark mode toggle - anchored to the page's top right */
 .darkmode {
-  position: fixed;
+  position: absolute;
   top: 8px;
   right: 8px;
   width: min(6vw, 6vh);

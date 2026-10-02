@@ -7,6 +7,7 @@ created: March 17, 2025
 modified: September 9, 2025
 title: Genius of Nature
 permalink: essays/genius
+draft: "true"
 ---
 
 It’s all so murky here.

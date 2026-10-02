@@ -10,6 +10,7 @@ aliases:
   - epistemological dualism
 title: Two Peaks and the Telepathy Tapes
 permalink: essays/two-peaks
+draft: "true"
 ---
 ## (1) Contra the tapes
 

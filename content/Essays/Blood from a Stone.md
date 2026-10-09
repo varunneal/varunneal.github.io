@@ -9,7 +9,7 @@ image: ../images/behelit.png
 imageAlt: Line art behelit from Berserk
 modified: June 30, 2025
 title: Blood from a Stone
-draft: "true"
+draft: "false"
 ---
 
 %%*This post is a follow-up to [[two peaks]].*%%
